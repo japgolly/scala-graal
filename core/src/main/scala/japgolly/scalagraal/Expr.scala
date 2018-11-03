@@ -9,12 +9,14 @@ import scala.runtime.AbstractFunction1
 final class Expr[A] private[Expr] (private[Expr] val run: Context => A) extends AbstractFunction1[Context, Expr.Result[A]] {
 
   override def apply(context: Context): Expr.Result[A] =
-    try
+    try {
+      context.enter()
       Right(run(context))
-    catch {
+    } catch {
       case t: ExprError => Left(t)
       case t: Throwable => throw t
-    }
+    } finally
+      context.leave()
 
   def map[B](f: A => B): Expr[B] =
     new Expr(f compose run)
@@ -65,6 +67,9 @@ final class Expr[A] private[Expr] (private[Expr] val run: Context => A) extends 
 
 object Expr {
   type Result[A] = Either[ExprError, A]
+
+  def apply(lang: String, source: CharSequence): Expr[Value] =
+    apply(Source.create(lang, source))
 
   def apply(source: Source): Expr[Value] =
     new Expr(c => ExprError.InEval.capture(c.eval(source)))
