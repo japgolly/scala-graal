@@ -20,6 +20,7 @@
 * service
   * [x] before/around/after hooks
   * [x] single
+  * [ ] pure scheduling & execution (?)
 * multi-threaded service
   * [x] fixed pool
   * [ ] warmup
@@ -29,3 +30,9 @@
 * React SSR
   * [ ] render util (so one needn't write direct JS)
   * [ ] `window` management
+  * [ ] test util
+* Integration
+  * [ ] Scalaz
+  * [ ] Cats
+  * [ ] Cats Effect (?)
+  * [ ] Prometheus
