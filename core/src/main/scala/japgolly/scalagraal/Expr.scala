@@ -7,6 +7,9 @@ import scala.runtime.AbstractFunction1
 
 object Example {
   val x = Expr(???).asString
+  x: Expr[ExprError.InEvalOrRead, String]
+  val y = x.flatMap(_ => Expr(???).asInt)
+  y: Expr[ExprError.InEvalOrRead, Int]
 }
 
 final class Expr[E, A](private[Expr] val run: Context => Expr.Result[E, A]) extends AbstractFunction1[Context, Expr.Result[E, A]] {
@@ -26,25 +29,14 @@ final class Expr[E, A](private[Expr] val run: Context => Expr.Result[E, A]) exte
   def flatMap[B](f: A => Expr[E, B]): Expr[E, B] =
     new Expr(c => run(c).flatMap(f(_).run(c)))
 
-//  // @throws ClassCastException if this value could not be converted to string.
-//  // @throws UnsupportedOperationException if this value does not represent a string.
-//  // @throws PolyglotException if a guest language error occurred during execution.
-//  def asBoolean(implicit ev: Expr[E, A] =:= Expr[E, Value]): Expr[E, Boolean] = ev(this).map(_.asBoolean())
-//  def asByte   (implicit ev: Expr[E, A] =:= Expr[E, Value]): Expr[E, Byte   ] = ev(this).map(_.asByte())
-//  def asDouble (implicit ev: Expr[E, A] =:= Expr[E, Value]): Expr[E, Double ] = ev(this).map(_.asDouble())
-//  def asFloat  (implicit ev: Expr[E, A] =:= Expr[E, Value]): Expr[E, Float  ] = ev(this).map(_.asFloat())
-//  def asInt    (implicit ev: Expr[E, A] =:= Expr[E, Value]): Expr[E, Int    ] = ev(this).map(_.asInt())
-//  def asLong   (implicit ev: Expr[E, A] =:= Expr[E, Value]): Expr[E, Long   ] = ev(this).map(_.asLong())
-//  def asShort  (implicit ev: Expr[E, A] =:= Expr[E, Value]): Expr[E, Short  ] = ev(this).map(_.asShort())
-//  def asString (implicit ev: Expr[E, A] =:= Expr[E, Value]): Expr[E, String ] = ev(this).map(_.asString())
-
-  def asString(implicit ev: Expr[E, A] =:= Expr[E, Value], m: ExprError.Merge[E, ExprError.InRead]): Expr[m.C, String] =
+  private def _as[B](f: Value => B)(implicit ev: Expr[E, A] =:= Expr[E, Value], m: ExprError.Merge[E, ExprError.InRead]): Expr[m.Out, B] =
     ev(this).eflatmap {
       case Right(v) =>
         try
-          Right(v.asString())
+          Right(f(v))
         catch {
           case e: ClassCastException            => Left(m.b(ExprError.ValueCastError(v, e)))
+          case e: NullPointerException          => Left(m.b(ExprError.ValueIsNull(v, e)))
           case e: UnsupportedOperationException => Left(m.b(ExprError.ValueReprError(v, e)))
           case e: PolyglotException             => Left(m.b(ExprError.GuestLangError(v, e)))
         }
@@ -52,14 +44,23 @@ final class Expr[E, A](private[Expr] val run: Context => Expr.Result[E, A]) exte
         Left(m.a(e))
     }
 
-//  def as[T](t: TypeLiteral[T])(implicit ev: Expr[E, A] =:= Expr[E, Value]): Expr[E, T] =
-//    ev(this).map(_.as(t))
-//
-//  def as[T](implicit ev: Expr[E, A] =:= Expr[E, Value], ct: ClassTag[T]): Expr[E, T] = {
-//    val t = ct.runtimeClass.asInstanceOf[Class[T]]
-//    ev(this).map(_.as(t))
-//  }
-//
+  def asBoolean(implicit ev: Expr[E, A] =:= Expr[E, Value], m: ExprError.Merge[E, ExprError.InRead]): Expr[m.Out, Boolean] = _as(_.asBoolean())(ev, m)
+  def asByte   (implicit ev: Expr[E, A] =:= Expr[E, Value], m: ExprError.Merge[E, ExprError.InRead]): Expr[m.Out, Byte   ] = _as(_.asByte())(ev, m)
+  def asDouble (implicit ev: Expr[E, A] =:= Expr[E, Value], m: ExprError.Merge[E, ExprError.InRead]): Expr[m.Out, Double ] = _as(_.asDouble())(ev, m)
+  def asFloat  (implicit ev: Expr[E, A] =:= Expr[E, Value], m: ExprError.Merge[E, ExprError.InRead]): Expr[m.Out, Float  ] = _as(_.asFloat())(ev, m)
+  def asInt    (implicit ev: Expr[E, A] =:= Expr[E, Value], m: ExprError.Merge[E, ExprError.InRead]): Expr[m.Out, Int    ] = _as(_.asInt())(ev, m)
+  def asLong   (implicit ev: Expr[E, A] =:= Expr[E, Value], m: ExprError.Merge[E, ExprError.InRead]): Expr[m.Out, Long   ] = _as(_.asLong())(ev, m)
+  def asShort  (implicit ev: Expr[E, A] =:= Expr[E, Value], m: ExprError.Merge[E, ExprError.InRead]): Expr[m.Out, Short  ] = _as(_.asShort())(ev, m)
+  def asString (implicit ev: Expr[E, A] =:= Expr[E, Value], m: ExprError.Merge[E, ExprError.InRead]): Expr[m.Out, String ] = _as(_.asString())(ev, m)
+
+  def as[T](t: TypeLiteral[T])(implicit ev: Expr[E, A] =:= Expr[E, Value], m: ExprError.Merge[E, ExprError.InRead]): Expr[m.Out, T] =
+    _as(_.as(t))(ev, m)
+
+  def as[T](implicit ev: Expr[E, A] =:= Expr[E, Value], m: ExprError.Merge[E, ExprError.InRead], ct: ClassTag[T]): Expr[m.Out, T] = {
+    val t = ct.runtimeClass.asInstanceOf[Class[T]]
+    _as(_.as(t))(ev, m)
+  }
+
 //  def asOption[B](f: Expr[E, Value] => Expr[E, B])(implicit ev: Expr[E, A] =:= Expr[E, Value]): Expr[E, Option[B]] = {
 //    val self = ev(this)
 //    new Expr(c => {
@@ -67,7 +68,7 @@ final class Expr[E, A](private[Expr] val run: Context => Expr.Result[E, A]) exte
 //      if (v.isNull) None else Some(f(Expr.const(v)).run(c))
 //    })
 //  }
-//
+
 //  def timed: Expr[E, (Duration, A)] =
 //    new Expr(ctx => {
 //      val start = System.nanoTime()
@@ -128,33 +129,14 @@ object ExprError {
   final case class GuestLangError(value: Value, underlying: PolyglotException) extends InRead
 
   trait Merge[-A, -B] {
-    type C
-    val a: A => C
-    val b: B => C
+    type Out
+    val a: A => Out
+    val b: B => Out
   }
   object Merge {
-    type Aux[A, B, CC] = Merge[A, B] { type C = CC }
-    def apply[A, B, CC](x: A => CC, y: B => CC): Aux[A, B, CC] = new Merge[A, B] { type C = CC; val a = x; val b = y}
+    type Aux[A, B, O] = Merge[A, B] { type Out = O }
+    def apply[A, B, O](x: A => O, y: B => O): Aux[A, B, O] = new Merge[A, B] { type Out = O; val a = x; val b = y}
 
     implicit def lub[A <: AnyRef]: Aux[A, A, A] = Merge(a => a, a => a)
   }
-
-//  trait Merge[A, B] {
-//    type C
-//    val a: A => C
-//    val b: B => C
-//  }
-//  trait MergePri2 {
-//    implicit def lub[A, B <: A, C <: A]: Merge.Aux[B, C, A] = Merge(a => a, a => a)
-//  }
-//  trait MergePri1 extends MergePri2 {
-//    implicit def lubL[A, B <: A]: Merge.Aux[A, B, A] = Merge(a => a, a => a)
-//    implicit def lubR[A, B >: A]: Merge.Aux[A, B, B] = Merge(a => a, a => a)
-//  }
-//  object Merge extends MergePri1 {
-//    type Aux[A, B, CC] = Merge[A, B] { type C = CC }
-//    def apply[A, B, CC](x: A => CC, y: B => CC): Aux[A, B, CC] = new Merge[A, B] { type C = CC; val a = x; val b = y}
-//
-//    implicit def refl[A]: Aux[A, A, A] = Merge(a => a, a => a)
-//  }
 }
