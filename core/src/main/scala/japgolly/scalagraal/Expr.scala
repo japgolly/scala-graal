@@ -2,10 +2,11 @@ package japgolly.scalagraal
 
 import java.time.Duration
 import org.graalvm.polyglot._
+import scala.collection.generic.CanBuildFrom
 import scala.reflect.ClassTag
 import scala.runtime.AbstractFunction1
 
-final class Expr[A](private[Expr] val run: Context => A) extends AbstractFunction1[Context, Expr.Result[A]] {
+final class Expr[A] private[Expr] (private[Expr] val run: Context => A) extends AbstractFunction1[Context, Expr.Result[A]] {
 
   override def apply(context: Context): Expr.Result[A] =
     try
@@ -68,9 +69,24 @@ object Expr {
   def apply(source: Source): Expr[Value] =
     new Expr(c => ExprError.InEval.capture(c.eval(source)))
 
+  def lift[A](f: Context => A): Expr[A] =
+    new Expr(f)
+
   def const[A](a: A): Expr[A] =
     new Expr(_ => a)
 
   def point[A](a: => A): Expr[A] =
     new Expr(_ => a)
+
+  def stdlibDist[F[x] <: Traversable[x], A, B](fa: F[A])(f: A => Expr[B])
+                                              (implicit cbf: CanBuildFrom[F[A], B, F[B]]): Expr[F[B]] =
+    lift(c => {
+      val b = cbf(fa)
+      fa.foreach(a => b += f(a).run(c))
+      b.result()
+    })
+
+  def stdlibCosequence[F[x] <: Traversable[x], A](fea: F[Expr[A]])
+                                                 (implicit cbf: CanBuildFrom[F[Expr[A]], A, F[A]]): Expr[F[A]] =
+    stdlibDist[F, Expr[A], A](fea)(identity)
 }
