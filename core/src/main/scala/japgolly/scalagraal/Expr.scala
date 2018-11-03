@@ -28,6 +28,20 @@ final class Expr[E, A](private[Expr] val run: Context => Expr.Result[E, A]) exte
 
   def flatMap[B](f: A => Expr[E, B]): Expr[E, B] =
     new Expr(c => run(c).flatMap(f(_).run(c)))
+//  def flatMap[F, B](f: A => Expr[F, B])(implicit m: ExprError.Merge[E, F]): Expr[m.Out, B] =
+//    new Expr(c => run(c) match {
+//      case Right(a) => f(a).run(c) match {
+//        case Right(b) => Right(b)
+//        case Left(e) => Left(m.b(e))
+//      }
+//      case Left(e) => Left(m.a(e))
+//    })
+
+  def leftMap[F](f: E => F): Expr[F, A] =
+    new Expr(run(_).left.map(f))
+
+  def leftWiden[F >: E]: Expr[F, A] =
+    this.asInstanceOf[Expr[F, A]]
 
   private def _as[B](f: Value => B)(implicit ev: Expr[E, A] =:= Expr[E, Value], m: ExprError.Merge[E, ExprError.InRead]): Expr[m.Out, B] =
     ev(this).eflatmap {
@@ -61,13 +75,17 @@ final class Expr[E, A](private[Expr] val run: Context => Expr.Result[E, A]) exte
     _as(_.as(t))(ev, m)
   }
 
-//  def asOption[B](f: Expr[E, Value] => Expr[E, B])(implicit ev: Expr[E, A] =:= Expr[E, Value]): Expr[E, Option[B]] = {
-//    val self = ev(this)
-//    new Expr(c => {
-//      val v = self.run(c)
-//      if (v.isNull) None else Some(f(Expr.const(v)).run(c))
-//    })
-//  }
+  def asOption[F, B](f: Expr[E, Value] => Expr[F, B])
+                    (implicit ev: Expr[E, A] =:= Expr[E, Value],
+                     m1: ExprError.Merge[E, F],
+                     m2: ExprError.Merge[m1.Out, ExprError.InRead]): Expr[m2.Out, Option[B]] = {
+    val self = ev(this)
+    new Expr(c =>
+      self.run(c) match {
+        case Right(v) =>
+          if (v.isNull) Right(None) else f(Expr.const(v).leftWiden[E]).run(c).map(Some(_))
+    })
+  }
 
 //  def timed: Expr[E, (Duration, A)] =
 //    new Expr(ctx => {
@@ -132,6 +150,9 @@ object ExprError {
     type Out
     val a: A => Out
     val b: B => Out
+  }
+  trait MergeFallback {
+    implicit def coproduct[A, B]: Merge.Aux[A, B, Either[A, B]] = Merge(Left(_), Right(_))
   }
   object Merge {
     type Aux[A, B, O] = Merge[A, B] { type Out = O }
