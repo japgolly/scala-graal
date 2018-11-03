@@ -24,6 +24,9 @@
 * multi-threaded service
   * [x] fixed pool
   * [ ] warmup
+    * [ ] rules - eg. `up to 10000 reps/thread & up to 30 sec`
+    * [ ] on idle (?)
+    * [ ] implement results of warmpup discussion with graal team
   * [ ] shutdown
   * [ ] metrics
   * [ ] caching
