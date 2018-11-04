@@ -1,6 +1,7 @@
 import sbt._
 import sbt.Keys._
 import com.typesafe.sbt.pgp.PgpKeys
+import pl.project13.scala.sbt.JmhPlugin
 import sbtrelease.ReleasePlugin.autoImport._
 import Lib._
 
@@ -63,11 +64,16 @@ object ScalaGraal {
   lazy val root =
     Project("root", file("."))
       .configure(commonSettings, preventPublication)
-      .aggregate(core)
+      .aggregate(core, benchmark)
 
   lazy val core = project
     .configure(commonSettings, publicationSettings, testSettings)
     .settings(
       libraryDependencies ++= Seq(
         "org.graalvm.sdk" % "graal-sdk" % Ver.Graal))
+
+  lazy val benchmark = project
+    .configure(commonSettings, preventPublication)
+    .enablePlugins(JmhPlugin)
+    .dependsOn(core)
 }
