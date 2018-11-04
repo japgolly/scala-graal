@@ -9,30 +9,32 @@ import scala.concurrent.JavaConversions.asExecutionContext
 trait ContextAsync {
   def apply[A](f: Context => A): Future[A]
   def withAround(f: ContextAsync.Around): ContextAsync
-
-  def shutdown(): Unit
-  def state(): ContextAsync.State
 }
 
 object ContextAsync {
 
-  sealed trait State
-  object State {
-    case object Active       extends State
-    case object ShuttingDown extends State
-    case object Terminated   extends State
+  trait Pool extends ContextAsync {
+    def shutdown(): Unit
+    def poolState(): ContextAsync.PoolState
   }
 
-  def fixedPool(poolSize: Int): ContextBuilder[ContextAsync] =
-    new ContextBuilder[ContextAsync] {
-      override def apply(newContext: => Context): ContextAsync = {
+  sealed trait PoolState
+  object PoolState {
+    case object Active       extends PoolState
+    case object ShuttingDown extends PoolState
+    case object Terminated   extends PoolState
+  }
+
+  def fixedPool(poolSize: Int): ContextBuilder[ContextAsync.Pool] =
+    new ContextBuilder[Pool] {
+      override def apply(newContext: => Context) = {
         val poolNo = poolCount.getAndIncrement()
         val threadCount = new AtomicInteger(1)
         fixedPool(poolSize, DefaultContextThread(poolNo, threadCount, newContext, _))
       }
     }
 
-  def fixedPool(poolSize: Int, createNewThread: Runnable => ContextThread): ContextAsync = {
+  def fixedPool(poolSize: Int, createNewThread: Runnable => ContextThread): ContextAsync.Pool = {
     val threadFactory = new ThreadFactory {
       override def newThread(r: Runnable) = createNewThread(r)
     }
@@ -95,7 +97,7 @@ object ContextAsync {
     }
   }
 
-  private class ExecutorServiceBased(es: ExecutorService, around: Around) extends ContextAsync {
+  private class ExecutorServiceBased(es: ExecutorService, around: Around) extends Pool {
     private[this] implicit val ec = asExecutionContext(es)
 
     override def apply[A](f: Context => A): Future[A] =
@@ -110,13 +112,13 @@ object ContextAsync {
     override def shutdown(): Unit =
       es.shutdown()
 
-    override def state(): State =
+    override def poolState(): PoolState =
       if (es.isTerminated)
-        State.Terminated
+        PoolState.Terminated
       else if (es.isShutdown)
-        State.ShuttingDown
+        PoolState.ShuttingDown
       else
-        State.Active
+        PoolState.Active
   }
 
   // ===================================================================================================================
