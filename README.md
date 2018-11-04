@@ -27,7 +27,7 @@
     * [ ] rules - eg. `up to 10000 reps/thread & up to 30 sec | until completes within 20ms`
     * [ ] on idle (?)
     * [ ] implement results of warmpup discussion with graal team
-  * [ ] shutdown
+  * [x] shutdown
   * [ ] metrics
   * [ ] caching
 * React SSR

@@ -6,13 +6,22 @@ import org.graalvm.polyglot.{Context, Engine}
 import scala.concurrent.Future
 import scala.concurrent.JavaConversions.asExecutionContext
 
-// TODO add shutdown
 trait ContextAsync {
   def apply[A](f: Context => A): Future[A]
   def withAround(f: ContextAsync.Around): ContextAsync
+
+  def shutdown(): Unit
+  def state(): ContextAsync.State
 }
 
 object ContextAsync {
+
+  sealed trait State
+  object State {
+    case object Active       extends State
+    case object ShuttingDown extends State
+    case object Terminated   extends State
+  }
 
   def fixedPool(poolSize: Int): ContextBuilder[ContextAsync] =
     new ContextBuilder[ContextAsync] {
@@ -97,6 +106,17 @@ object ContextAsync {
 
     override def withAround(f: Around): ContextAsync =
       new ExecutorServiceBased(es, around.insideOf(f))
+
+    override def shutdown(): Unit =
+      es.shutdown()
+
+    override def state(): State =
+      if (es.isTerminated)
+        State.Terminated
+      else if (es.isShutdown)
+        State.ShuttingDown
+      else
+        State.Active
   }
 
   // ===================================================================================================================

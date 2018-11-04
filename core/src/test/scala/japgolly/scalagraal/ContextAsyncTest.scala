@@ -4,6 +4,7 @@ import japgolly.microlibs.testutil.TestUtil._
 import org.graalvm.polyglot.Context
 import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration._
+import scalaz.Equal
 import scalaz.std.anyVal._
 import scalaz.std.option._
 import scalaz.std.set._
@@ -12,6 +13,8 @@ import scalaz.std.tuple._
 import utest._
 
 object ContextAsyncTest extends TestSuite {
+
+  implicit val stateEq: Equal[ContextAsync.State] = Equal.equalA
 
   override def tests = Tests {
 
@@ -25,6 +28,8 @@ object ContextAsyncTest extends TestSuite {
           Context.create("js")
         }
       }
+
+      assertEq(pool.state(), ContextAsync.State.Active)
 
       val fa = pool(Expr("js", "(1+1) * 100").asInt)
       val fb = pool(Expr("js", "10 * (5+3)").asInt)
@@ -43,6 +48,11 @@ object ContextAsyncTest extends TestSuite {
       assertEq(a.toOption, Some((200, 80)))
 
       assertEq(threadNames, Set("ScalaGraal-pool-1-thread-1", "ScalaGraal-pool-1-thread-2"))
+
+      pool.shutdown()
+      pool.state()
+
+//      eventually(pool.state() == ContextAsync.State.Active)
     }
 
   }
