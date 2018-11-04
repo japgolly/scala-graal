@@ -12,6 +12,16 @@ import org.openjdk.jmh.annotations._
 //[info] WarmupBM.render               100             1000  avgt   40   11.542 ±   2.710  ms/op
 //[info] WarmupBM.render              1000             1000  avgt   40    9.835 ±   4.310  ms/op
 
+//[info] Benchmark        (warmupContexts)  (warmupRenders)  Mode  Cnt    Score    Error  Units
+//[info] WarmupBM.render                 1             1680  avgt   40   70.871 ± 52.280  ms/op
+//[info] WarmupBM.render                 2             1680  avgt   40   31.106 ± 15.262  ms/op
+//[info] WarmupBM.render                 3             1680  avgt   40   27.365 ± 11.238  ms/op
+//[info] WarmupBM.render                 4             1680  avgt   40   22.310 ±  8.398  ms/op
+//[info] WarmupBM.render                 5             1680  avgt   40   19.572 ±  7.493  ms/op
+//[info] WarmupBM.render                 6             1680  avgt   40   16.894 ±  5.099  ms/op
+//[info] WarmupBM.render                 7             1680  avgt   40   17.199 ±  5.202  ms/op
+//[info] WarmupBM.render                 8             1680  avgt   40   16.548 ±  4.275  ms/op
+
 //[info] Benchmark        (warmupContexts)  (warmupRenders)  Mode  Cnt    Score     Error  Units
 //[info] WarmupBM.render                 0             2000  avgt   40  185.371 ± 143.554  ms/op
 //[info] WarmupBM.render                 1             2000  avgt   40   71.920 ±  51.349  ms/op
