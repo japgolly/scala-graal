@@ -13,6 +13,17 @@ import org.openjdk.jmh.annotations._
 //[info] WarmupBM.render              1000             1000  avgt   40    9.835 ±   4.310  ms/op
 
 //[info] Benchmark        (warmupContexts)  (warmupRenders)  Mode  Cnt    Score     Error  Units
+//[info] WarmupBM.render                 0             2000  avgt   40  185.371 ± 143.554  ms/op
+//[info] WarmupBM.render                 1             2000  avgt   40   71.920 ±  51.349  ms/op
+//[info] WarmupBM.render                 2             2000  avgt   40   29.244 ±  15.615  ms/op
+//[info] WarmupBM.render                10             2000  avgt   40   17.469 ±   6.050  ms/op
+//[info] WarmupBM.render                20             2000  avgt   40   14.743 ±   4.794  ms/op
+//[info] WarmupBM.render               100             2000  avgt   40   10.870 ±   2.405  ms/op
+//[info] WarmupBM.render               200             2000  avgt   40    8.802 ±   1.900  ms/op
+//[info] WarmupBM.render              1000             2000  avgt   40    7.102 ±   1.975  ms/op
+//[info] WarmupBM.render              2000             2000  avgt   40    5.974 ±   1.012  ms/op
+
+//[info] Benchmark        (warmupContexts)  (warmupRenders)  Mode  Cnt    Score     Error  Units
 //[info] WarmupBM.render                 0            10000  avgt   40  191.544 ± 155.303  ms/op
 //[info] WarmupBM.render                 1            10000  avgt   40   65.249 ±  39.473  ms/op
 //[info] WarmupBM.render                10            10000  avgt   40   11.792 ±   3.300  ms/op
@@ -54,10 +65,10 @@ object WarmupBM {
 class WarmupBM {
   import WarmupBM._
 
-  @Param(Array("0", "1", "10", "100", "1000", "10000"))
+  @Param(Array("0", "1", "2", "10", "20", "100", "200", "1000", "2000"))
   var warmupContexts: Int = _
 
-  @Param(Array("1000", "10000"))
+  @Param(Array("2000"))
   var warmupRenders: Int = _
 
   var ctx: Context = _
