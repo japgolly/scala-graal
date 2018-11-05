@@ -110,6 +110,7 @@ object ContextAsync {
       new ExecutorServiceBased(es, around.insideOf(f))
 
     override def shutdown(): Unit =
+      // TODO Close all contexts
       es.shutdown()
 
     override def poolState(): PoolState =
