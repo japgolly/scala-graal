@@ -10,13 +10,11 @@ final class Expr[A] private[Expr] (private[Expr] val run: Context => A) extends 
 
   override def apply(context: Context): Expr.Result[A] =
     try {
-      context.enter()
       Right(run(context))
     } catch {
       case t: ExprError => Left(t)
       case t: Throwable => throw t
-    } finally
-      context.leave()
+    }
 
   def map[B](f: A => B): Expr[B] =
     new Expr(f compose run)

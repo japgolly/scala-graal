@@ -10,27 +10,45 @@ trait ContextSync {
 object ContextSync {
 
   def single(context: Context, mutex: Boolean = true): ContextSync =
-    new Single(context, if (mutex) new AnyRef else null, Around.id)
+    if (mutex)
+      new SingleBlocking(context, Around.id, new AnyRef)
+    else
+      new SingleThreaded(context, Around.id)
 
-  private class Single(context: Context, lock: AnyRef, around: Around) extends ContextSync {
+  private class SingleBlocking(context: Context, around: Around, lock: AnyRef) extends ContextSync {
     override def apply[A](f: Context => A) =
-      if (lock eq null)
-        around(context, f)
-      else
-        lock.synchronized(around(context, f))
+      lock.synchronized {
+        around.enterAndLeave(context, f)
+      }
 
     override def withAround(f: ContextSync.Around) =
-      new Single(context, lock, around.insideOf(f))
+      new SingleBlocking(context, around.insideOf(f), lock)
+  }
+
+  private class SingleThreaded(context: Context, around: Around) extends ContextSync {
+    override def apply[A](f: Context => A) =
+      around.enterAndLeave(context, f)
+
+    override def withAround(f: ContextSync.Around) =
+      new SingleThreaded(context, around.insideOf(f))
   }
 
   // ===================================================================================================================
 
   trait Around { inner =>
     def apply[A](c: Context, f: Context => A): A
+
     def insideOf(outer: Around): Around = new Around {
       override def apply[A](c: Context, f: Context => A) =
         outer(c, inner(_, f))
     }
+
+    final def enterAndLeave[A](c: Context, f: Context => A): A =
+      try {
+        c.enter()
+        this(c, f)
+      } finally
+        c.leave()
   }
 
   object Around {
