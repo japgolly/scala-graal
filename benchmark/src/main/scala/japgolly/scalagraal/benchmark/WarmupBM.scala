@@ -42,6 +42,17 @@ object WarmupBM {
   }
 }
 
+//[info] Benchmark            (warmupContexts)  (warmupRenders)  Mode  Cnt   Score   Error  Units
+//[info] WarmupTimeBM.warmup                 1             1680  avgt   10  20.888 ± 1.278   s/op
+//[info] WarmupTimeBM.warmup                 2             1680  avgt   10  30.447 ± 1.715   s/op
+//[info] WarmupTimeBM.warmup                 3             1680  avgt   10  33.835 ± 1.854   s/op
+//[info] WarmupTimeBM.warmup                 4             1680  avgt   10  34.101 ± 1.516   s/op
+//[info] WarmupTimeBM.warmup                 5             1680  avgt   10  34.159 ± 2.025   s/op
+//[info] WarmupTimeBM.warmup                 6             1680  avgt   10  35.152 ± 2.013   s/op
+//[info] WarmupTimeBM.warmup                 7             1680  avgt   10  34.315 ± 1.125   s/op
+//[info] WarmupTimeBM.warmup                 8             1680  avgt   10  35.329 ± 3.176   s/op
+//[info] WarmupTimeBM.warmup                10             1680  avgt   10  34.252 ± 2.553   s/op
+
 //[info] Benchmark            (warmupContexts)  (warmupRenders)  Mode  Cnt   Score    Error  Units
 //[info] WarmupTimeBM.warmup                 1             2000  avgt    4  21.488 ±  2.551   s/op
 //[info] WarmupTimeBM.warmup                 2             2000  avgt    4  33.100 ±  3.985   s/op
@@ -54,16 +65,16 @@ object WarmupBM {
 
 @Warmup(iterations = 0)
 @Measurement(iterations = 1, time = 1, timeUnit = TimeUnit.NANOSECONDS)
-@Fork(4)
+@Fork(10)
 @BenchmarkMode(Array(Mode.AverageTime))
 @OutputTimeUnit(TimeUnit.SECONDS)
 @State(Scope.Benchmark)
 class WarmupTimeBM {
 
-  @Param(Array("1", "2", "10", "20", "100", "200", "1000", "2000"))
+  @Param(Array("1", "2", "3", "4", "5", "6", "7", "8", "10"))
   var warmupContexts: Int = _
 
-  @Param(Array("2000"))
+  @Param(Array("1680"))
   var warmupRenders: Int = _
 
   @Setup def setup: Unit = {
