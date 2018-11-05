@@ -16,7 +16,7 @@
   * [x] parse results
   * [x] error handling
   * [x] null handling
-  * [ ] bindings
+  * [x] bindings (via interpolation)
 * service
   * [x] before/around/after hooks
   * [x] single

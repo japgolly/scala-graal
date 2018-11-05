@@ -15,6 +15,7 @@ import utest._
 object ContextAsyncTest extends TestSuite {
 
   implicit val stateEq: Equal[ContextAsync.PoolState] = Equal.equalA
+  implicit val lang = Language.JS
 
   override def tests = Tests {
 
@@ -31,8 +32,8 @@ object ContextAsyncTest extends TestSuite {
 
       assertEq(pool.poolState(), ContextAsync.PoolState.Active)
 
-      val fa = pool(Expr("js", "(1+1) * 100").asInt)
-      val fb = pool(Expr("js", "10 * (5+3)").asInt)
+      val fa = pool(Expr("(1+1) * 100").asInt)
+      val fb = pool(Expr("10 * (5+3)").asInt)
 
       implicit val ec = ExecutionContext.global
 

@@ -66,8 +66,8 @@ final class Expr[A] private[Expr] (private[Expr] val run: Context => A) extends 
 object Expr {
   type Result[A] = Either[ExprError, A]
 
-  def apply(lang: String, source: CharSequence): Expr[Value] =
-    apply(Source.create(lang, source))
+  def apply(source: CharSequence)(implicit language: Language): Expr[Value] =
+    apply(Source.create(language.name, source))
 
   def apply(source: Source): Expr[Value] =
     new Expr(c => ExprError.InEval.capture(c.eval(source)))
@@ -92,4 +92,35 @@ object Expr {
   def stdlibCosequence[F[x] <: Traversable[x], A](fea: F[Expr[A]])
                                                  (implicit cbf: CanBuildFrom[F[Expr[A]], A, F[A]]): Expr[F[A]] =
     stdlibDist[F, Expr[A], A](fea)(identity)
+
+  final class Interpolation(private val sc: StringContext) extends AnyVal {
+
+    def js(args: Any*): Expr[Value] =
+      build(Language.JS, args: _*)
+
+    private def build(lang: Language, args: Any*): Expr[Value] =
+      if (args.isEmpty)
+        Expr(sc.parts.head)(lang)
+      else {
+        val iParts = sc.parts.iterator
+        val argArray = args.toArray
+        var i = 0
+        val sb = new StringBuilder(iParts.next())
+        while (iParts.hasNext) {
+          sb.append(lang.scalaGraalArgB.localValue)
+          sb.append('[')
+          sb.append(i)
+          sb.append(']')
+          sb.append(iParts.next)
+          i += 1
+        }
+        val body = sb.toString()
+        val bodySrc = Source.create(lang.name, body)
+        val eval = lang.scalaGraalArgF(bodySrc)
+        lift{ctx =>
+          ctx.getPolyglotBindings.putMember(lang.scalaGraalArgB.bindingName, argArray)
+          eval(ctx)
+        }
+      }
+  }
 }
