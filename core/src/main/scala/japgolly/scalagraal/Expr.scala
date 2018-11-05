@@ -102,7 +102,7 @@ object Expr {
       if (args.isEmpty)
         Expr(sc.parts.head)(lang)
       else {
-        val argArray: Array[Any] = args.map(translateValue)(collection.breakOut)
+        val argArray: Array[Any] = args.map(lang.translateValue)(collection.breakOut)
         val iParts = sc.parts.iterator
         var i = 0
         val sb = new StringBuilder(iParts.next())
@@ -122,12 +122,6 @@ object Expr {
           eval(ctx)
         }
       }
-
-    private def translateValue(value: Any): Any = value match {
-      case Some(a) => translateValue(a)
-      case None    => null
-      case a       => a
-    }
 
   }
 }

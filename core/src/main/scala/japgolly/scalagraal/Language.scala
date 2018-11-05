@@ -2,8 +2,11 @@ package japgolly.scalagraal
 
 import org.graalvm.polyglot.{Context, Source, Value}
 
-final case class Language(name: String,
-                          bound: Language.Binding => Source => Context => Value) {
+sealed trait Language {
+
+  val name: String
+  def bound(b: Language.Binding): Source => Context => Value
+  def translateValue(value: Any): Any
 
   private[scalagraal] val scalaGraalArgB = Language.Binding("__scalagraal_arg")
   private[scalagraal] val scalaGraalArgF = bound(scalaGraalArgB)
@@ -12,6 +15,7 @@ final case class Language(name: String,
 object Language {
 
   final case class Binding(bindingName: String, localValue: String)
+
   object Binding {
     def apply(name: String): Binding =
       apply(name, name)
@@ -20,9 +24,10 @@ object Language {
       new Binding(bindingName, localValue)
   }
 
-  val JS = Language(
-    "js",
-    b => {
+  case object JS extends Language {
+    override val name = "js"
+
+    override def bound(b: Binding): Source => Context => Value = {
       val set   = Source.create("js", s"${b.localValue}=Polyglot.import('${b.bindingName}')")
       val unset = Source.create("js", s"${b.localValue}=null")
       body => ctx => {
@@ -35,5 +40,11 @@ object Language {
         }
       }
     }
-  )
+
+    override def translateValue(value: Any): Any = value match {
+      case Some(a) => translateValue(a)
+      case None    => null
+      case a       => a
+    }
+  }
 }
