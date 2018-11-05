@@ -88,7 +88,7 @@ object ContextAsync {
       val init2 = new Runnable {
         override def run(): Unit = {
           val self = Thread.currentThread().asInstanceOf[DefaultContextThread]
-          self._contextSync = ContextSync.single(newContext, mutex = false)
+          self._contextSync = ContextSync(newContext, mutex = false)
           init.run()
         }
       }

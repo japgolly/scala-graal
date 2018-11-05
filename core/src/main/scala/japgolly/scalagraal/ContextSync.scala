@@ -9,7 +9,13 @@ trait ContextSync {
 
 object ContextSync {
 
-  def single(context: Context, mutex: Boolean = true): ContextSync =
+  def apply()(implicit lang: Language): ContextSync =
+    apply(mutex = true)
+
+  def apply(mutex: Boolean)(implicit lang: Language): ContextSync =
+    apply(Context.create(lang.name), mutex)
+
+  def apply(context: Context, mutex: Boolean = true): ContextSync =
     if (mutex)
       new SingleBlocking(context, Around.id, new AnyRef)
     else

@@ -7,8 +7,20 @@
 > https://twitter.com/japgolly/status/1058657919254679552
 
 
+# Demo
 
-# ROADMAP
+```scala
+implicit val lang = Language.JS
+val ctx = ContextSync()
+
+val (a,b) = (3,8)
+val expr = js"($a + $b) * 2".asInt
+
+val Right(result) = ctx(expr)
+assert(result == 22)
+```
+
+# Roadmap
 
 * expressions
   * [x] composition
