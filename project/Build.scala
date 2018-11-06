@@ -13,7 +13,7 @@ object ScalaGraal {
     Lib.publicationSettings(ghProject)
 
   object Ver {
-    final val Graal         = "1.0.0-rc8"
+    final val Graal         = "1.0.0-rc9"
     final val KindProjector = "0.9.8"
     final val Microlibs     = "1.18"
     final val MTest         = "0.6.6"
