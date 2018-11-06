@@ -28,20 +28,23 @@ assert(result == 22)
   * [x] parse results
   * [x] error handling
   * [x] null handling
-  * [x] bindings (via interpolation)
+  * [x] binding interpolation
+  * [ ] bindind codec (eg binary/json)
 * service
   * [x] before/around/after hooks
   * [x] single
+  * multi-threaded service
+    * [x] fixed pool
+    * [x] shutdown
+  * [ ] synchronous resource pool
   * [ ] pure scheduling & execution (?)
-* multi-threaded service
-  * [x] fixed pool
-  * [ ] warmup
-    * [ ] rules - eg. `up to 10000 reps/thread & up to 30 sec | until completes within 20ms`
-    * [ ] on idle (?)
-    * [ ] implement results of warmpup discussion with graal team
-  * [x] shutdown
+  * [ ] higher-level profunctor-like
   * [ ] metrics
   * [ ] caching
+* [ ] warmup
+  * [ ] rules - eg. `up to 10000 reps/thread & up to 30 sec | until completes within 20ms`
+  * [ ] on idle (?)
+  * [ ] implement results of warmpup discussion with graal team
 * React SSR
   * [ ] render util (so one needn't write direct JS)
   * [ ] `window` management
@@ -51,3 +54,6 @@ assert(result == 22)
   * [ ] Cats
   * [ ] Cats Effect (?)
   * [ ] Prometheus
+  * [ ] BooPickle
+  * [ ] upickle
+  * [ ] circe
