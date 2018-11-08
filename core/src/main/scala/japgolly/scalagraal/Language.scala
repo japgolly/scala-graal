@@ -10,6 +10,7 @@ sealed trait Language {
 
   private[scalagraal] val scalaGraalArgB = Language.Binding("__scalagraal_arg")
   private[scalagraal] val scalaGraalArgF = bound(scalaGraalArgB)
+  private[scalagraal] val blah22 = (1 to 22).map(i => s"${scalaGraalArgB.localValue}[$i]").toVector
 }
 
 object Language {
