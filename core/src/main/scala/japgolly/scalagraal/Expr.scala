@@ -107,7 +107,7 @@ object Expr {
         var i = 0
         val sb = new StringBuilder(iParts.next())
         while (iParts.hasNext) {
-          sb.append(lang.scalaGraalArgB.localValue)
+          sb.append(lang.argBinding.localValue)
           sb.append('[')
           sb.append(i)
           sb.append(']')
@@ -116,432 +116,116 @@ object Expr {
         }
         val body = sb.toString()
         val bodySrc = Source.create(lang.name, body)
-        val eval = lang.scalaGraalArgF(bodySrc)
+        val eval = lang.argBinder(bodySrc)
         lift{ctx =>
-          ctx.getPolyglotBindings.putMember(lang.scalaGraalArgB.bindingName, argArray)
+          ctx.getPolyglotBindings.putMember(lang.argBinding.bindingName, argArray)
           eval(ctx)
         }
       }
 
   }
 
-  // TODO Should be per language
-  final case class Arg[A](prepare: A => ArgValue) extends AnyVal
-  object Arg {
-    def const[A](v: ArgValue): Arg[A] = Arg(_ => v)
+  // TODO Should include language in type
+//  trait CommonArgs {
+//    //implicit val jsArgInt: Arg[Int] = Arg(i => ArgValue.Literal(i.toString))
+//    implicit val jsArgInt: Arg[Int] = Arg(ArgValue.Polyglot)
+//    implicit val jsArgLong: Arg[Long] = Arg(ArgValue.Polyglot)
+//    implicit val jsArgString: Arg[String] = Arg(ArgValue.Polyglot)
+//    implicit val jsArgBoolean: Arg[Boolean] = Arg(ArgValue.Polyglot)
+//    implicit val jsArgShort: Arg[Short] = Arg(ArgValue.Polyglot)
+//    implicit val jsArgFloat: Arg[Float] = Arg(ArgValue.Polyglot)
+//    implicit val jsArgDouble: Arg[Double] = Arg(ArgValue.Polyglot)
+//  }
+//
+//  trait JsArgs {
+//    implicit val jsArgUnit: Arg[Unit] = Arg.const(ArgValue.Literal("undefined"))
+//  }
+
+  sealed trait Param[A]
+  object Param {
+    final case class Const[A](source: String) extends Param[A]
+    final case class Literal[A](mkSource: A => String) extends Param[A]
+    final case class Polyglot[A](mkValue: A => Any) extends Param[A]
+    final case class Custom[A](mkValue: A => Context => Any) extends Param[A]
   }
 
-  sealed trait ArgValue
-  object ArgValue {
-    final case class Literal(expr: String) extends ArgValue
-    final case class Polyglot(expr: Any) extends ArgValue
-    final case class Custom(expr: Context => Any) extends ArgValue
-  }
+  private type X = AnyRef { type A = Int }
 
-  trait CommonArgs {
-    //implicit val jsArgInt: Arg[Int] = Arg(i => ArgValue.Literal(i.toString))
-    implicit val jsArgInt: Arg[Int] = Arg(ArgValue.Polyglot)
-    implicit val jsArgLong: Arg[Long] = Arg(ArgValue.Polyglot)
-    implicit val jsArgString: Arg[String] = Arg(ArgValue.Polyglot)
-    implicit val jsArgBoolean: Arg[Boolean] = Arg(ArgValue.Polyglot)
-    implicit val jsArgShort: Arg[Short] = Arg(ArgValue.Polyglot)
-    implicit val jsArgFloat: Arg[Float] = Arg(ArgValue.Polyglot)
-    implicit val jsArgDouble: Arg[Double] = Arg(ArgValue.Polyglot)
-  }
-
-  trait JsArgs {
-    implicit val jsArgUnit: Arg[Unit] = Arg.const(ArgValue.Literal("undefined"))
-  }
-
-  final class MutableBuilder(size: Int) {
-    val array = new Array[Any](size)
-    var lateEvals = List.empty[Context => Unit]
-    var used = false
-
-    def add(i: Int, av: ArgValue)(implicit l: Language): String =
-      av match {
-        case ArgValue.Literal(t) =>
-          t
-        case ArgValue.Polyglot(a) =>
-          used = true
-          array(i) = a
-          l.blah22(i)
-        case ArgValue.Custom(f) =>
-          used = true
-          lateEvals ::= (ctx => array(i) = f(ctx))
-          l.blah22(i)
-      }
-  }
-
-  def args2[A, B](f: (String, String) => String, a: A, b: B)(implicit fa: Arg[A], fb: Arg[B], l: Language): Expr[Value] = {
-    val builder = new MutableBuilder(2)
-    val aa = builder.add(0, fa.prepare(a))
-    val ab = builder.add(1, fb.prepare(b))
-    val bodyStr = f(aa, ab)
-    val bodySrc = Source.create(l.name, bodyStr)
-    if (builder.used) {
-      val eval = l.scalaGraalArgF(bodySrc)
-      val lateEvals = builder.lateEvals
-      val array = builder.array
-      lift { ctx =>
-        if (lateEvals.nonEmpty) lateEvals.foreach(_(ctx))
-        ctx.getPolyglotBindings.putMember(l.scalaGraalArgB.bindingName, array)
-        eval(ctx)
-      }
-    } else {
-      Expr(bodySrc)
-    }
-  }
-
-  def fn1[A](mkExpr: String => String)(implicit argA: Arg2[A], l: Language): A => Expr[Value] = {
-    val builder = new MutableBuilder2(2)
-    val ra = builder.add(argA)
-
-    ra match {
-      case Right((None, argStr)) =>
-        val exprStr = mkExpr(argStr)
-        val exprSrc = Source.create(l.name, exprStr)
-        val expr = Expr(exprSrc)
-        _ => expr
-      case Right((Some(argSet), argStr)) =>
-        val exprStr = mkExpr(argStr)
-        val exprSrc = Source.create(l.name, exprStr)
-        builder.onCtx match {
-          case None =>
-            a => lift { ctx =>
-              argSet(a)
-              ctx.eval(exprSrc)
-            }
-        }
-
-    }
-
-//    val bodyStr = f(aa, ab)
-//    val bodySrc = Source.create(l.name, bodyStr)
-//    if (builder.used) {
-//      val eval = l.scalaGraalArgF(bodySrc)
-//      val lateEvals = builder.lateEvals
-//      val array = builder.array
-//      lift { ctx =>
-//        if (lateEvals.nonEmpty) lateEvals.foreach(_(ctx))
-//        ctx.getPolyglotBindings.putMember(l.scalaGraalArgB.bindingName, array)
-//        eval(ctx)
-//      }
-//    } else {
-//      Expr(bodySrc)
-//    }
-  }
-
-  sealed trait Arg2[A]
-  object Arg2 {
-    final case class Const[A](expr: String) extends Arg2[A]
-    final case class Literal[A](expr: A => String) extends Arg2[A]
-    final case class Polyglot[A](mkValue: A => Any) extends Arg2[A]
-    final case class Custom[A](mkValue: A => Context => Any) extends Arg2[A]
-
-    final class AndValue[A](val arg: Arg[A], val value: A)
-  }
-
-  /*
-  Const => {expr;    _ => expr}
-  Lit   =>           a => {expr(src(f(a)) }
-  Pol   => {expr;    a => {new Array(a); expr}}
-  Cust  => {exprSrc; a => {new Array(); f=(a); Expr(ctx => {f(ctx); exprSrc}}}
-   */
-
-  def fromConst[A](g: Arg2.Const[A], f: String => String)(implicit l: Language): A => Expr[Value] = {
-    val e = Expr(f(g.expr))
-    _ => e
-  }
-  def fromLiteral[A](g: Arg2.Literal[A], f: String => String)(implicit l: Language): A => Expr[Value] = {
-    // nothing built up front here
-    a => Expr(f(g.expr(a)))
-  }
-  def fromPolyglot[A](g: Arg2.Polyglot[A], f: String => String)(implicit l: Language): A => Expr[Value] = {
-    val run = l.scalaGraalArgF(Source.create(l.name, f(l.blah22(0))))
-    a => {
-      val d = new Array[Any](1)
-      d(0) = g.mkValue(a)
-      lift { ctx =>
-        ctx.getPolyglotBindings.putMember(l.scalaGraalArgB.bindingName, d)
-        run(ctx)
-      }
-    }
-  }
-  def fromCustom[A](g: Arg2.Custom[A], f: String => String)(implicit l: Language): A => Expr[Value] = {
-    val run = l.scalaGraalArgF(Source.create(l.name, f(l.blah22(0))))
-    a => {
-      val h = g.mkValue(a)
-      lift { ctx =>
-        val d = new Array[Any](1)
-        d(0) = h(ctx)
-        ctx.getPolyglotBindings.putMember(l.scalaGraalArgB.bindingName, d)
-        run(ctx)
-      }
-    }
-  }
-  def fromLiteralPolyglot[A, B](ga: Arg2.Literal[A], gb: Arg2.Polyglot[B], f: (String, String) => String)(implicit l: Language): (A, B) => Expr[Value] = {
-    // nothing built up front here
-    (a, b) => {
-      val ea = ga.expr(a)
-      val run = l.scalaGraalArgF(Source.create(l.name, f(ea, l.blah22(1))))
-      val d = new Array[Any](2)
-      d(1) = gb.mkValue(b)
-      lift { ctx =>
-        ctx.getPolyglotBindings.putMember(l.scalaGraalArgB.bindingName, d)
-        run(ctx)
-      }
-    }
-  }
-
-  def all[A, B, C, D](ga: Arg2.Const[A],
-                      gb: Arg2.Literal[B],
-                      gc: Arg2.Polyglot[C],
-                      gd: Arg2.Custom[D],
-                      f: (String, String, String, String) => String)(implicit l: Language): (A, B, C, D) => Expr[Value] = {
-    // nothing built up front here
-    (_, b, c, d) => {
-      val ea = ga.expr
-      val eb = gb.expr(b)
-      val vc = gc.mkValue(c)
-      val fd = gd.mkValue(d)
-      val es = f(ea, eb, l.blah22(2), l.blah22(3))
-      val run = l.scalaGraalArgF(Source.create(l.name, es))
-      lift { ctx =>
-        val d = new Array[Any](4)
-        // d(0) = const
-        // d(1) = literal
-        d(2) = vc
-        d(3) = fd(ctx)
-        ctx.getPolyglotBindings.putMember(l.scalaGraalArgB.bindingName, d)
-        run(ctx)
-      }
-    }
-  }
-
-  def nonLiteral[A, C, D](ga: Arg2.Const[A],
-                          gc: Arg2.Polyglot[C],
-                          gd: Arg2.Custom[D],
-                          f: (String, String, String) => String)(implicit l: Language): (A, C, D) => Expr[Value] = {
-    val ea = ga.expr
-    val es = f(ea, l.blah22(2), l.blah22(3))
-    val run = l.scalaGraalArgF(Source.create(l.name, es))
-    (_, c, d) => {
-      val vc = gc.mkValue(c)
-      val fd = gd.mkValue(d)
-      lift { ctx =>
-        val d = new Array[Any](4)
-        // d(0) = const
-        // d(1) = literal
-        d(2) = vc
-        d(3) = fd(ctx)
-        ctx.getPolyglotBindings.putMember(l.scalaGraalArgB.bindingName, d)
-        run(ctx)
-      }
-    }
-  }
-
-  private sealed trait AA
-  private def genericAll(params: Array[Arg2[AA]], mkExpr: Array[String] => String)(implicit l: Language): Array[AA] => Expr[Value] = {
-    val arity = params.length
-    val indices = params.indices
-    args => {
-      var setValues = List.empty[(Array[Any], Context) => Unit]
-
-      val run = {
-        val tokens = new Array[String](arity)
-        for (i <- indices) {
-          val arg = args(i)
-          val token: String = params(i) match {
-            case Arg2.Const(t) => t
-            case Arg2.Literal(f) => f(arg)
-            case Arg2.Polyglot(f) =>
-              val v = f(arg)
-              setValues ::= ((tgt, _) => tgt(i) = v)
-              l.blah22(i)
-            case Arg2.Custom(f) =>
-              val g = f(arg)
-              setValues ::= ((tgt, ctx) => tgt(i) = g(ctx))
-              l.blah22(i)
-          }
-          tokens(i) = token
-        }
-        val es = mkExpr(tokens)
-        l.scalaGraalArgF(Source.create(l.name, es))
-      }
-
-      lift { ctx =>
-        val d = new Array[Any](arity)
-        setValues.foreach(_(d, ctx))
-        ctx.getPolyglotBindings.putMember(l.scalaGraalArgB.bindingName, d)
-        run(ctx)
-      }
-    }
-  }
-  private def genericNonLiterals(params: Array[Arg2[AA]], mkExpr: Array[String] => String)(implicit l: Language): Array[AA] => Expr[Value] = {
+  private def genericOpt(params: Array[Param[X]], mkExprStr: Array[String] => String)(implicit l: Language): Array[X] => Expr[Value] = {
     val arity = params.length
     val indices = params.indices
 
-    val run = {
+    def mkRun(args: Array[X]): Context => Value = {
       val tokens = new Array[String](arity)
       for (i <- indices) {
         val token: String = params(i) match {
-          case Arg2.Const(t) => t
-          case Arg2.Literal(_) => ???
-          case Arg2.Polyglot(_) => l.blah22(i)
-          case Arg2.Custom(_) => l.blah22(i)
-        }
-        tokens(i) = token
-      }
-      val es = mkExpr(tokens)
-      l.scalaGraalArgF(Source.create(l.name, es))
-    }
-
-    args => {
-      var setValues = List.empty[(Array[Any], Context) => Unit]
-
-        for (i <- indices) {
-          val arg = args(i)
-          params(i) match {
-            case Arg2.Const(_) => ()
-            case Arg2.Literal(_) => ()
-            case Arg2.Polyglot(f) =>
-              val v = f(arg)
-              setValues ::= ((tgt, _) => tgt(i) = v)
-            case Arg2.Custom(f) =>
-              val g = f(arg)
-              setValues ::= ((tgt, ctx) => tgt(i) = g(ctx))
-          }
-        }
-
-      lift { ctx =>
-        val d = new Array[Any](arity)
-        setValues.foreach(_(d, ctx))
-        ctx.getPolyglotBindings.putMember(l.scalaGraalArgB.bindingName, d)
-        run(ctx)
-      }
-    }
-  }
-  private def genericPreOpt(params: Array[Arg2[AA]], mkExpr: Array[String] => String)(implicit l: Language): Array[AA] => Expr[Value] = {
-    val arity = params.length
-    val indices = params.indices
-
-    def mkRun(args: Array[AA]): Context => Value = {
-      val tokens = new Array[String](arity)
-      for (i <- indices) {
-        val token: String = params(i) match {
-          case Arg2.Const(t) => t
-          case Arg2.Polyglot(_) => l.blah22(i)
-          case Arg2.Custom(_) => l.blah22(i)
-          case Arg2.Literal(f) => f(args(i))
-        }
-        tokens(i) = token
-      }
-      val es = mkExpr(tokens)
-      l.scalaGraalArgF(Source.create(l.name, es))
-    }
-
-    def mkSetValues(args: Array[AA]): List[(Array[Any], Context) => Unit] = {
-      var setValues = List.empty[(Array[Any], Context) => Unit]
-      for (i <- indices) {
-        params(i) match {
-          case Arg2.Polyglot(f) =>
-            val v = f(args(i))
-            setValues ::= ((tgt, _) => tgt(i) = v)
-          case Arg2.Custom(f) =>
-            val g = f(args(i))
-            setValues ::= ((tgt, ctx) => tgt(i) = g(ctx))
-          case Arg2.Const(_) | Arg2.Literal(_) => ()
-        }
-      }
-      setValues
-    }
-
-    args => {
-      val run = mkRun(args)
-      val setValues = mkSetValues(args)
-      lift { ctx =>
-        val d = new Array[Any](arity)
-        setValues.foreach(_(d, ctx))
-        ctx.getPolyglotBindings.putMember(l.scalaGraalArgB.bindingName, d)
-        run(ctx)
-      }
-    }
-  }
-  private def genericOpt(params: Array[Arg2[AA]], mkExprStr: Array[String] => String)(implicit l: Language): Array[AA] => Expr[Value] = {
-    val arity = params.length
-    val indices = params.indices
-
-    // !Literal
-    def mkRun(args: Array[AA]): Context => Value = {
-      val tokens = new Array[String](arity)
-      for (i <- indices) {
-        val token: String = params(i) match {
-          case Arg2.Const(t) => t
-          case Arg2.Polyglot(_) => l.blah22(i)
-          case Arg2.Custom(_) => l.blah22(i)
-          case Arg2.Literal(f) => f(args(i))
+          case Param.Const(t) => t
+          case Param.Polyglot(_) => l.argElement(i)
+          case Param.Custom(_) => l.argElement(i)
+          case Param.Literal(f) => f(args(i))
         }
         tokens(i) = token
       }
       val es = mkExprStr(tokens)
-      l.scalaGraalArgF(Source.create(l.name, es))
+      l.argBinder(Source.create(l.name, es))
     }
 
-    def mkArrayP(args: Array[AA]): Array[Any] = {
-      val d = new Array[Any](arity)
+    def mkArrayP(args: Array[X]): Array[Any] = {
+      val data = new Array[Any](arity)
       for (i <- indices) {
         params(i) match {
-          case Arg2.Polyglot(f) => d(i) = f(args(i))
-          case Arg2.Custom(_) | Arg2.Const(_) | Arg2.Literal(_) => ()
+          case Param.Polyglot(f) => data(i) = f(args(i))
+          case Param.Custom(_) | Param.Const(_) | Param.Literal(_) => ()
         }
       }
-      d
+      data
     }
 
-    def mkSetValuesPC(args: Array[AA]): List[(Array[Any], Context) => Unit] = {
+    def mkSetValuesPC(args: Array[X]): List[(Array[Any], Context) => Unit] = {
       var setValues = List.empty[(Array[Any], Context) => Unit]
       for (i <- indices) {
         params(i) match {
-          case Arg2.Polyglot(f) =>
+          case Param.Polyglot(f) =>
             val v = f(args(i))
             setValues ::= ((tgt, _) => tgt(i) = v)
-          case Arg2.Custom(f) =>
+          case Param.Custom(f) =>
             val g = f(args(i))
             setValues ::= ((tgt, ctx) => tgt(i) = g(ctx))
-          case Arg2.Const(_) | Arg2.Literal(_) => ()
+          case Param.Const(_) | Param.Literal(_) => ()
         }
       }
       setValues
     }
 
-    def mkExprWithBindings(run: Context => Value, args: Array[AA], hasCustom: Boolean) =
+    def mkExprWithBindings(run: Context => Value, args: Array[X], hasCustom: Boolean) =
       if (hasCustom) {
         val setValues = mkSetValuesPC(args)
         lift { ctx =>
-          val d = new Array[Any](arity)
-          setValues.foreach(_ (d, ctx))
-          ctx.getPolyglotBindings.putMember(l.scalaGraalArgB.bindingName, d)
+          val data = new Array[Any](arity)
+          setValues.foreach(_ (data, ctx))
+          ctx.getPolyglotBindings.putMember(l.argBinding.bindingName, data)
           run(ctx)
         }
       } else {
         val d = mkArrayP(args)
+        println(params.toList)
+        println(d.toList)
         lift { ctx =>
-          ctx.getPolyglotBindings.putMember(l.scalaGraalArgB.bindingName, d)
+          ctx.getPolyglotBindings.putMember(l.argBinding.bindingName, d)
           run(ctx)
         }
       }
 
-    var hasConst, hasLiteral, hasPolyglot, hasCustom = false
+    var hasLiteral, hasPolyglot, hasCustom = false
     params.foreach {
-      case Arg2.Const(_) => hasConst = true
-      case Arg2.Literal(_) =>  hasLiteral = true
-      case Arg2.Polyglot(_) =>  hasPolyglot = true
-      case Arg2.Custom(_) =>  hasCustom = true
+      case _: Param.Const[X] => ()
+      case _: Param.Literal[X] =>  hasLiteral = true
+      case _: Param.Polyglot[X] =>  hasPolyglot = true
+      case _: Param.Custom[X] =>  hasCustom = true
     }
 
-
     val usesBindings = hasPolyglot || hasCustom
+    println((hasLiteral, usesBindings, hasCustom))
     (hasLiteral, usesBindings) match {
 
       case (false, false) =>
@@ -563,49 +247,19 @@ object Expr {
     }
   }
 
-
-  // precompilation = !literal
-  // bindings       = polyglot | custom
-  // run def        = C:outside, L:inside
-
-  final class MutableBuilder2(size: Int) {
-    private var i = -1
-    private val argArray = new Array[Any](size)
-
-    private var ctxSets = 0
-    private val ctxArray = new Array[Context => Unit](size)
-
-    def onCtx: Option[Context => Unit] =
-      if (ctxSets == 0)
-        None
-      else
-        Some(ctx => {
-          var j = ctxSets
-          while (j > 0) {
-            j -= 1
-            ctxArray(j)(ctx)
-          }
-        })
-
-    def add[A](arg: Arg2[A])(implicit l: Language): Either[A => String, (Option[A => Unit], String)] = {
-      i += 1
-      arg match {
-        case Arg2.Const(t) =>
-          Right(None -> t)
-        case Arg2.Literal(f) =>
-          Left(f)
-        case Arg2.Polyglot(f) =>
-          Right(Some(a => argArray(i) = a), l.blah22(i))
-        case Arg2.Custom(f) =>
-          val c = ctxSets
-          ctxSets += 1
-          val argFn: A => Unit = a => {
-            val ctxToValue: Context => Any = f(a)
-            ctxArray(c) = ctx => argArray(i) = ctxToValue(ctx)
-          }
-          Right(Some(argFn), l.blah22(i))
-      }
-    }
+  def compile2[A, B](mkExpr: (String, String) => String)(implicit l: Language, A: Param[A], B: Param[B]): (A, B) => Expr[Value] = {
+    val ps = Array[Param[_]](A, B).asInstanceOf[Array[Param[X]]]
+    val z = genericOpt(ps, e => mkExpr(e(0), e(1)))
+    (a, b) => z(Array[Any](a, b).asInstanceOf[Array[X]])
   }
 
+  def compile4[A, B, C, D](mkExpr: (String, String, String, String) => String)(implicit l: Language, A: Param[A], B: Param[B], C: Param[C], D: Param[D]): (A, B, C, D) => Expr[Value] = {
+    val ps = Array[Param[_]](A, B, C, D).asInstanceOf[Array[Param[X]]]
+    val z = genericOpt(ps, e => mkExpr(e(0), e(1), e(2), e(3)))
+    (a, b, c, d) => z(Array[Any](a, b, c, d).asInstanceOf[Array[X]])
+  }
+  def compile4[A, B, C, D, Z](mkExpr: (String, String, String, String) => String, post: Expr[Value] => Z)(implicit l: Language, A: Param[A], B: Param[B], C: Param[C], D: Param[D]): (A, B, C, D) => Z = {
+    val z = compile4[A, B, C, D](mkExpr)
+    (a, b, c, d) => post(z(a, b, c, d))
+  }
 }
