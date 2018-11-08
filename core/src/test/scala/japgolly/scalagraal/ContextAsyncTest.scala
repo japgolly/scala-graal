@@ -1,21 +1,15 @@
 package japgolly.scalagraal
 
-import japgolly.microlibs.testutil.TestUtil._
+import TestUtil.{sync => _, _}
 import org.graalvm.polyglot.Context
 import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration._
 import scalaz.Equal
-import scalaz.std.anyVal._
-import scalaz.std.option._
-import scalaz.std.set._
-import scalaz.std.string._
-import scalaz.std.tuple._
 import utest._
 
 object ContextAsyncTest extends TestSuite {
 
   implicit val stateEq: Equal[ContextAsync.PoolState] = Equal.equalA
-  implicit val lang = Language.JS
 
   override def tests = Tests {
 
