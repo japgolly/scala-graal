@@ -1,23 +1,11 @@
 package japgolly.scalagraal
 
-import japgolly.microlibs.testutil.TestUtil._
-import scalaz.Equal
-import scalaz.std.anyVal._
-import scalaz.std.either._
-import scalaz.std.option._
-import scalaz.std.string._
+import TestUtil._
 import utest._
 
 object ContextSyncTest extends TestSuite {
 
-  implicit val lang = Language.JS
-
-  def assertEvalResult[A: Equal](actual: Expr.Result[A], expect: A): Unit =
-    assertEq(actual.left.map(_.toString), Right(expect))
-
   override def tests = Tests {
-
-    val sync = ContextSync()
 
     'eval {
       assertEvalResult(sync(Expr("(1+1) * 100").asInt), 200)
@@ -51,5 +39,6 @@ object ContextSyncTest extends TestSuite {
       val Right(result) = ctx(expr)
       assert(result == 22)
     }
+
   }
 }
