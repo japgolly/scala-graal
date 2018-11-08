@@ -276,4 +276,8 @@ object Expr {
     val z = genericOpt(ps, e => mkExpr(e(0), e(1), e(2), e(3)), post)
     (a, b, c, d) => z(Array[Any](a, b, c, d).asInstanceOf[Array[X]])
   }
+
+  def apply2[A, B](mkExpr: (String, String) => String, a: A, b: B)(implicit l: Language, A: Param[A], B: Param[B]): Expr[Value] =
+    compile2[A, B](mkExpr).apply(a, b)
+
 }
