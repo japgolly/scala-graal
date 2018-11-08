@@ -150,8 +150,12 @@ object Expr {
   }
 
   private type X = AnyRef { type A = Unit }
+  private val exprValueId = (a: Expr[Value]) => a
 
-  private def genericOpt(params: Array[Param[X]], mkExprStr: Array[String] => String)(implicit l: Language): Array[X] => Expr[Value] = {
+  private def genericOpt[Z](params: Array[Param[X]],
+                            mkExprStr: Array[String] => String,
+                            post: Expr[Value] => Z)
+                           (implicit l: Language): Array[X] => Z = {
     val arity = params.length
     val indices = params.indices
 
@@ -201,22 +205,24 @@ object Expr {
       setValues
     }
 
-    def mkExprWithBindings(run: Context => Value, args: Array[X], hasCustom: Boolean) =
-      if (hasCustom) {
-        val setValues = mkSetValuesPC(args)
-        lift { ctx =>
-          val data = new Array[Any](arity)
-          setValues.foreach(_ (data, ctx))
-          l.argBinding.set(ctx, data)
-          run(ctx)
+    def mkExprWithBindings(run: Context => Value, args: Array[X], hasCustom: Boolean): Z =
+      post(
+        if (hasCustom) {
+          val setValues = mkSetValuesPC(args)
+          lift { ctx =>
+            val data = new Array[Any](arity)
+            setValues.foreach(_ (data, ctx))
+            l.argBinding.set(ctx, data)
+            run(ctx)
+          }
+        } else {
+          val data = mkArrayP(args)
+          lift { ctx =>
+            l.argBinding.set(ctx, data)
+            run(ctx)
+          }
         }
-      } else {
-        val data = mkArrayP(args)
-        lift { ctx =>
-          l.argBinding.set(ctx, data)
-          run(ctx)
-        }
-      }
+      )
 
     var hasLiteral, hasPolyglot, hasCustom = false
     params.foreach {
@@ -242,10 +248,10 @@ object Expr {
     } else {
       if (hasLiteral) {
         // !usesBindings, hasLiteral
-        args => lift(mkRun(args, usesBindings = usesBindings))
+        args => post(lift(mkRun(args, usesBindings = usesBindings)))
       } else {
         // !usesBindings, !hasLiteral
-        val expr = lift(mkRun(null, usesBindings = usesBindings))
+        val expr = post(lift(mkRun(null, usesBindings = usesBindings)))
         _ => expr
       }
     }
@@ -253,23 +259,21 @@ object Expr {
 
   def compile1[A](mkExpr: String => String)(implicit l: Language, A: Param[A]): A => Expr[Value] = {
     val ps = Array[Param[_]](A).asInstanceOf[Array[Param[X]]]
-    val z = genericOpt(ps, e => mkExpr(e(0)))
+    val z = genericOpt(ps, e => mkExpr(e(0)), exprValueId)
     a => z(Array[Any](a).asInstanceOf[Array[X]])
   }
 
   def compile2[A, B](mkExpr: (String, String) => String)(implicit l: Language, A: Param[A], B: Param[B]): (A, B) => Expr[Value] = {
     val ps = Array[Param[_]](A, B).asInstanceOf[Array[Param[X]]]
-    val z = genericOpt(ps, e => mkExpr(e(0), e(1)))
+    val z = genericOpt(ps, e => mkExpr(e(0), e(1)), exprValueId)
     (a, b) => z(Array[Any](a, b).asInstanceOf[Array[X]])
   }
 
-  def compile4[A, B, C, D](mkExpr: (String, String, String, String) => String)(implicit l: Language, A: Param[A], B: Param[B], C: Param[C], D: Param[D]): (A, B, C, D) => Expr[Value] = {
-    val ps = Array[Param[_]](A, B, C, D).asInstanceOf[Array[Param[X]]]
-    val z = genericOpt(ps, e => mkExpr(e(0), e(1), e(2), e(3)))
-    (a, b, c, d) => z(Array[Any](a, b, c, d).asInstanceOf[Array[X]])
-  }
+  def compile4[A, B, C, D](mkExpr: (String, String, String, String) => String)(implicit l: Language, A: Param[A], B: Param[B], C: Param[C], D: Param[D]): (A, B, C, D) => Expr[Value] =
+    compile4[A, B, C, D, Expr[Value]](mkExpr, exprValueId)
   def compile4[A, B, C, D, Z](mkExpr: (String, String, String, String) => String, post: Expr[Value] => Z)(implicit l: Language, A: Param[A], B: Param[B], C: Param[C], D: Param[D]): (A, B, C, D) => Z = {
-    val z = compile4[A, B, C, D](mkExpr)
-    (a, b, c, d) => post(z(a, b, c, d))
+    val ps = Array[Param[_]](A, B, C, D).asInstanceOf[Array[Param[X]]]
+    val z = genericOpt(ps, e => mkExpr(e(0), e(1), e(2), e(3)), post)
+    (a, b, c, d) => z(Array[Any](a, b, c, d).asInstanceOf[Array[X]])
   }
 }
