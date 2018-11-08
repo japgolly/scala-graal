@@ -118,7 +118,7 @@ object Expr {
         val bodySrc = Source.create(lang.name, body)
         val eval = lang.argBinder(bodySrc)
         lift{ctx =>
-          ctx.getPolyglotBindings.putMember(lang.argBinding.bindingName, argArray)
+          lang.argBinding.set(ctx, argArray)
           eval(ctx)
         }
       }
@@ -149,13 +149,13 @@ object Expr {
     final case class Custom[A](mkValue: A => Context => Any) extends Param[A]
   }
 
-  private type X = AnyRef { type A = Int }
+  private type X = AnyRef { type A = Unit }
 
   private def genericOpt(params: Array[Param[X]], mkExprStr: Array[String] => String)(implicit l: Language): Array[X] => Expr[Value] = {
     val arity = params.length
     val indices = params.indices
 
-    def mkRun(args: Array[X]): Context => Value = {
+    def mkRun(args: Array[X], usesBindings: Boolean): Context => Value = {
       val tokens = new Array[String](arity)
       for (i <- indices) {
         val token: String = params(i) match {
@@ -167,7 +167,11 @@ object Expr {
         tokens(i) = token
       }
       val es = mkExprStr(tokens)
-      l.argBinder(Source.create(l.name, es))
+      val src = Source.create(l.name, es)
+      if (usesBindings)
+        l.argBinder(src)
+      else
+        _.eval(src)
     }
 
     def mkArrayP(args: Array[X]): Array[Any] = {
@@ -203,15 +207,13 @@ object Expr {
         lift { ctx =>
           val data = new Array[Any](arity)
           setValues.foreach(_ (data, ctx))
-          ctx.getPolyglotBindings.putMember(l.argBinding.bindingName, data)
+          l.argBinding.set(ctx, data)
           run(ctx)
         }
       } else {
-        val d = mkArrayP(args)
-        println(params.toList)
-        println(d.toList)
+        val data = mkArrayP(args)
         lift { ctx =>
-          ctx.getPolyglotBindings.putMember(l.argBinding.bindingName, d)
+          l.argBinding.set(ctx, data)
           run(ctx)
         }
       }
@@ -223,28 +225,36 @@ object Expr {
       case _: Param.Polyglot[X] =>  hasPolyglot = true
       case _: Param.Custom[X] =>  hasCustom = true
     }
-
     val usesBindings = hasPolyglot || hasCustom
-    println((hasLiteral, usesBindings, hasCustom))
-    (hasLiteral, usesBindings) match {
 
-      case (false, false) =>
-        val expr = lift(mkRun(null))
-        _ => expr
-
-      case (true, false) =>
-        args => lift(mkRun(args))
-
-      case (false, true) =>
-        val run = mkRun(null)
-        args => mkExprWithBindings(run, args, hasCustom = hasCustom)
-
-      case (true, true) =>
+    if (usesBindings) {
+      if (hasLiteral) {
+        // usesBindings, hasLiteral
         args => {
-          val run = mkRun(args)
+          val run = mkRun(args, usesBindings = usesBindings)
           mkExprWithBindings(run, args, hasCustom = hasCustom)
         }
+      } else {
+        // usesBindings, !hasLiteral
+        val run = mkRun(null, usesBindings = usesBindings)
+        args => mkExprWithBindings(run, args, hasCustom = hasCustom)
+      }
+    } else {
+      if (hasLiteral) {
+        // !usesBindings, hasLiteral
+        args => lift(mkRun(args, usesBindings = usesBindings))
+      } else {
+        // !usesBindings, !hasLiteral
+        val expr = lift(mkRun(null, usesBindings = usesBindings))
+        _ => expr
+      }
     }
+  }
+
+  def compile1[A](mkExpr: String => String)(implicit l: Language, A: Param[A]): A => Expr[Value] = {
+    val ps = Array[Param[_]](A).asInstanceOf[Array[Param[X]]]
+    val z = genericOpt(ps, e => mkExpr(e(0)))
+    a => z(Array[Any](a).asInstanceOf[Array[X]])
   }
 
   def compile2[A, B](mkExpr: (String, String) => String)(implicit l: Language, A: Param[A], B: Param[B]): (A, B) => Expr[Value] = {
