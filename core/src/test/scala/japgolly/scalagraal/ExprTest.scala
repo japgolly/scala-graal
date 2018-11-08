@@ -22,7 +22,7 @@ object ExprTest extends TestSuite {
         for {
           pa <- paramTypes.map(_(a))
         } {
-          val fn = Expr.compile1(identity)(lang, pa).andThen(_.asInt)
+          val fn = Expr.compile1(identity, _.asInt)(lang, pa)
           val expr = fn(a)
           val result = sync(expr)
           assertEvalResult(result, a)

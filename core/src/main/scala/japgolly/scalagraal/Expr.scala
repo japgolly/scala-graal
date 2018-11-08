@@ -63,7 +63,7 @@ final class Expr[A] private[Expr] (private[Expr] val run: Context => A) extends 
     })
 }
 
-object Expr {
+object Expr extends ExprBoilerplate {
   type Result[A] = Either[ExprError, A]
 
   def apply(source: CharSequence)(implicit language: Language): Expr[Value] =
@@ -93,6 +93,7 @@ object Expr {
                                                  (implicit cbf: CanBuildFrom[F[Expr[A]], A, F[A]]): Expr[F[A]] =
     stdlibDist[F, Expr[A], A](fea)(identity)
 
+  // TODO Remove
   final class Interpolation(private val sc: StringContext) extends AnyVal {
 
     def js(args: Any*): Expr[Value] =
@@ -149,13 +150,10 @@ object Expr {
     final case class Custom[A](mkValue: A => Context => Any) extends Param[A]
   }
 
-  private type X = AnyRef { type A = Unit }
-  private val exprValueId = (a: Expr[Value]) => a
-
-  private def genericOpt[Z](params: Array[Param[X]],
-                            mkExprStr: Array[String] => String,
-                            post: Expr[Value] => Z)
-                           (implicit l: Language): Array[X] => Z = {
+  override protected def genericOpt[Z](params: Array[Param[X]],
+                                       mkExprStr: Array[String] => String,
+                                       post: Expr[Value] => Z)
+                                      (implicit l: Language): Array[X] => Z = {
     val arity = params.length
     val indices = params.indices
 
@@ -256,28 +254,4 @@ object Expr {
       }
     }
   }
-
-  def compile1[A](mkExpr: String => String)(implicit l: Language, A: Param[A]): A => Expr[Value] = {
-    val ps = Array[Param[_]](A).asInstanceOf[Array[Param[X]]]
-    val z = genericOpt(ps, e => mkExpr(e(0)), exprValueId)
-    a => z(Array[Any](a).asInstanceOf[Array[X]])
-  }
-
-  def compile2[A, B](mkExpr: (String, String) => String)(implicit l: Language, A: Param[A], B: Param[B]): (A, B) => Expr[Value] = {
-    val ps = Array[Param[_]](A, B).asInstanceOf[Array[Param[X]]]
-    val z = genericOpt(ps, e => mkExpr(e(0), e(1)), exprValueId)
-    (a, b) => z(Array[Any](a, b).asInstanceOf[Array[X]])
-  }
-
-  def compile4[A, B, C, D](mkExpr: (String, String, String, String) => String)(implicit l: Language, A: Param[A], B: Param[B], C: Param[C], D: Param[D]): (A, B, C, D) => Expr[Value] =
-    compile4[A, B, C, D, Expr[Value]](mkExpr, exprValueId)
-  def compile4[A, B, C, D, Z](mkExpr: (String, String, String, String) => String, post: Expr[Value] => Z)(implicit l: Language, A: Param[A], B: Param[B], C: Param[C], D: Param[D]): (A, B, C, D) => Z = {
-    val ps = Array[Param[_]](A, B, C, D).asInstanceOf[Array[Param[X]]]
-    val z = genericOpt(ps, e => mkExpr(e(0), e(1), e(2), e(3)), post)
-    (a, b, c, d) => z(Array[Any](a, b, c, d).asInstanceOf[Array[X]])
-  }
-
-  def apply2[A, B](mkExpr: (String, String) => String, a: A, b: B)(implicit l: Language, A: Param[A], B: Param[B]): Expr[Value] =
-    compile2[A, B](mkExpr).apply(a, b)
-
 }
