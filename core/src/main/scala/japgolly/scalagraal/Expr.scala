@@ -152,10 +152,10 @@ object Expr extends ExprBoilerplate {
       val tokens = new Array[String](arity)
       for (i <- indices) {
         val token: String = params(i) match {
-          case ExprParam.Const(t) => t
-          case ExprParam.Polyglot(_) => l.argElement(i)
-          case ExprParam.Custom(_) => l.argElement(i)
-          case ExprParam.Literal(f) => f(args(i))
+          case p: ExprParam.SourceConst[X] => p.source
+          case _: ExprParam.ValueFn    [X] => l.argElement(i)
+          case _: ExprParam.CtxValueFn [X] => l.argElement(i)
+          case p: ExprParam.SourceFn   [X] => p.mkSource(args(i))
         }
         tokens(i) = token
       }
@@ -167,45 +167,44 @@ object Expr extends ExprBoilerplate {
         _.eval(src)
     }
 
-    def mkArrayP(args: Array[X]): Array[Any] = {
-      val data = new Array[Any](arity)
+    def mkValuesCtxFree(args: Array[X]): Array[Any] = {
+      val values = new Array[Any](arity)
       for (i <- indices) {
         params(i) match {
-          case ExprParam.Polyglot(f) => data(i) = f(args(i))
-          case ExprParam.Custom(_) | ExprParam.Const(_) | ExprParam.Literal(_) => ()
+          case p: ExprParam.ValueFn    [X] => values(i) = p.mkValue(args(i))
+          case _: ExprParam.CtxValueFn [X]
+             | _: ExprParam.SourceFn   [X]
+             | _: ExprParam.SourceConst[X] => ()
         }
       }
-      data
+      values
     }
 
-    def mkSetValuesPC(args: Array[X]): List[(Array[Any], Context) => Unit] = {
-      var setValues = List.empty[(Array[Any], Context) => Unit]
+    def mkValuesWithCtx(args: Array[X]): List[(Array[Any], Context) => Unit] = {
+      var fs = List.empty[(Array[Any], Context) => Unit]
       for (i <- indices) {
         params(i) match {
-          case ExprParam.Polyglot(f) =>
-            val v = f(args(i))
-            setValues ::= ((tgt, _) => tgt(i) = v)
-          case ExprParam.Custom(f) =>
-            val g = f(args(i))
-            setValues ::= ((tgt, ctx) => tgt(i) = g(ctx))
-          case ExprParam.Const(_) | ExprParam.Literal(_) => ()
+          case p: ExprParam.ValueFn    [X] => val v = p.mkValue(args(i)); fs ::= ((tgt, _) => tgt(i) = v)
+          case p: ExprParam.CtxValueFn [X] => val g = p.mkValue(args(i)); fs ::= ((tgt, c) => tgt(i) = g(c))
+          case _: ExprParam.SourceConst[X]
+             | _: ExprParam.SourceFn   [X] => ()
         }
       }
-      setValues
+      fs
     }
 
-    def mkExprWithBindings(run: Context => Value, args: Array[X], hasCustom: Boolean): Z =
+    def mkExprWithBindings(run: Context => Value, args: Array[X], hasCtxValueFn: Boolean): Z =
       post(
-        if (hasCustom) {
-          val setValues = mkSetValuesPC(args)
+        if (hasCtxValueFn) {
+          val setValueFns = mkValuesWithCtx(args)
           lift { ctx =>
             val data = new Array[Any](arity)
-            setValues.foreach(_ (data, ctx))
+            setValueFns.foreach(_ (data, ctx))
             l.argBinding.set(ctx, data)
             run(ctx)
           }
         } else {
-          val data = mkArrayP(args)
+          val data = mkValuesCtxFree(args)
           lift { ctx =>
             l.argBinding.set(ctx, data)
             run(ctx)
@@ -213,33 +212,29 @@ object Expr extends ExprBoilerplate {
         }
       )
 
-    var hasLiteral, hasPolyglot, hasCustom = false
+    var hasSourceFn, hasValueFn, hasCtxValueFn = false
     params.foreach {
-      case _: ExprParam.Const[X] => ()
-      case _: ExprParam.Literal[X] =>  hasLiteral = true
-      case _: ExprParam.Polyglot[X] =>  hasPolyglot = true
-      case _: ExprParam.Custom[X] =>  hasCustom = true
+      case _: ExprParam.SourceConst[X] => ()
+      case _: ExprParam.SourceFn   [X] => hasSourceFn = true
+      case _: ExprParam.ValueFn    [X] => hasValueFn = true
+      case _: ExprParam.CtxValueFn [X] => hasCtxValueFn = true
     }
-    val usesBindings = hasPolyglot || hasCustom
+    val usesBindings = hasValueFn || hasCtxValueFn
 
     if (usesBindings) {
-      if (hasLiteral) {
-        // usesBindings, hasLiteral
+      if (hasSourceFn) {
         args => {
           val run = mkRun(args, usesBindings = usesBindings)
-          mkExprWithBindings(run, args, hasCustom = hasCustom)
+          mkExprWithBindings(run, args, hasCtxValueFn = hasCtxValueFn)
         }
       } else {
-        // usesBindings, !hasLiteral
         val run = mkRun(null, usesBindings = usesBindings)
-        args => mkExprWithBindings(run, args, hasCustom = hasCustom)
+        args => mkExprWithBindings(run, args, hasCtxValueFn = hasCtxValueFn)
       }
     } else {
-      if (hasLiteral) {
-        // !usesBindings, hasLiteral
+      if (hasSourceFn) {
         args => post(lift(mkRun(args, usesBindings = usesBindings)))
       } else {
-        // !usesBindings, !hasLiteral
         val expr = post(lift(mkRun(null, usesBindings = usesBindings)))
         _ => expr
       }

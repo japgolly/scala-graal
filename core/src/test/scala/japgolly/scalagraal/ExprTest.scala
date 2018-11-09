@@ -6,10 +6,10 @@ import TestUtil._
 object ExprTest extends TestSuite {
 
   val paramTypes = Vector[Int => ExprParam[Int]](
-    i => ExprParam.Const(i.toString),
-    _ => ExprParam.Literal(_.toString),
-    _ => ExprParam.Polyglot(identity),
-    _ => ExprParam.Custom(i => _.eval(lang.name, i.toString)))
+    i => ExprParam.SourceConst(i.toString),
+    _ => ExprParam.SourceFn(_.toString),
+    _ => ExprParam.ValueFn(identity),
+    _ => ExprParam.CtxValueFn(i => _.eval(lang.name, i.toString)))
 
   override def tests = Tests {
 

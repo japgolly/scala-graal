@@ -6,9 +6,10 @@ import org.graalvm.polyglot.Context
 sealed trait ExprParam[A]
 
 object ExprParam {
-  final case class Const   [A](source: String)               extends ExprParam[A]
-  final case class Literal [A](mkSource: A => String)        extends ExprParam[A]
-  final case class Polyglot[A](mkValue: A => Any)            extends ExprParam[A]
-  final case class Custom  [A](mkValue: A => Context => Any) extends ExprParam[A]
+
+  final case class SourceConst[A](source: String)               extends ExprParam[A]
+  final case class SourceFn   [A](mkSource: A => String)        extends ExprParam[A]
+  final case class ValueFn    [A](mkValue: A => Any)            extends ExprParam[A]
+  final case class CtxValueFn [A](mkValue: A => Context => Any) extends ExprParam[A]
 }
 
