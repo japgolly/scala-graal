@@ -2,6 +2,7 @@ package japgolly.scalagraal
 
 import org.graalvm.polyglot.Context
 import org.graalvm.polyglot.proxy.Proxy
+import scala.runtime.AbstractFunction1
 
 sealed trait ExprParam[A] {
   def contramap[B](f: B => A): ExprParam[B]
@@ -12,6 +13,12 @@ sealed trait ExprParam[A] {
 
 object ExprParam {
 
+  type RawValue = Any { type Raw = Unit }
+  object RawValue extends AbstractFunction1[Any, RawValue] {
+    override def apply(a: Any): RawValue = a.asInstanceOf[RawValue]
+    val Null: RawValue = apply(null)
+  }
+
   final case class SourceConst[A](source: String) extends ExprParam[A] {
     override def contramap[B](f: B => A) = this.asInstanceOf[ExprParam[B]]
   }
@@ -20,16 +27,16 @@ object ExprParam {
     override def contramap[B](f: B => A) = SourceFn(mkSource compose f)
   }
 
-  final case class ValueFn[A](mkValue: A => Any) extends ExprParam[A] {
+  final case class ValueFn[A](mkValue: A => RawValue) extends ExprParam[A] {
     override def contramap[B](f: B => A) = ValueFn(mkValue compose f)
   }
 
-  final case class CtxValueFn[A](mkValue: A => Context => Any) extends ExprParam[A] {
+  private[this] val rawValueFn = ValueFn[Any](RawValue)
+  def RawValueFn[A] = rawValueFn.asInstanceOf[ValueFn[A]]
+
+  final case class CtxValueFn[A](mkValue: A => Context => RawValue) extends ExprParam[A] {
     override def contramap[B](f: B => A) = CtxValueFn(mkValue compose f)
   }
-
-  private[this] val _id: Any => Any = identity
-  private def id[A] = _id.asInstanceOf[A => A]
 
   trait Contravariance {
     // Do this ourselves because Scala 2 chooses the most general implicit instance when the type param is
@@ -38,29 +45,29 @@ object ExprParam {
   }
 
   trait Primitives {
-    implicit val exprParamBoolean: ValueFn[Boolean] = ValueFn(id)
-    implicit val exprParamByte   : ValueFn[Byte   ] = ValueFn(id)
-    implicit val exprParamShort  : ValueFn[Short  ] = ValueFn(id)
-    implicit val exprParamInt    : ValueFn[Int    ] = ValueFn(id)
-    implicit val exprParamLong   : ValueFn[Long   ] = ValueFn(id)
-    implicit val exprParamFloat  : ValueFn[Float  ] = ValueFn(id)
-    implicit val exprParamDouble : ValueFn[Double ] = ValueFn(id)
-    implicit val exprParamString : ValueFn[String ] = ValueFn(id)
+    implicit def exprParamBoolean: ValueFn[Boolean] = RawValueFn
+    implicit def exprParamByte   : ValueFn[Byte   ] = RawValueFn
+    implicit def exprParamShort  : ValueFn[Short  ] = RawValueFn
+    implicit def exprParamInt    : ValueFn[Int    ] = RawValueFn
+    implicit def exprParamLong   : ValueFn[Long   ] = RawValueFn
+    implicit def exprParamFloat  : ValueFn[Float  ] = RawValueFn
+    implicit def exprParamDouble : ValueFn[Double ] = RawValueFn
+    implicit def exprParamString : ValueFn[String ] = RawValueFn
   }
 
   trait ArrayPrimitives {
-    implicit val exprParamArrayBoolean: ValueFn[Array[Boolean]] = ValueFn(id)
-    implicit val exprParamArrayByte   : ValueFn[Array[Byte   ]] = ValueFn(id)
-    implicit val exprParamArrayShort  : ValueFn[Array[Short  ]] = ValueFn(id)
-    implicit val exprParamArrayInt    : ValueFn[Array[Int    ]] = ValueFn(id)
-    implicit val exprParamArrayLong   : ValueFn[Array[Long   ]] = ValueFn(id)
-    implicit val exprParamArrayFloat  : ValueFn[Array[Float  ]] = ValueFn(id)
-    implicit val exprParamArrayDouble : ValueFn[Array[Double ]] = ValueFn(id)
-    implicit val exprParamArrayString : ValueFn[Array[String ]] = ValueFn(id)
+    implicit def exprParamArrayBoolean: ValueFn[Array[Boolean]] = RawValueFn
+    implicit def exprParamArrayByte   : ValueFn[Array[Byte   ]] = RawValueFn
+    implicit def exprParamArrayShort  : ValueFn[Array[Short  ]] = RawValueFn
+    implicit def exprParamArrayInt    : ValueFn[Array[Int    ]] = RawValueFn
+    implicit def exprParamArrayLong   : ValueFn[Array[Long   ]] = RawValueFn
+    implicit def exprParamArrayFloat  : ValueFn[Array[Float  ]] = RawValueFn
+    implicit def exprParamArrayDouble : ValueFn[Array[Double ]] = RawValueFn
+    implicit def exprParamArrayString : ValueFn[Array[String ]] = RawValueFn
   }
 
   trait PolyglotValues {
-    implicit val exprParamProxy: ValueFn[Proxy] = ValueFn(id)
+    implicit def exprParamProxy: ValueFn[Proxy] = RawValueFn
   }
 
   trait Defaults

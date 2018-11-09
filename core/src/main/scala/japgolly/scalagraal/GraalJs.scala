@@ -17,13 +17,13 @@ object GraalJsComponents {
     implicit def exprParamOptionV[A](implicit p: ValueFn[A]): ValueFn[Option[A]] =
       ValueFn {
         case Some(a) => p.mkValue(a)
-        case None    => null
+        case None    => RawValue.Null
       }
 
     implicit def exprParamOptionC[A](implicit p: CtxValueFn[A]): CtxValueFn[Option[A]] =
       CtxValueFn {
         case Some(a) => p.mkValue(a)
-        case None    => _ => null
+        case None    => _ => RawValue.Null
       }
   }
 }

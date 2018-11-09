@@ -8,8 +8,8 @@ object ExprTest extends TestSuite {
   val paramTypes = Vector[Int => ExprParam[Int]](
     i => ExprParam.SourceConst(i.toString),
     _ => ExprParam.SourceFn(_.toString),
-    _ => ExprParam.ValueFn(identity),
-    _ => ExprParam.CtxValueFn(i => _.eval(graalLanguage.name, i.toString)))
+    _ => ExprParam.ValueFn(ExprParam.RawValue),
+    _ => ExprParam.CtxValueFn(i => ctx => ExprParam.RawValue(ctx.eval(graalLanguage.name, i.toString))))
 
   trait X
 
