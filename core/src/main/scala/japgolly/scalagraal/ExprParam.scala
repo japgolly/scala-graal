@@ -34,33 +34,33 @@ object ExprParam {
   trait Contravariance {
     // Do this ourselves because Scala 2 chooses the most general implicit instance when the type param is
     // contravariant, instead of the most specific implicit instance. Thankfully Scala 3 will correct this.
-    implicit final def exprParamContravariance[B <: A, A](implicit p: ExprParam[A]): ExprParam[B] = p.narrow
+    implicit final def exprParamContravariance[A](implicit p: ExprParam[_ >: A]): ExprParam[A] = p.narrow
   }
 
   trait Primitives {
-    implicit val exprParamBoolean: ExprParam[Boolean] = ValueFn(id)
-    implicit val exprParamByte   : ExprParam[Byte   ] = ValueFn(id)
-    implicit val exprParamShort  : ExprParam[Short  ] = ValueFn(id)
-    implicit val exprParamInt    : ExprParam[Int    ] = ValueFn(id)
-    implicit val exprParamLong   : ExprParam[Long   ] = ValueFn(id)
-    implicit val exprParamFloat  : ExprParam[Float  ] = ValueFn(id)
-    implicit val exprParamDouble : ExprParam[Double ] = ValueFn(id)
-    implicit val exprParamString : ExprParam[String ] = ValueFn(id)
+    implicit val exprParamBoolean: ValueFn[Boolean] = ValueFn(id)
+    implicit val exprParamByte   : ValueFn[Byte   ] = ValueFn(id)
+    implicit val exprParamShort  : ValueFn[Short  ] = ValueFn(id)
+    implicit val exprParamInt    : ValueFn[Int    ] = ValueFn(id)
+    implicit val exprParamLong   : ValueFn[Long   ] = ValueFn(id)
+    implicit val exprParamFloat  : ValueFn[Float  ] = ValueFn(id)
+    implicit val exprParamDouble : ValueFn[Double ] = ValueFn(id)
+    implicit val exprParamString : ValueFn[String ] = ValueFn(id)
   }
 
   trait ArrayPrimitives {
-    implicit val exprParamArrayBoolean: ExprParam[Array[Boolean]] = ValueFn(id)
-    implicit val exprParamArrayByte   : ExprParam[Array[Byte   ]] = ValueFn(id)
-    implicit val exprParamArrayShort  : ExprParam[Array[Short  ]] = ValueFn(id)
-    implicit val exprParamArrayInt    : ExprParam[Array[Int    ]] = ValueFn(id)
-    implicit val exprParamArrayLong   : ExprParam[Array[Long   ]] = ValueFn(id)
-    implicit val exprParamArrayFloat  : ExprParam[Array[Float  ]] = ValueFn(id)
-    implicit val exprParamArrayDouble : ExprParam[Array[Double ]] = ValueFn(id)
-    implicit val exprParamArrayString : ExprParam[Array[String ]] = ValueFn(id)
+    implicit val exprParamArrayBoolean: ValueFn[Array[Boolean]] = ValueFn(id)
+    implicit val exprParamArrayByte   : ValueFn[Array[Byte   ]] = ValueFn(id)
+    implicit val exprParamArrayShort  : ValueFn[Array[Short  ]] = ValueFn(id)
+    implicit val exprParamArrayInt    : ValueFn[Array[Int    ]] = ValueFn(id)
+    implicit val exprParamArrayLong   : ValueFn[Array[Long   ]] = ValueFn(id)
+    implicit val exprParamArrayFloat  : ValueFn[Array[Float  ]] = ValueFn(id)
+    implicit val exprParamArrayDouble : ValueFn[Array[Double ]] = ValueFn(id)
+    implicit val exprParamArrayString : ValueFn[Array[String ]] = ValueFn(id)
   }
 
   trait PolyglotValues {
-    implicit val exprParamProxy: ExprParam[Proxy] = ValueFn(id)
+    implicit val exprParamProxy: ValueFn[Proxy] = ValueFn(id)
   }
 
   trait Defaults

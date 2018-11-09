@@ -93,39 +93,6 @@ object Expr extends ExprBoilerplate {
                                                  (implicit cbf: CanBuildFrom[F[Expr[A]], A, F[A]]): Expr[F[A]] =
     stdlibDist[F, Expr[A], A](fea)(identity)
 
-  // TODO Remove
-  final class Interpolation(private val sc: StringContext) extends AnyVal {
-
-    def js(args: Any*): Expr[Value] =
-      build(Language.JS, args: _*)
-
-    private def build(lang: Language, args: Any*): Expr[Value] =
-      if (args.isEmpty)
-        Expr(sc.parts.head)(lang)
-      else {
-        val argArray: Array[Any] = args.map(lang.translateValue)(collection.breakOut)
-        val iParts = sc.parts.iterator
-        var i = 0
-        val sb = new StringBuilder(iParts.next())
-        while (iParts.hasNext) {
-          sb.append(lang.argBinding.localValue)
-          sb.append('[')
-          sb.append(i)
-          sb.append(']')
-          sb.append(iParts.next)
-          i += 1
-        }
-        val body = sb.toString()
-        val bodySrc = Source.create(lang.name, body)
-        val eval = lang.argBinder(bodySrc)
-        lift{ctx =>
-          lang.argBinding.set(ctx, argArray)
-          eval(ctx)
-        }
-      }
-
-  }
-
   override protected def genericOpt[Z](params: Array[ExprParam[X]],
                                        mkExprStr: Array[String] => String,
                                        post: Expr[Value] => Z)

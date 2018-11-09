@@ -47,7 +47,15 @@ object ExprTest extends TestSuite {
           assertEvalResult(result, expect)
         }
       }
+    }
 
+    'results {
+      'option {
+        val a = Option.empty[Int]
+        val b = Some(456)
+        val expr = Expr.apply2((a, b) => s"($a == null) ? $b : $a", a, b).asOption(_.asInt)
+        assertEvalResult(sync(expr), b)
+      }
     }
 
   }
