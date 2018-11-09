@@ -126,21 +126,6 @@ object Expr extends ExprBoilerplate {
 
   }
 
-  // TODO Should include language in type
-//  trait CommonArgs {
-//    implicit val jsArgInt: Arg[Int] = Arg(ArgValue.Polyglot)
-//    implicit val jsArgLong: Arg[Long] = Arg(ArgValue.Polyglot)
-//    implicit val jsArgString: Arg[String] = Arg(ArgValue.Polyglot)
-//    implicit val jsArgBoolean: Arg[Boolean] = Arg(ArgValue.Polyglot)
-//    implicit val jsArgShort: Arg[Short] = Arg(ArgValue.Polyglot)
-//    implicit val jsArgFloat: Arg[Float] = Arg(ArgValue.Polyglot)
-//    implicit val jsArgDouble: Arg[Double] = Arg(ArgValue.Polyglot)
-//  }
-//
-//  trait JsArgs {
-//    implicit val jsArgUnit: Arg[Unit] = Arg.const(ArgValue.Literal("undefined"))
-//  }
-
   override protected def genericOpt[Z](params: Array[ExprParam[X]],
                                        mkExprStr: Array[String] => String,
                                        post: Expr[Value] => Z)
