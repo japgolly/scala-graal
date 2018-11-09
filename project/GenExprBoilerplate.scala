@@ -14,17 +14,22 @@ object GenExprBoilerplate {
         val Strings = List.fill(n)("String").mkString(",")
         val es = (0 until n).map(i => s"e($i)").mkString(",")
         s"""
-           |  final def compile$n[$ABC,Z](mkExpr: ($Strings) => String, post: Expr[Value] => Z)(implicit lang: Language, $Params): ($ABC) => Z = {
-           |    val ps = Array[ExprParam[_]]($ABC).asInstanceOf[Array[ExprParam[X]]]
-           |    val z = genericOpt(ps, e => mkExpr($es), post)
-           |  ($abc) => z(Array[Any]($abc).asInstanceOf[Array[X]])
+           |  final class CompileDsl$n[$ABC](mkExpr: ($Strings) => String) {
+           |    def apply[Z](post: Expr[Value] => Z)(implicit lang: Language, $Params): ($ABC) => Z = {
+           |      val ps = Array[ExprParam[_]]($ABC).asInstanceOf[Array[ExprParam[X]]]
+           |      val z = genericOpt(ps, e => mkExpr($es), post)
+           |      ($abc) => z(Array[Any]($abc).asInstanceOf[Array[X]])
+           |    }
            |  }
            |
-           |  final def compile$n[$ABC](mkExpr: ($Strings) => String)(implicit lang: Language, $Params): ($ABC) => Expr[Value] =
-           |    compile$n[$ABC,Expr[Value]](mkExpr, exprValueId)
+           |  final def compile$n[$ABC](mkExpr: ($Strings) => String): CompileDsl$n[$ABC] =
+           |    new CompileDsl$n(mkExpr)
+           |
+           |  final def compileExpr$n[$ABC](mkExpr: ($Strings) => String)(implicit lang: Language, $Params): ($ABC) => Expr[Value] =
+           |    compile$n[$ABC](mkExpr)(exprValueId)
            |
            |  final def apply$n[$ABC](mkExpr: ($Strings) => String, $Types)(implicit lang: Language, $Params): Expr[Value] =
-           |    compile$n[$ABC](mkExpr).apply($abc)
+           |    compileExpr$n[$ABC](mkExpr).apply($abc)
          """.stripMargin.trim.replaceFirst("^", "  ")
       }
 

@@ -23,7 +23,7 @@ object ExprTest extends TestSuite {
         for {
           pa <- paramTypes.map(_(a))
         } {
-          val fn = Expr.compile1(identity, _.asInt)(graalLanguage, pa)
+          val fn = Expr.compile1(identity)(_.asInt)(graalLanguage, pa)
           val expr = fn(a)
           val result = sync(expr)
           assertEvalResult(result, a)
@@ -43,7 +43,7 @@ object ExprTest extends TestSuite {
           pc <- paramTypes.map(_(c))
           pd <- paramTypes.map(_(d))
         } {
-          val fn = Expr.compile4(mkExpr, _.asInt)(graalLanguage, pa, pb, pc, pd)
+          val fn = Expr.compile4(mkExpr)(_.asInt)(graalLanguage, pa, pb, pc, pd)
           val expr = fn(a, b, c, d)
           val result = sync(expr)
           assertEvalResult(result, expect)
@@ -51,12 +51,12 @@ object ExprTest extends TestSuite {
       }
 
       "any" - {
-        compileError(""" Expr.compile1(a => a, _.asInt) """)
+        compileError(""" Expr.compile1(a => a)(_.asInt) """)
         ()
       }
 
       "X" - {
-        compileError(""" Expr.compile1[X](a => a, _.asInt) """)
+        compileError(""" Expr.compile1[X](a => a)(_.asInt) """)
         ()
       }
 
@@ -69,6 +69,16 @@ object ExprTest extends TestSuite {
         val expr = Expr.apply2((a, b) => s"($a == null) ? $b : $a", a, b).asOption(_.asInt)
         assertEvalResult(sync(expr), b)
       }
+    }
+
+    'demo {
+      implicit val lang = Language.JS
+      val ctx = ContextSync()
+
+      val expr = Expr.compile2[Int, Int]((a, b) => s"($a + $b) * 2")(_.asInt)
+
+      val result = ctx(expr(3, 8))
+      assert(result == Right(22))
     }
 
   }
