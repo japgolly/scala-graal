@@ -9,7 +9,7 @@ object ExprTest extends TestSuite {
     i => ExprParam.SourceConst(i.toString),
     _ => ExprParam.SourceFn(_.toString),
     _ => ExprParam.ValueFn(identity),
-    _ => ExprParam.CtxValueFn(i => _.eval(lang.name, i.toString)))
+    _ => ExprParam.CtxValueFn(i => _.eval(graalLanguage.name, i.toString)))
 
   override def tests = Tests {
 
@@ -21,7 +21,7 @@ object ExprTest extends TestSuite {
         for {
           pa <- paramTypes.map(_(a))
         } {
-          val fn = Expr.compile1(identity, _.asInt)(lang, pa)
+          val fn = Expr.compile1(identity, _.asInt)(graalLanguage, pa)
           val expr = fn(a)
           val result = sync(expr)
           assertEvalResult(result, a)
@@ -41,7 +41,7 @@ object ExprTest extends TestSuite {
           pc <- paramTypes.map(_(c))
           pd <- paramTypes.map(_(d))
         } {
-          val fn = Expr.compile4(mkExpr, _.asInt)(lang, pa, pb, pc, pd)
+          val fn = Expr.compile4(mkExpr, _.asInt)(graalLanguage, pa, pb, pc, pd)
           val expr = fn(a, b, c, d)
           val result = sync(expr)
           assertEvalResult(result, expect)

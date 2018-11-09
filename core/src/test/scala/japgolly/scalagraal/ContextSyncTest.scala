@@ -1,7 +1,7 @@
 package japgolly.scalagraal
 
-import TestUtil._
 import utest._
+import TestUtil._
 
 object ContextSyncTest extends TestSuite {
 
