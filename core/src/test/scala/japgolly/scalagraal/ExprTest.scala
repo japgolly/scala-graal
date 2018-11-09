@@ -70,15 +70,5 @@ object ExprTest extends TestSuite {
       }
     }
 
-    'demo {
-      implicit val lang = Language.JS
-      val ctx = ContextSync()
-
-      val expr = Expr.compile2[Int, Int]((a, b) => s"($a + $b) * 2")(_.asInt)
-
-      val result = ctx.eval(expr(3, 8))
-      assert(result == Right(22))
-    }
-
   }
 }

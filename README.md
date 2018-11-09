@@ -10,14 +10,13 @@
 # Demo
 
 ```scala
-implicit val lang = Language.JS
-val ctx = ContextSync()
+	import GraalJs._
+	val ctx = ContextSync()
 
-val (a,b) = (3,8)
-val expr = js"($a + $b) * 2".asInt
+	val expr = Expr.compile2[Int, Int]((a, b) => s"($a + $b) * 2 + '!'")(_.asString)
 
-val Right(result) = ctx(expr)
-assert(result == 22)
+	val result = ctx.eval(expr(3, 8))
+	assert(result == Right("22!"))
 ```
 
 # Roadmap
@@ -56,5 +55,4 @@ assert(result == 22)
   * [ ] Cats Effect (?)
   * [ ] Prometheus
   * [ ] BooPickle
-  * [ ] upickle
   * [ ] circe
