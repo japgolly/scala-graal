@@ -7,7 +7,7 @@ import scala.concurrent.Future
 import scala.concurrent.JavaConversions.asExecutionContext
 
 trait ContextAsync {
-  def apply[A](f: Context => A): Future[A]
+  def eval[A](f: Context => A): Future[A]
   def withAround(f: ContextAsync.Around): ContextAsync
 }
 
@@ -100,10 +100,10 @@ object ContextAsync {
   private class ExecutorServiceBased(es: ExecutorService, around: Around) extends Pool {
     private[this] implicit val ec = asExecutionContext(es)
 
-    override def apply[A](f: Context => A): Future[A] =
+    override def eval[A](f: Context => A): Future[A] =
       Future {
         val t = Thread.currentThread().asInstanceOf[ContextThread]
-        t.contextSync(around(_, f))
+        t.contextSync.eval(around(_, f))
       }
 
     override def withAround(f: Around): ContextAsync =

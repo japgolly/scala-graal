@@ -26,8 +26,8 @@ object ContextAsyncTest extends TestSuite {
 
       assertEq(pool.poolState(), ContextAsync.PoolState.Active)
 
-      val fa = pool(Expr("(1+1) * 100").asInt)
-      val fb = pool(Expr("10 * (5+3)").asInt)
+      val fa = pool.eval(Expr("(1+1) * 100").asInt)
+      val fb = pool.eval(Expr("10 * (5+3)").asInt)
 
       implicit val ec = ExecutionContext.global
 

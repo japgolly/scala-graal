@@ -8,7 +8,7 @@ object ContextSyncTest extends TestSuite {
   override def tests = Tests {
 
     'eval {
-      assertEvalResult(sync(Expr("(1+1) * 100").asInt), 200)
+      assertEvalResult(sync.eval(Expr("(1+1) * 100").asInt), 200)
     }
 
   }

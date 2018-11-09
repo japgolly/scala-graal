@@ -3,7 +3,7 @@ package japgolly.scalagraal
 import org.graalvm.polyglot.Context
 
 trait ContextSync {
-  def apply[A](f: Context => A): A
+  def eval[A](f: Context => A): A
   def withAround(f: ContextSync.Around): ContextSync
 }
 
@@ -22,7 +22,7 @@ object ContextSync {
       new SingleThreaded(context, Around.id)
 
   private class SingleBlocking(context: Context, around: Around, lock: AnyRef) extends ContextSync {
-    override def apply[A](f: Context => A) =
+    override def eval[A](f: Context => A) =
       lock.synchronized {
         around.enterAndLeave(context, f)
       }
@@ -32,7 +32,7 @@ object ContextSync {
   }
 
   private class SingleThreaded(context: Context, around: Around) extends ContextSync {
-    override def apply[A](f: Context => A) =
+    override def eval[A](f: Context => A) =
       around.enterAndLeave(context, f)
 
     override def withAround(f: ContextSync.Around) =

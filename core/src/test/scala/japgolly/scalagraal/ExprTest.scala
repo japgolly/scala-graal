@@ -25,7 +25,7 @@ object ExprTest extends TestSuite {
         } {
           val fn = Expr.compile1(identity)(_.asInt)(graalLanguage, pa)
           val expr = fn(a)
-          val result = sync(expr)
+          val result = sync.eval(expr)
           assertEvalResult(result, a)
         }
       }
@@ -45,7 +45,7 @@ object ExprTest extends TestSuite {
         } {
           val fn = Expr.compile4(mkExpr)(_.asInt)(graalLanguage, pa, pb, pc, pd)
           val expr = fn(a, b, c, d)
-          val result = sync(expr)
+          val result = sync.eval(expr)
           assertEvalResult(result, expect)
         }
       }
@@ -59,7 +59,6 @@ object ExprTest extends TestSuite {
         compileError(""" Expr.compile1[X](a => a)(_.asInt) """)
         ()
       }
-
     }
 
     'results {
@@ -67,7 +66,7 @@ object ExprTest extends TestSuite {
         val a = Option.empty[Int]
         val b = Some(456)
         val expr = Expr.apply2((a, b) => s"($a == null) ? $b : $a", a, b).asOption(_.asInt)
-        assertEvalResult(sync(expr), b)
+        assertEvalResult(sync.eval(expr), b)
       }
     }
 
@@ -77,7 +76,7 @@ object ExprTest extends TestSuite {
 
       val expr = Expr.compile2[Int, Int]((a, b) => s"($a + $b) * 2")(_.asInt)
 
-      val result = ctx(expr(3, 8))
+      val result = ctx.eval(expr(3, 8))
       assert(result == Right(22))
     }
 
