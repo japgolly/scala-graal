@@ -146,11 +146,12 @@ object Expr extends ExprBoilerplate {
                                        post: Expr[Value] => Z)
                                       (implicit l: Language): Array[X] => Z = {
     val arity = params.length
-    val indices = params.indices
 
     def mkRun(args: Array[X], usesBindings: Boolean): Context => Value = {
       val tokens = new Array[String](arity)
-      for (i <- indices) {
+      var i = arity
+      while (i > 0) {
+        i -= 1
         val token: String = params(i) match {
           case p: ExprParam.SourceConst[X] => p.source
           case _: ExprParam.ValueFn    [X] => l.argElement(i)
@@ -169,7 +170,9 @@ object Expr extends ExprBoilerplate {
 
     def mkValuesCtxFree(args: Array[X]): Array[Any] = {
       val values = new Array[Any](arity)
-      for (i <- indices) {
+      var i = arity
+      while (i > 0) {
+        i -= 1
         params(i) match {
           case p: ExprParam.ValueFn    [X] => values(i) = p.mkValue(args(i))
           case _: ExprParam.CtxValueFn [X]
@@ -182,7 +185,10 @@ object Expr extends ExprBoilerplate {
 
     def mkValuesWithCtx(args: Array[X]): List[(Array[Any], Context) => Unit] = {
       var fs = List.empty[(Array[Any], Context) => Unit]
-      for (i <- indices) {
+      var j = arity
+      while (j > 0) {
+        j -= 1
+        val i = j
         params(i) match {
           case p: ExprParam.ValueFn    [X] => val v = p.mkValue(args(i)); fs ::= ((tgt, _) => tgt(i) = v)
           case p: ExprParam.CtxValueFn [X] => val g = p.mkValue(args(i)); fs ::= ((tgt, c) => tgt(i) = g(c))
