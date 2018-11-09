@@ -10,12 +10,12 @@ object GenExprBoilerplate {
         val ABC = _ABC.mkString(",")
         val abc = (1 to n).map(_ + 96).map(_.toChar).mkString(",")
         val Types = _ABC.map(A => s"${A.toLower}: $A").mkString(", ")
-        val Params = _ABC.map(A => s"$A:Param[$A]").mkString(", ")
+        val Params = _ABC.map(A => s"$A:ExprParam[$A]").mkString(", ")
         val Strings = List.fill(n)("String").mkString(",")
         val es = (0 until n).map(i => s"e($i)").mkString(",")
         s"""
            |  final def compile$n[$ABC,Z](mkExpr: ($Strings) => String, post: Expr[Value] => Z)(implicit lang: Language, $Params): ($ABC) => Z = {
-           |    val ps = Array[Param[_]]($ABC).asInstanceOf[Array[Param[X]]]
+           |    val ps = Array[ExprParam[_]]($ABC).asInstanceOf[Array[ExprParam[X]]]
            |    val z = genericOpt(ps, e => mkExpr($es), post)
            |  ($abc) => z(Array[Any]($abc).asInstanceOf[Array[X]])
            |  }
@@ -37,14 +37,13 @@ object GenExprBoilerplate {
          |package japgolly.scalagraal
          |
          |import org.graalvm.polyglot.Value
-         |import Expr.Param
          |
          |abstract class $Name private[scalagraal]() {
          |
          |  protected final type X = AnyRef { type A = Unit }
          |  private[this] final val exprValueId = (a: Expr[Value]) => a
          |
-         |  protected def genericOpt[Z](params: Array[Param[X]],
+         |  protected def genericOpt[Z](params: Array[ExprParam[X]],
          |                              mkExprStr: Array[String] => String,
          |                              post: Expr[Value] => Z)
          |                             (implicit lang: Language): Array[X] => Z

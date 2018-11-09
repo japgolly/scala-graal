@@ -128,7 +128,6 @@ object Expr extends ExprBoilerplate {
 
   // TODO Should include language in type
 //  trait CommonArgs {
-//    //implicit val jsArgInt: Arg[Int] = Arg(i => ArgValue.Literal(i.toString))
 //    implicit val jsArgInt: Arg[Int] = Arg(ArgValue.Polyglot)
 //    implicit val jsArgLong: Arg[Long] = Arg(ArgValue.Polyglot)
 //    implicit val jsArgString: Arg[String] = Arg(ArgValue.Polyglot)
@@ -142,15 +141,7 @@ object Expr extends ExprBoilerplate {
 //    implicit val jsArgUnit: Arg[Unit] = Arg.const(ArgValue.Literal("undefined"))
 //  }
 
-  sealed trait Param[A]
-  object Param {
-    final case class Const[A](source: String) extends Param[A]
-    final case class Literal[A](mkSource: A => String) extends Param[A]
-    final case class Polyglot[A](mkValue: A => Any) extends Param[A]
-    final case class Custom[A](mkValue: A => Context => Any) extends Param[A]
-  }
-
-  override protected def genericOpt[Z](params: Array[Param[X]],
+  override protected def genericOpt[Z](params: Array[ExprParam[X]],
                                        mkExprStr: Array[String] => String,
                                        post: Expr[Value] => Z)
                                       (implicit l: Language): Array[X] => Z = {
@@ -161,10 +152,10 @@ object Expr extends ExprBoilerplate {
       val tokens = new Array[String](arity)
       for (i <- indices) {
         val token: String = params(i) match {
-          case Param.Const(t) => t
-          case Param.Polyglot(_) => l.argElement(i)
-          case Param.Custom(_) => l.argElement(i)
-          case Param.Literal(f) => f(args(i))
+          case ExprParam.Const(t) => t
+          case ExprParam.Polyglot(_) => l.argElement(i)
+          case ExprParam.Custom(_) => l.argElement(i)
+          case ExprParam.Literal(f) => f(args(i))
         }
         tokens(i) = token
       }
@@ -180,8 +171,8 @@ object Expr extends ExprBoilerplate {
       val data = new Array[Any](arity)
       for (i <- indices) {
         params(i) match {
-          case Param.Polyglot(f) => data(i) = f(args(i))
-          case Param.Custom(_) | Param.Const(_) | Param.Literal(_) => ()
+          case ExprParam.Polyglot(f) => data(i) = f(args(i))
+          case ExprParam.Custom(_) | ExprParam.Const(_) | ExprParam.Literal(_) => ()
         }
       }
       data
@@ -191,13 +182,13 @@ object Expr extends ExprBoilerplate {
       var setValues = List.empty[(Array[Any], Context) => Unit]
       for (i <- indices) {
         params(i) match {
-          case Param.Polyglot(f) =>
+          case ExprParam.Polyglot(f) =>
             val v = f(args(i))
             setValues ::= ((tgt, _) => tgt(i) = v)
-          case Param.Custom(f) =>
+          case ExprParam.Custom(f) =>
             val g = f(args(i))
             setValues ::= ((tgt, ctx) => tgt(i) = g(ctx))
-          case Param.Const(_) | Param.Literal(_) => ()
+          case ExprParam.Const(_) | ExprParam.Literal(_) => ()
         }
       }
       setValues
@@ -224,10 +215,10 @@ object Expr extends ExprBoilerplate {
 
     var hasLiteral, hasPolyglot, hasCustom = false
     params.foreach {
-      case _: Param.Const[X] => ()
-      case _: Param.Literal[X] =>  hasLiteral = true
-      case _: Param.Polyglot[X] =>  hasPolyglot = true
-      case _: Param.Custom[X] =>  hasCustom = true
+      case _: ExprParam.Const[X] => ()
+      case _: ExprParam.Literal[X] =>  hasLiteral = true
+      case _: ExprParam.Polyglot[X] =>  hasPolyglot = true
+      case _: ExprParam.Custom[X] =>  hasCustom = true
     }
     val usesBindings = hasPolyglot || hasCustom
 

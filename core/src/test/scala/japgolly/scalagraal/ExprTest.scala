@@ -2,15 +2,14 @@ package japgolly.scalagraal
 
 import utest._
 import TestUtil._
-import Expr.Param
 
 object ExprTest extends TestSuite {
 
-  val paramTypes = Vector[Int => Param[Int]](
-    i => Param.Const(i.toString),
-    _ => Param.Literal(_.toString),
-    _ => Param.Polyglot(identity),
-    _ => Param.Custom(i => _.eval(lang.name, i.toString)))
+  val paramTypes = Vector[Int => ExprParam[Int]](
+    i => ExprParam.Const(i.toString),
+    _ => ExprParam.Literal(_.toString),
+    _ => ExprParam.Polyglot(identity),
+    _ => ExprParam.Custom(i => _.eval(lang.name, i.toString)))
 
   override def tests = Tests {
 
