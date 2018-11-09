@@ -28,7 +28,8 @@ assert(result == 22)
   * [x] parse results
   * [x] error handling
   * [x] null handling
-  * [x] binding interpolation
+  * [x] ~~binding interpolation~~ (REMOVED)
+  * [x] binding typeclasses
   * [ ] bindind codec (eg binary/json)
 * service
   * [x] before/around/after hooks

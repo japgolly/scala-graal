@@ -61,6 +61,8 @@ object ScalaGraal {
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+  lazy val genExprBoilerplate = TaskKey[File]("genExprBoilerplate")
+
   lazy val root =
     Project("root", file("."))
       .configure(commonSettings, preventPublication)
@@ -69,8 +71,8 @@ object ScalaGraal {
   lazy val core = project
     .configure(commonSettings, publicationSettings, testSettings)
     .settings(
-      libraryDependencies ++= Seq(
-        "org.graalvm.sdk" % "graal-sdk" % Ver.Graal))
+      libraryDependencies += "org.graalvm.sdk" % "graal-sdk" % Ver.Graal,
+      genExprBoilerplate := GenExprBoilerplate(sourceDirectory.value / "main" / "scala"))
 
   lazy val benchmark = project
     .configure(commonSettings, preventPublication)

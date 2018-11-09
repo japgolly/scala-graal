@@ -8,13 +8,17 @@ sealed trait Language {
   def bound(b: Language.Binding): Source => Context => Value
   def translateValue(value: Any): Any
 
-  private[scalagraal] val scalaGraalArgB = Language.Binding("__scalagraal_arg")
-  private[scalagraal] val scalaGraalArgF = bound(scalaGraalArgB)
+  private[scalagraal] val argBinding = Language.Binding("__scalagraal_arg")
+  private[scalagraal] val argBinder = bound(argBinding)
+  private[scalagraal] val argElement = (0 until 22).map(i => s"${argBinding.localValue}[$i]").toVector
 }
 
 object Language {
 
-  final case class Binding(bindingName: String, localValue: String)
+  final case class Binding(bindingName: String, localValue: String) {
+    def set(ctx: Context, value: AnyRef): Unit =
+      ctx.getPolyglotBindings.putMember(bindingName, value)
+  }
 
   object Binding {
     def apply(name: String): Binding =

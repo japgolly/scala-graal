@@ -63,7 +63,7 @@ final class Expr[A] private[Expr] (private[Expr] val run: Context => A) extends 
     })
 }
 
-object Expr {
+object Expr extends ExprBoilerplate {
   type Result[A] = Either[ExprError, A]
 
   def apply(source: CharSequence)(implicit language: Language): Expr[Value] =
@@ -93,35 +93,109 @@ object Expr {
                                                  (implicit cbf: CanBuildFrom[F[Expr[A]], A, F[A]]): Expr[F[A]] =
     stdlibDist[F, Expr[A], A](fea)(identity)
 
-  final class Interpolation(private val sc: StringContext) extends AnyVal {
+  override protected def genericOpt[Z](params: Array[ExprParam[X]],
+                                       mkExprStr: Array[String] => String,
+                                       post: Expr[Value] => Z)
+                                      (implicit l: Language): Array[X] => Z = {
+    val arity = params.length
 
-    def js(args: Any*): Expr[Value] =
-      build(Language.JS, args: _*)
-
-    private def build(lang: Language, args: Any*): Expr[Value] =
-      if (args.isEmpty)
-        Expr(sc.parts.head)(lang)
-      else {
-        val argArray: Array[Any] = args.map(lang.translateValue)(collection.breakOut)
-        val iParts = sc.parts.iterator
-        var i = 0
-        val sb = new StringBuilder(iParts.next())
-        while (iParts.hasNext) {
-          sb.append(lang.scalaGraalArgB.localValue)
-          sb.append('[')
-          sb.append(i)
-          sb.append(']')
-          sb.append(iParts.next)
-          i += 1
+    def mkRun(args: Array[X], usesBindings: Boolean): Context => Value = {
+      val tokens = new Array[String](arity)
+      var i = arity
+      while (i > 0) {
+        i -= 1
+        val token: String = params(i) match {
+          case p: ExprParam.SourceConst[X] => p.source
+          case _: ExprParam.ValueFn    [X] => l.argElement(i)
+          case _: ExprParam.CtxValueFn [X] => l.argElement(i)
+          case p: ExprParam.SourceFn   [X] => p.mkSource(args(i))
         }
-        val body = sb.toString()
-        val bodySrc = Source.create(lang.name, body)
-        val eval = lang.scalaGraalArgF(bodySrc)
-        lift{ctx =>
-          ctx.getPolyglotBindings.putMember(lang.scalaGraalArgB.bindingName, argArray)
-          eval(ctx)
+        tokens(i) = token
+      }
+      val es = mkExprStr(tokens)
+      val src = Source.create(l.name, es)
+      if (usesBindings)
+        l.argBinder(src)
+      else
+        _.eval(src)
+    }
+
+    def mkValuesCtxFree(args: Array[X]): Array[Any] = {
+      val values = new Array[Any](arity)
+      var i = arity
+      while (i > 0) {
+        i -= 1
+        params(i) match {
+          case p: ExprParam.ValueFn    [X] => values(i) = p.mkValue(args(i))
+          case _: ExprParam.CtxValueFn [X]
+             | _: ExprParam.SourceFn   [X]
+             | _: ExprParam.SourceConst[X] => ()
         }
       }
+      values
+    }
 
+    def mkValuesWithCtx(args: Array[X]): List[(Array[Any], Context) => Unit] = {
+      var fs = List.empty[(Array[Any], Context) => Unit]
+      var j = arity
+      while (j > 0) {
+        j -= 1
+        val i = j
+        params(i) match {
+          case p: ExprParam.ValueFn    [X] => val v = p.mkValue(args(i)); fs ::= ((tgt, _) => tgt(i) = v)
+          case p: ExprParam.CtxValueFn [X] => val g = p.mkValue(args(i)); fs ::= ((tgt, c) => tgt(i) = g(c))
+          case _: ExprParam.SourceConst[X]
+             | _: ExprParam.SourceFn   [X] => ()
+        }
+      }
+      fs
+    }
+
+    def mkExprWithBindings(run: Context => Value, args: Array[X], hasCtxValueFn: Boolean): Z =
+      post(
+        if (hasCtxValueFn) {
+          val setValueFns = mkValuesWithCtx(args)
+          lift { ctx =>
+            val data = new Array[Any](arity)
+            setValueFns.foreach(_ (data, ctx))
+            l.argBinding.set(ctx, data)
+            run(ctx)
+          }
+        } else {
+          val data = mkValuesCtxFree(args)
+          lift { ctx =>
+            l.argBinding.set(ctx, data)
+            run(ctx)
+          }
+        }
+      )
+
+    var hasSourceFn, hasValueFn, hasCtxValueFn = false
+    params.foreach {
+      case _: ExprParam.SourceConst[X] => ()
+      case _: ExprParam.SourceFn   [X] => hasSourceFn = true
+      case _: ExprParam.ValueFn    [X] => hasValueFn = true
+      case _: ExprParam.CtxValueFn [X] => hasCtxValueFn = true
+    }
+    val usesBindings = hasValueFn || hasCtxValueFn
+
+    if (usesBindings) {
+      if (hasSourceFn) {
+        args => {
+          val run = mkRun(args, usesBindings = usesBindings)
+          mkExprWithBindings(run, args, hasCtxValueFn = hasCtxValueFn)
+        }
+      } else {
+        val run = mkRun(null, usesBindings = usesBindings)
+        args => mkExprWithBindings(run, args, hasCtxValueFn = hasCtxValueFn)
+      }
+    } else {
+      if (hasSourceFn) {
+        args => post(lift(mkRun(args, usesBindings = usesBindings)))
+      } else {
+        val expr = post(lift(mkRun(null, usesBindings = usesBindings)))
+        _ => expr
+      }
+    }
   }
 }
