@@ -34,7 +34,7 @@ object ExprParam {
   trait Contravariance {
     // Do this ourselves because Scala 2 chooses the most general implicit instance when the type param is
     // contravariant, instead of the most specific implicit instance. Thankfully Scala 3 will correct this.
-    implicit final def exprParamContravariance[A](implicit p: ExprParam[_ >: A]): ExprParam[A] = p.narrow
+    implicit final def exprParamContravariance[A <: AnyRef](implicit p: ExprParam[_ >: A]): ExprParam[A] = p.narrow
   }
 
   trait Primitives {

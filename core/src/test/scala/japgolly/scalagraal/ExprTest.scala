@@ -11,6 +11,8 @@ object ExprTest extends TestSuite {
     _ => ExprParam.ValueFn(identity),
     _ => ExprParam.CtxValueFn(i => _.eval(graalLanguage.name, i.toString)))
 
+  trait X
+
   override def tests = Tests {
 
     'args {
@@ -47,6 +49,17 @@ object ExprTest extends TestSuite {
           assertEvalResult(result, expect)
         }
       }
+
+      "any" - {
+        compileError(""" Expr.compile1(a => a, _.asInt) """)
+        ()
+      }
+
+      "X" - {
+        compileError(""" Expr.compile1[X](a => a, _.asInt) """)
+        ()
+      }
+
     }
 
     'results {
