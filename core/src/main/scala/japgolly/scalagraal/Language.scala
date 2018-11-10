@@ -23,7 +23,12 @@ object Language {
 
     def withValue[A](ctx: Context, value: AnyRef)(a: => A): A = {
       set(ctx, value)
-      try a finally ctx.getPolyglotBindings.removeMember(bindingName)
+      try
+        a
+      finally {
+        ctx.getPolyglotBindings.removeMember(bindingName)
+        ()
+      }
     }
   }
 
