@@ -54,14 +54,13 @@ Scala (JVM) code:
 import GraalJs._
 import GraalBoopickle._
 
+// This will be converted from JVM -> binary -> Scala.JS
+val data = ScalaData(9999,3)
+
 val expr: Expr[Unit] =
   for {
-    // 1. Load our Scala.JS code.
-    _ <- Expr.requireFileOnClasspath("my_scalajs-fastopt.js")
-    // 2. Call the function we exposed.
-    //    Because we defined a Pickler instance, this will use binary to transform
-    //    our Scala case class from JVM to a Scala.JS representation
-    s <- Expr.apply1(a => s"myScalaJsFn($a)", ScalaData(9999, 3)).asString
+    _ <- Expr.requireFileOnClasspath("my_scalajs-fastopt.js") // Load our Scala.JS code
+    s <- Expr.apply1(a => s"myScalaJsFn($a)", data).asString  // Call Scala.JS with a case class
   } yield s
 
 val result = ContextSync().eval(expr)
