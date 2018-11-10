@@ -7,7 +7,7 @@ import TestData._
 
 object GraalBoopickleTest extends TestSuite {
 
-  lazy val SJS = Expr.requireFileOnClasspath("extboopickle-test-fastopt.js")
+  lazy val SJS = Expr.requireFileOnClasspath("ext-boopickle-test-fastopt.js")
 
   override def tests = Tests {
     val ctx = ContextSync()

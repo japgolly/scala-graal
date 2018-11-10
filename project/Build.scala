@@ -87,7 +87,9 @@ object ScalaGraal {
     .in(file("ext-boopickle"))
     .configureCross(commonSettings, publicationSettings, testSettings)
     .jvmConfigure(_.dependsOn(core))
-    .settings(libraryDependencies += "io.suzaku" %%% "boopickle" % Ver.BooPickle)
+    .settings(
+      name := "ext-boopickle",
+      libraryDependencies += "io.suzaku" %%% "boopickle" % Ver.BooPickle)
 
   lazy val extBoopickleJS  = extBoopickle.js
   lazy val extBoopickleJVM = extBoopickle.jvm
