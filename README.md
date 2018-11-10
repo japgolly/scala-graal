@@ -82,17 +82,25 @@ assert(result == Right("a is 9999 and b is 3"))
     * [x] shutdown
   * [ ] synchronous resource pool
   * [ ] pure scheduling & execution (?)
-  * [ ] higher-level profunctor-like
+  * [ ] higher-level profunctor-like (?)
   * [ ] metrics
+  * [ ] logging
   * [ ] caching
 * [ ] warmup
   * [ ] rules - eg. `up to 10000 reps/thread & up to 30 sec | until completes within 20ms`
   * [ ] on idle (?)
   * [ ] implement results of warmpup discussion with graal team
 * React SSR
-  * [ ] render util (so one needn't write direct JS)
-  * [ ] `window` management
+  * [ ] render util (so one needn't write direct JS) (?)
+  * [ ] `window` and especially `window.location` management
   * [ ] test util
+  * [ ] howto guide
+    * SBT howto
+    * JS deps howto (webpack|SBT)
+    * main scala howto
+    * testing howto
+    * Graal flags?
+    * xsbt-web-plugin
 * Integration
   * [ ] Scalaz
   * [ ] Cats
@@ -100,6 +108,7 @@ assert(result == Right("a is 9999 and b is 3"))
   * [ ] Prometheus
   * [x] BooPickle
   * [ ] circe
+  * [ ] clear-config
 * build
   * [ ] travis
   * [ ] tut
