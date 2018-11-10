@@ -43,7 +43,7 @@ object ScalaData {
 Scala.JS code:
 
 ```scala
-@scalajs.js.annotation.JSExportTopLevel("myScalaJsFn")
+@JSExportTopLevel("myScalaJsFn") // This is how we'll call this fn from the JVM
 def demo(p: Pickled[ScalaData]): String =
   s"a is ${p.value.a} and b is ${p.value.b}"
 ```
@@ -51,9 +51,6 @@ def demo(p: Pickled[ScalaData]): String =
 Scala (JVM) code:
 
 ```scala
-import GraalJs._
-import GraalBoopickle._
-
 // This will be converted from JVM -> binary -> Scala.JS
 val data = ScalaData(9999,3)
 
