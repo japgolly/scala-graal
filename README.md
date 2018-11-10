@@ -26,7 +26,7 @@ val result = ctx.eval(expr(3, 8))
 assert(result == Right("22!"))
 ```
 
-# Demo: Use Scala.JS over binary protocol
+# Demo: Call Scala.JS from JVM (binary protocol)
 
 Shared code:
 
