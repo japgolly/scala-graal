@@ -3,6 +3,7 @@ package japgolly.scalagraal
 import java.time.Duration
 import org.graalvm.polyglot._
 import scala.collection.generic.CanBuildFrom
+import scala.io.Codec
 import scala.reflect.ClassTag
 import scala.runtime.AbstractFunction1
 
@@ -92,6 +93,18 @@ object Expr extends ExprBoilerplate {
   def stdlibCosequence[F[x] <: Traversable[x], A](fea: F[Expr[A]])
                                                  (implicit cbf: CanBuildFrom[F[Expr[A]], A, F[A]]): Expr[F[A]] =
     stdlibDist[F, Expr[A], A](fea)(identity)
+
+  def fileOnClasspath(filename: String)(implicit lang: Language, codec: Codec): Option[Expr[Value]] =
+    SourceUtil.fileOnClasspath(filename).map(apply)
+
+  def fileOnClasspath(lang: String, filename: String)(implicit codec: Codec): Option[Expr[Value]] =
+    SourceUtil.fileOnClasspath(lang, filename).map(apply)
+
+  def requireFileOnClasspath(filename: String)(implicit lang: Language, codec: Codec): Expr[Value] =
+    apply(SourceUtil.requireFileOnClasspath(filename))
+
+  def requireFileOnClasspath(lang: String, filename: String)(implicit codec: Codec): Expr[Value] =
+    apply(SourceUtil.requireFileOnClasspath(lang, filename))
 
   override protected def genericOpt[Z](params: Array[ExprParam[X]],
                                        mkExprStr: Array[String] => String,
