@@ -12,6 +12,8 @@ abstract class ExprBoilerplate private[scalagraal]() {
                               post: Expr[Value] => Z)
                              (implicit lang: Language): Array[X] => Z
 
+  // ===================================================================================================================
+
   final class CompileDsl1[A](mkExpr: (String) => String) {
     def apply[Z](post: Expr[Value] => Z)(implicit lang: Language, A:ExprParam[A]): (A) => Z = {
       val ps = Array[ExprParam[_]](A).asInstanceOf[Array[ExprParam[X]]]
@@ -28,6 +30,12 @@ abstract class ExprBoilerplate private[scalagraal]() {
 
   final def apply1[A](mkExpr: (String) => String, a: A)(implicit lang: Language, A:ExprParam[A]): Expr[Value] =
     compileExpr1[A](mkExpr).apply(a)
+
+  final def compileFnCall1[A](fnName: String): CompileDsl1[A] =
+    compile1[A]((a) => s"$fnName($a)")
+
+  final def callFn1[A](fnName: String, a: A)(implicit lang: Language, A:ExprParam[A]): Expr[Value] =
+    compileFnCall1[A](fnName)(exprValueId).apply(a)
 
   // ===================================================================================================================
 
@@ -48,6 +56,12 @@ abstract class ExprBoilerplate private[scalagraal]() {
   final def apply2[A,B](mkExpr: (String,String) => String, a: A, b: B)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B]): Expr[Value] =
     compileExpr2[A,B](mkExpr).apply(a,b)
 
+  final def compileFnCall2[A,B](fnName: String): CompileDsl2[A,B] =
+    compile2[A,B]((a,b) => s"$fnName($a,$b)")
+
+  final def callFn2[A,B](fnName: String, a: A, b: B)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B]): Expr[Value] =
+    compileFnCall2[A,B](fnName)(exprValueId).apply(a,b)
+
   // ===================================================================================================================
 
   final class CompileDsl3[A,B,C](mkExpr: (String,String,String) => String) {
@@ -66,6 +80,12 @@ abstract class ExprBoilerplate private[scalagraal]() {
 
   final def apply3[A,B,C](mkExpr: (String,String,String) => String, a: A, b: B, c: C)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C]): Expr[Value] =
     compileExpr3[A,B,C](mkExpr).apply(a,b,c)
+
+  final def compileFnCall3[A,B,C](fnName: String): CompileDsl3[A,B,C] =
+    compile3[A,B,C]((a,b,c) => s"$fnName($a,$b,$c)")
+
+  final def callFn3[A,B,C](fnName: String, a: A, b: B, c: C)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C]): Expr[Value] =
+    compileFnCall3[A,B,C](fnName)(exprValueId).apply(a,b,c)
 
   // ===================================================================================================================
 
@@ -86,6 +106,12 @@ abstract class ExprBoilerplate private[scalagraal]() {
   final def apply4[A,B,C,D](mkExpr: (String,String,String,String) => String, a: A, b: B, c: C, d: D)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D]): Expr[Value] =
     compileExpr4[A,B,C,D](mkExpr).apply(a,b,c,d)
 
+  final def compileFnCall4[A,B,C,D](fnName: String): CompileDsl4[A,B,C,D] =
+    compile4[A,B,C,D]((a,b,c,d) => s"$fnName($a,$b,$c,$d)")
+
+  final def callFn4[A,B,C,D](fnName: String, a: A, b: B, c: C, d: D)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D]): Expr[Value] =
+    compileFnCall4[A,B,C,D](fnName)(exprValueId).apply(a,b,c,d)
+
   // ===================================================================================================================
 
   final class CompileDsl5[A,B,C,D,E](mkExpr: (String,String,String,String,String) => String) {
@@ -104,6 +130,12 @@ abstract class ExprBoilerplate private[scalagraal]() {
 
   final def apply5[A,B,C,D,E](mkExpr: (String,String,String,String,String) => String, a: A, b: B, c: C, d: D, e: E)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E]): Expr[Value] =
     compileExpr5[A,B,C,D,E](mkExpr).apply(a,b,c,d,e)
+
+  final def compileFnCall5[A,B,C,D,E](fnName: String): CompileDsl5[A,B,C,D,E] =
+    compile5[A,B,C,D,E]((a,b,c,d,e) => s"$fnName($a,$b,$c,$d,$e)")
+
+  final def callFn5[A,B,C,D,E](fnName: String, a: A, b: B, c: C, d: D, e: E)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E]): Expr[Value] =
+    compileFnCall5[A,B,C,D,E](fnName)(exprValueId).apply(a,b,c,d,e)
 
   // ===================================================================================================================
 
@@ -124,6 +156,12 @@ abstract class ExprBoilerplate private[scalagraal]() {
   final def apply6[A,B,C,D,E,F](mkExpr: (String,String,String,String,String,String) => String, a: A, b: B, c: C, d: D, e: E, f: F)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F]): Expr[Value] =
     compileExpr6[A,B,C,D,E,F](mkExpr).apply(a,b,c,d,e,f)
 
+  final def compileFnCall6[A,B,C,D,E,F](fnName: String): CompileDsl6[A,B,C,D,E,F] =
+    compile6[A,B,C,D,E,F]((a,b,c,d,e,f) => s"$fnName($a,$b,$c,$d,$e,$f)")
+
+  final def callFn6[A,B,C,D,E,F](fnName: String, a: A, b: B, c: C, d: D, e: E, f: F)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F]): Expr[Value] =
+    compileFnCall6[A,B,C,D,E,F](fnName)(exprValueId).apply(a,b,c,d,e,f)
+
   // ===================================================================================================================
 
   final class CompileDsl7[A,B,C,D,E,F,G](mkExpr: (String,String,String,String,String,String,String) => String) {
@@ -142,6 +180,12 @@ abstract class ExprBoilerplate private[scalagraal]() {
 
   final def apply7[A,B,C,D,E,F,G](mkExpr: (String,String,String,String,String,String,String) => String, a: A, b: B, c: C, d: D, e: E, f: F, g: G)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G]): Expr[Value] =
     compileExpr7[A,B,C,D,E,F,G](mkExpr).apply(a,b,c,d,e,f,g)
+
+  final def compileFnCall7[A,B,C,D,E,F,G](fnName: String): CompileDsl7[A,B,C,D,E,F,G] =
+    compile7[A,B,C,D,E,F,G]((a,b,c,d,e,f,g) => s"$fnName($a,$b,$c,$d,$e,$f,$g)")
+
+  final def callFn7[A,B,C,D,E,F,G](fnName: String, a: A, b: B, c: C, d: D, e: E, f: F, g: G)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G]): Expr[Value] =
+    compileFnCall7[A,B,C,D,E,F,G](fnName)(exprValueId).apply(a,b,c,d,e,f,g)
 
   // ===================================================================================================================
 
@@ -162,6 +206,12 @@ abstract class ExprBoilerplate private[scalagraal]() {
   final def apply8[A,B,C,D,E,F,G,H](mkExpr: (String,String,String,String,String,String,String,String) => String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H]): Expr[Value] =
     compileExpr8[A,B,C,D,E,F,G,H](mkExpr).apply(a,b,c,d,e,f,g,h)
 
+  final def compileFnCall8[A,B,C,D,E,F,G,H](fnName: String): CompileDsl8[A,B,C,D,E,F,G,H] =
+    compile8[A,B,C,D,E,F,G,H]((a,b,c,d,e,f,g,h) => s"$fnName($a,$b,$c,$d,$e,$f,$g,$h)")
+
+  final def callFn8[A,B,C,D,E,F,G,H](fnName: String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H]): Expr[Value] =
+    compileFnCall8[A,B,C,D,E,F,G,H](fnName)(exprValueId).apply(a,b,c,d,e,f,g,h)
+
   // ===================================================================================================================
 
   final class CompileDsl9[A,B,C,D,E,F,G,H,I](mkExpr: (String,String,String,String,String,String,String,String,String) => String) {
@@ -180,6 +230,12 @@ abstract class ExprBoilerplate private[scalagraal]() {
 
   final def apply9[A,B,C,D,E,F,G,H,I](mkExpr: (String,String,String,String,String,String,String,String,String) => String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H], I:ExprParam[I]): Expr[Value] =
     compileExpr9[A,B,C,D,E,F,G,H,I](mkExpr).apply(a,b,c,d,e,f,g,h,i)
+
+  final def compileFnCall9[A,B,C,D,E,F,G,H,I](fnName: String): CompileDsl9[A,B,C,D,E,F,G,H,I] =
+    compile9[A,B,C,D,E,F,G,H,I]((a,b,c,d,e,f,g,h,i) => s"$fnName($a,$b,$c,$d,$e,$f,$g,$h,$i)")
+
+  final def callFn9[A,B,C,D,E,F,G,H,I](fnName: String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H], I:ExprParam[I]): Expr[Value] =
+    compileFnCall9[A,B,C,D,E,F,G,H,I](fnName)(exprValueId).apply(a,b,c,d,e,f,g,h,i)
 
   // ===================================================================================================================
 
@@ -200,6 +256,12 @@ abstract class ExprBoilerplate private[scalagraal]() {
   final def apply10[A,B,C,D,E,F,G,H,I,J](mkExpr: (String,String,String,String,String,String,String,String,String,String) => String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H], I:ExprParam[I], J:ExprParam[J]): Expr[Value] =
     compileExpr10[A,B,C,D,E,F,G,H,I,J](mkExpr).apply(a,b,c,d,e,f,g,h,i,j)
 
+  final def compileFnCall10[A,B,C,D,E,F,G,H,I,J](fnName: String): CompileDsl10[A,B,C,D,E,F,G,H,I,J] =
+    compile10[A,B,C,D,E,F,G,H,I,J]((a,b,c,d,e,f,g,h,i,j) => s"$fnName($a,$b,$c,$d,$e,$f,$g,$h,$i,$j)")
+
+  final def callFn10[A,B,C,D,E,F,G,H,I,J](fnName: String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H], I:ExprParam[I], J:ExprParam[J]): Expr[Value] =
+    compileFnCall10[A,B,C,D,E,F,G,H,I,J](fnName)(exprValueId).apply(a,b,c,d,e,f,g,h,i,j)
+
   // ===================================================================================================================
 
   final class CompileDsl11[A,B,C,D,E,F,G,H,I,J,K](mkExpr: (String,String,String,String,String,String,String,String,String,String,String) => String) {
@@ -218,6 +280,12 @@ abstract class ExprBoilerplate private[scalagraal]() {
 
   final def apply11[A,B,C,D,E,F,G,H,I,J,K](mkExpr: (String,String,String,String,String,String,String,String,String,String,String) => String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H], I:ExprParam[I], J:ExprParam[J], K:ExprParam[K]): Expr[Value] =
     compileExpr11[A,B,C,D,E,F,G,H,I,J,K](mkExpr).apply(a,b,c,d,e,f,g,h,i,j,k)
+
+  final def compileFnCall11[A,B,C,D,E,F,G,H,I,J,K](fnName: String): CompileDsl11[A,B,C,D,E,F,G,H,I,J,K] =
+    compile11[A,B,C,D,E,F,G,H,I,J,K]((a,b,c,d,e,f,g,h,i,j,k) => s"$fnName($a,$b,$c,$d,$e,$f,$g,$h,$i,$j,$k)")
+
+  final def callFn11[A,B,C,D,E,F,G,H,I,J,K](fnName: String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H], I:ExprParam[I], J:ExprParam[J], K:ExprParam[K]): Expr[Value] =
+    compileFnCall11[A,B,C,D,E,F,G,H,I,J,K](fnName)(exprValueId).apply(a,b,c,d,e,f,g,h,i,j,k)
 
   // ===================================================================================================================
 
@@ -238,6 +306,12 @@ abstract class ExprBoilerplate private[scalagraal]() {
   final def apply12[A,B,C,D,E,F,G,H,I,J,K,L](mkExpr: (String,String,String,String,String,String,String,String,String,String,String,String) => String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H], I:ExprParam[I], J:ExprParam[J], K:ExprParam[K], L:ExprParam[L]): Expr[Value] =
     compileExpr12[A,B,C,D,E,F,G,H,I,J,K,L](mkExpr).apply(a,b,c,d,e,f,g,h,i,j,k,l)
 
+  final def compileFnCall12[A,B,C,D,E,F,G,H,I,J,K,L](fnName: String): CompileDsl12[A,B,C,D,E,F,G,H,I,J,K,L] =
+    compile12[A,B,C,D,E,F,G,H,I,J,K,L]((a,b,c,d,e,f,g,h,i,j,k,l) => s"$fnName($a,$b,$c,$d,$e,$f,$g,$h,$i,$j,$k,$l)")
+
+  final def callFn12[A,B,C,D,E,F,G,H,I,J,K,L](fnName: String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H], I:ExprParam[I], J:ExprParam[J], K:ExprParam[K], L:ExprParam[L]): Expr[Value] =
+    compileFnCall12[A,B,C,D,E,F,G,H,I,J,K,L](fnName)(exprValueId).apply(a,b,c,d,e,f,g,h,i,j,k,l)
+
   // ===================================================================================================================
 
   final class CompileDsl13[A,B,C,D,E,F,G,H,I,J,K,L,M](mkExpr: (String,String,String,String,String,String,String,String,String,String,String,String,String) => String) {
@@ -256,6 +330,12 @@ abstract class ExprBoilerplate private[scalagraal]() {
 
   final def apply13[A,B,C,D,E,F,G,H,I,J,K,L,M](mkExpr: (String,String,String,String,String,String,String,String,String,String,String,String,String) => String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H], I:ExprParam[I], J:ExprParam[J], K:ExprParam[K], L:ExprParam[L], M:ExprParam[M]): Expr[Value] =
     compileExpr13[A,B,C,D,E,F,G,H,I,J,K,L,M](mkExpr).apply(a,b,c,d,e,f,g,h,i,j,k,l,m)
+
+  final def compileFnCall13[A,B,C,D,E,F,G,H,I,J,K,L,M](fnName: String): CompileDsl13[A,B,C,D,E,F,G,H,I,J,K,L,M] =
+    compile13[A,B,C,D,E,F,G,H,I,J,K,L,M]((a,b,c,d,e,f,g,h,i,j,k,l,m) => s"$fnName($a,$b,$c,$d,$e,$f,$g,$h,$i,$j,$k,$l,$m)")
+
+  final def callFn13[A,B,C,D,E,F,G,H,I,J,K,L,M](fnName: String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H], I:ExprParam[I], J:ExprParam[J], K:ExprParam[K], L:ExprParam[L], M:ExprParam[M]): Expr[Value] =
+    compileFnCall13[A,B,C,D,E,F,G,H,I,J,K,L,M](fnName)(exprValueId).apply(a,b,c,d,e,f,g,h,i,j,k,l,m)
 
   // ===================================================================================================================
 
@@ -276,6 +356,12 @@ abstract class ExprBoilerplate private[scalagraal]() {
   final def apply14[A,B,C,D,E,F,G,H,I,J,K,L,M,N](mkExpr: (String,String,String,String,String,String,String,String,String,String,String,String,String,String) => String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M, n: N)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H], I:ExprParam[I], J:ExprParam[J], K:ExprParam[K], L:ExprParam[L], M:ExprParam[M], N:ExprParam[N]): Expr[Value] =
     compileExpr14[A,B,C,D,E,F,G,H,I,J,K,L,M,N](mkExpr).apply(a,b,c,d,e,f,g,h,i,j,k,l,m,n)
 
+  final def compileFnCall14[A,B,C,D,E,F,G,H,I,J,K,L,M,N](fnName: String): CompileDsl14[A,B,C,D,E,F,G,H,I,J,K,L,M,N] =
+    compile14[A,B,C,D,E,F,G,H,I,J,K,L,M,N]((a,b,c,d,e,f,g,h,i,j,k,l,m,n) => s"$fnName($a,$b,$c,$d,$e,$f,$g,$h,$i,$j,$k,$l,$m,$n)")
+
+  final def callFn14[A,B,C,D,E,F,G,H,I,J,K,L,M,N](fnName: String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M, n: N)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H], I:ExprParam[I], J:ExprParam[J], K:ExprParam[K], L:ExprParam[L], M:ExprParam[M], N:ExprParam[N]): Expr[Value] =
+    compileFnCall14[A,B,C,D,E,F,G,H,I,J,K,L,M,N](fnName)(exprValueId).apply(a,b,c,d,e,f,g,h,i,j,k,l,m,n)
+
   // ===================================================================================================================
 
   final class CompileDsl15[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O](mkExpr: (String,String,String,String,String,String,String,String,String,String,String,String,String,String,String) => String) {
@@ -294,6 +380,12 @@ abstract class ExprBoilerplate private[scalagraal]() {
 
   final def apply15[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O](mkExpr: (String,String,String,String,String,String,String,String,String,String,String,String,String,String,String) => String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M, n: N, o: O)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H], I:ExprParam[I], J:ExprParam[J], K:ExprParam[K], L:ExprParam[L], M:ExprParam[M], N:ExprParam[N], O:ExprParam[O]): Expr[Value] =
     compileExpr15[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O](mkExpr).apply(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o)
+
+  final def compileFnCall15[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O](fnName: String): CompileDsl15[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O] =
+    compile15[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O]((a,b,c,d,e,f,g,h,i,j,k,l,m,n,o) => s"$fnName($a,$b,$c,$d,$e,$f,$g,$h,$i,$j,$k,$l,$m,$n,$o)")
+
+  final def callFn15[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O](fnName: String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M, n: N, o: O)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H], I:ExprParam[I], J:ExprParam[J], K:ExprParam[K], L:ExprParam[L], M:ExprParam[M], N:ExprParam[N], O:ExprParam[O]): Expr[Value] =
+    compileFnCall15[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O](fnName)(exprValueId).apply(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o)
 
   // ===================================================================================================================
 
@@ -314,6 +406,12 @@ abstract class ExprBoilerplate private[scalagraal]() {
   final def apply16[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P](mkExpr: (String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String) => String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M, n: N, o: O, p: P)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H], I:ExprParam[I], J:ExprParam[J], K:ExprParam[K], L:ExprParam[L], M:ExprParam[M], N:ExprParam[N], O:ExprParam[O], P:ExprParam[P]): Expr[Value] =
     compileExpr16[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P](mkExpr).apply(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p)
 
+  final def compileFnCall16[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P](fnName: String): CompileDsl16[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P] =
+    compile16[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P]((a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p) => s"$fnName($a,$b,$c,$d,$e,$f,$g,$h,$i,$j,$k,$l,$m,$n,$o,$p)")
+
+  final def callFn16[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P](fnName: String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M, n: N, o: O, p: P)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H], I:ExprParam[I], J:ExprParam[J], K:ExprParam[K], L:ExprParam[L], M:ExprParam[M], N:ExprParam[N], O:ExprParam[O], P:ExprParam[P]): Expr[Value] =
+    compileFnCall16[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P](fnName)(exprValueId).apply(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p)
+
   // ===================================================================================================================
 
   final class CompileDsl17[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q](mkExpr: (String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String) => String) {
@@ -332,6 +430,12 @@ abstract class ExprBoilerplate private[scalagraal]() {
 
   final def apply17[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q](mkExpr: (String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String) => String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M, n: N, o: O, p: P, q: Q)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H], I:ExprParam[I], J:ExprParam[J], K:ExprParam[K], L:ExprParam[L], M:ExprParam[M], N:ExprParam[N], O:ExprParam[O], P:ExprParam[P], Q:ExprParam[Q]): Expr[Value] =
     compileExpr17[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q](mkExpr).apply(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q)
+
+  final def compileFnCall17[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q](fnName: String): CompileDsl17[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q] =
+    compile17[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q]((a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q) => s"$fnName($a,$b,$c,$d,$e,$f,$g,$h,$i,$j,$k,$l,$m,$n,$o,$p,$q)")
+
+  final def callFn17[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q](fnName: String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M, n: N, o: O, p: P, q: Q)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H], I:ExprParam[I], J:ExprParam[J], K:ExprParam[K], L:ExprParam[L], M:ExprParam[M], N:ExprParam[N], O:ExprParam[O], P:ExprParam[P], Q:ExprParam[Q]): Expr[Value] =
+    compileFnCall17[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q](fnName)(exprValueId).apply(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q)
 
   // ===================================================================================================================
 
@@ -352,6 +456,12 @@ abstract class ExprBoilerplate private[scalagraal]() {
   final def apply18[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R](mkExpr: (String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String) => String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M, n: N, o: O, p: P, q: Q, r: R)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H], I:ExprParam[I], J:ExprParam[J], K:ExprParam[K], L:ExprParam[L], M:ExprParam[M], N:ExprParam[N], O:ExprParam[O], P:ExprParam[P], Q:ExprParam[Q], R:ExprParam[R]): Expr[Value] =
     compileExpr18[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R](mkExpr).apply(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r)
 
+  final def compileFnCall18[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R](fnName: String): CompileDsl18[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R] =
+    compile18[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R]((a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r) => s"$fnName($a,$b,$c,$d,$e,$f,$g,$h,$i,$j,$k,$l,$m,$n,$o,$p,$q,$r)")
+
+  final def callFn18[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R](fnName: String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M, n: N, o: O, p: P, q: Q, r: R)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H], I:ExprParam[I], J:ExprParam[J], K:ExprParam[K], L:ExprParam[L], M:ExprParam[M], N:ExprParam[N], O:ExprParam[O], P:ExprParam[P], Q:ExprParam[Q], R:ExprParam[R]): Expr[Value] =
+    compileFnCall18[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R](fnName)(exprValueId).apply(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r)
+
   // ===================================================================================================================
 
   final class CompileDsl19[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S](mkExpr: (String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String) => String) {
@@ -370,6 +480,12 @@ abstract class ExprBoilerplate private[scalagraal]() {
 
   final def apply19[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S](mkExpr: (String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String) => String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M, n: N, o: O, p: P, q: Q, r: R, s: S)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H], I:ExprParam[I], J:ExprParam[J], K:ExprParam[K], L:ExprParam[L], M:ExprParam[M], N:ExprParam[N], O:ExprParam[O], P:ExprParam[P], Q:ExprParam[Q], R:ExprParam[R], S:ExprParam[S]): Expr[Value] =
     compileExpr19[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S](mkExpr).apply(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s)
+
+  final def compileFnCall19[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S](fnName: String): CompileDsl19[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S] =
+    compile19[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S]((a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s) => s"$fnName($a,$b,$c,$d,$e,$f,$g,$h,$i,$j,$k,$l,$m,$n,$o,$p,$q,$r,$s)")
+
+  final def callFn19[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S](fnName: String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M, n: N, o: O, p: P, q: Q, r: R, s: S)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H], I:ExprParam[I], J:ExprParam[J], K:ExprParam[K], L:ExprParam[L], M:ExprParam[M], N:ExprParam[N], O:ExprParam[O], P:ExprParam[P], Q:ExprParam[Q], R:ExprParam[R], S:ExprParam[S]): Expr[Value] =
+    compileFnCall19[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S](fnName)(exprValueId).apply(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s)
 
   // ===================================================================================================================
 
@@ -390,6 +506,12 @@ abstract class ExprBoilerplate private[scalagraal]() {
   final def apply20[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T](mkExpr: (String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String) => String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M, n: N, o: O, p: P, q: Q, r: R, s: S, t: T)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H], I:ExprParam[I], J:ExprParam[J], K:ExprParam[K], L:ExprParam[L], M:ExprParam[M], N:ExprParam[N], O:ExprParam[O], P:ExprParam[P], Q:ExprParam[Q], R:ExprParam[R], S:ExprParam[S], T:ExprParam[T]): Expr[Value] =
     compileExpr20[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T](mkExpr).apply(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t)
 
+  final def compileFnCall20[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T](fnName: String): CompileDsl20[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T] =
+    compile20[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T]((a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t) => s"$fnName($a,$b,$c,$d,$e,$f,$g,$h,$i,$j,$k,$l,$m,$n,$o,$p,$q,$r,$s,$t)")
+
+  final def callFn20[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T](fnName: String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M, n: N, o: O, p: P, q: Q, r: R, s: S, t: T)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H], I:ExprParam[I], J:ExprParam[J], K:ExprParam[K], L:ExprParam[L], M:ExprParam[M], N:ExprParam[N], O:ExprParam[O], P:ExprParam[P], Q:ExprParam[Q], R:ExprParam[R], S:ExprParam[S], T:ExprParam[T]): Expr[Value] =
+    compileFnCall20[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T](fnName)(exprValueId).apply(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t)
+
   // ===================================================================================================================
 
   final class CompileDsl21[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U](mkExpr: (String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String) => String) {
@@ -409,6 +531,12 @@ abstract class ExprBoilerplate private[scalagraal]() {
   final def apply21[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U](mkExpr: (String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String) => String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M, n: N, o: O, p: P, q: Q, r: R, s: S, t: T, u: U)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H], I:ExprParam[I], J:ExprParam[J], K:ExprParam[K], L:ExprParam[L], M:ExprParam[M], N:ExprParam[N], O:ExprParam[O], P:ExprParam[P], Q:ExprParam[Q], R:ExprParam[R], S:ExprParam[S], T:ExprParam[T], U:ExprParam[U]): Expr[Value] =
     compileExpr21[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U](mkExpr).apply(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u)
 
+  final def compileFnCall21[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U](fnName: String): CompileDsl21[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U] =
+    compile21[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U]((a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u) => s"$fnName($a,$b,$c,$d,$e,$f,$g,$h,$i,$j,$k,$l,$m,$n,$o,$p,$q,$r,$s,$t,$u)")
+
+  final def callFn21[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U](fnName: String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M, n: N, o: O, p: P, q: Q, r: R, s: S, t: T, u: U)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H], I:ExprParam[I], J:ExprParam[J], K:ExprParam[K], L:ExprParam[L], M:ExprParam[M], N:ExprParam[N], O:ExprParam[O], P:ExprParam[P], Q:ExprParam[Q], R:ExprParam[R], S:ExprParam[S], T:ExprParam[T], U:ExprParam[U]): Expr[Value] =
+    compileFnCall21[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U](fnName)(exprValueId).apply(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u)
+
   // ===================================================================================================================
 
   final class CompileDsl22[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V](mkExpr: (String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String) => String) {
@@ -427,4 +555,10 @@ abstract class ExprBoilerplate private[scalagraal]() {
 
   final def apply22[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V](mkExpr: (String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String,String) => String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M, n: N, o: O, p: P, q: Q, r: R, s: S, t: T, u: U, v: V)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H], I:ExprParam[I], J:ExprParam[J], K:ExprParam[K], L:ExprParam[L], M:ExprParam[M], N:ExprParam[N], O:ExprParam[O], P:ExprParam[P], Q:ExprParam[Q], R:ExprParam[R], S:ExprParam[S], T:ExprParam[T], U:ExprParam[U], V:ExprParam[V]): Expr[Value] =
     compileExpr22[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V](mkExpr).apply(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v)
+
+  final def compileFnCall22[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V](fnName: String): CompileDsl22[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V] =
+    compile22[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V]((a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v) => s"$fnName($a,$b,$c,$d,$e,$f,$g,$h,$i,$j,$k,$l,$m,$n,$o,$p,$q,$r,$s,$t,$u,$v)")
+
+  final def callFn22[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V](fnName: String, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M, n: N, o: O, p: P, q: Q, r: R, s: S, t: T, u: U, v: V)(implicit lang: Language, A:ExprParam[A], B:ExprParam[B], C:ExprParam[C], D:ExprParam[D], E:ExprParam[E], F:ExprParam[F], G:ExprParam[G], H:ExprParam[H], I:ExprParam[I], J:ExprParam[J], K:ExprParam[K], L:ExprParam[L], M:ExprParam[M], N:ExprParam[N], O:ExprParam[O], P:ExprParam[P], Q:ExprParam[Q], R:ExprParam[R], S:ExprParam[S], T:ExprParam[T], U:ExprParam[U], V:ExprParam[V]): Expr[Value] =
+    compileFnCall22[A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V](fnName)(exprValueId).apply(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v)
 }

@@ -9,6 +9,7 @@ object GenExprBoilerplate {
         val _ABC = (1 to n).map(_ + 64).map(_.toChar)
         val ABC = _ABC.mkString(",")
         val abc = (1 to n).map(_ + 96).map(_.toChar).mkString(",")
+        val `$a,$b,$c` = (1 to n).map(_ + 96).map("$" + _.toChar).mkString(",")
         val Types = _ABC.map(A => s"${A.toLower}: $A").mkString(", ")
         val Params = _ABC.map(A => s"$A:ExprParam[$A]").mkString(", ")
         val Strings = List.fill(n)("String").mkString(",")
@@ -30,12 +31,18 @@ object GenExprBoilerplate {
            |
            |  final def apply$n[$ABC](mkExpr: ($Strings) => String, $Types)(implicit lang: Language, $Params): Expr[Value] =
            |    compileExpr$n[$ABC](mkExpr).apply($abc)
+           |
+           |  final def compileFnCall$n[$ABC](fnName: String): CompileDsl$n[$ABC] =
+           |    compile$n[$ABC](($abc) => s"$$fnName(${`$a,$b,$c`})")
+           |
+           |  final def callFn$n[$ABC](fnName: String, $Types)(implicit lang: Language, $Params): Expr[Value] =
+           |    compileFnCall$n[$ABC](fnName)(exprValueId).apply($abc)
          """.stripMargin.trim.replaceFirst("^", "  ")
       }
 
     val Name = "ExprBoilerplate"
 
-    val sep = s"\n\n  // ${"=" * 115}\n\n"
+    val sep = s"\n  // ${"=" * 115}\n\n"
 
     val content =
       s"""
@@ -52,8 +59,7 @@ object GenExprBoilerplate {
          |                              mkExprStr: Array[String] => String,
          |                              post: Expr[Value] => Z)
          |                             (implicit lang: Language): Array[X] => Z
-         |
-         |${groups.mkString(sep)}
+         |$sep${groups.mkString("\n" + sep)}
          |}
         """.stripMargin.trim
 

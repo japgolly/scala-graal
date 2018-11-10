@@ -57,7 +57,7 @@ val data = ScalaData(9999,3)
 val expr: Expr[Unit] =
   for {
     _ <- Expr.requireFileOnClasspath("my_scalajs-fastopt.js") // Load our Scala.JS code
-    s <- Expr.apply1(a => s"myScalaJsFn($a)", data).asString  // Call Scala.JS with a case class
+    s <- Expr.callFn1("myScalaJsFn", data).asString           // Call Scala.JS with a case class
   } yield s
 
 val result = ContextSync().eval(expr)
