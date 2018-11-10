@@ -3,9 +3,11 @@ package japgolly.scalagraal
 import org.graalvm.polyglot.{Context, Source, Value}
 
 sealed trait Language {
+  import Language.Binding
 
   val name: String
-  def bound(b: Language.Binding): Source => Context => Value
+  def polyglotImport(b: Binding): String
+  def bound(b: Binding): Source => Context => Value
   def translateValue(value: Any): Any
 
   private[scalagraal] val argBinding = Language.Binding("__scalagraal_arg")
@@ -35,6 +37,9 @@ object Language {
 
   case object JS extends Language {
     override val name = "js"
+
+    override def polyglotImport(b: Binding): String =
+      s"Polyglot.import('${b.bindingName}')"
 
     override def bound(b: Binding): Source => Context => Value = {
       val set   = Source.create("js", s"${b.localValue}=Polyglot.import('${b.bindingName}')")

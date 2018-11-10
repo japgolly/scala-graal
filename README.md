@@ -36,7 +36,7 @@ assert(result == Right("22!"))
   * [x] null handling
   * [x] ~~binding interpolation~~ (REMOVED)
   * [x] binding typeclasses
-  * [ ] bindind codec (eg binary/json)
+  * [x] bindind codec (eg binary/json)
 * service
   * [x] before/around/after hooks
   * [x] single
@@ -61,7 +61,7 @@ assert(result == Right("22!"))
   * [ ] Cats
   * [ ] Cats Effect (?)
   * [ ] Prometheus
-  * [ ] BooPickle
+  * [x] BooPickle
   * [ ] circe
 * build
   * [ ] travis

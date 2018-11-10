@@ -3,6 +3,12 @@ import sbt.Keys._
 import com.typesafe.sbt.pgp.PgpKeys
 import pl.project13.scala.sbt.JmhPlugin
 import sbtrelease.ReleasePlugin.autoImport._
+import org.portablescala.sbtplatformdeps.PlatformDepsPlugin.autoImport._
+import org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv
+import org.scalajs.sbtplugin.ScalaJSPlugin
+import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport.{crossProject => _, CrossType => _, _}
+import sbtcrossproject.CrossPlugin.autoImport._
+import scalajscrossproject.ScalaJSCrossPlugin.autoImport._
 import Lib._
 
 object ScalaGraal {
@@ -13,6 +19,7 @@ object ScalaGraal {
     Lib.publicationSettings(ghProject)
 
   object Ver {
+    final val BooPickle     = "1.3.0"
     final val Graal         = "1.0.0-rc9"
     final val KindProjector = "0.9.8"
     final val Microlibs     = "1.18"
@@ -33,7 +40,7 @@ object ScalaGraal {
     "-language:higherKinds",
     "-language:existentials")
 
-  val commonSettings: Project => Project =
+  val commonSettings = ConfigureBoth(
     _.settings(
       organization                  := "com.github.japgolly.scala-graal",
       homepage                      := Some(url("https://github.com/japgolly/" + ghProject)),
@@ -50,14 +57,16 @@ object ScalaGraal {
       releasePublishArtifactsAction := PgpKeys.publishSigned.value,
       releaseTagComment             := s"v${(version in ThisBuild).value}",
       releaseVcsSign                := true,
-      addCompilerPlugin("org.spire-math" %% "kind-projector" % Ver.KindProjector))
+      addCompilerPlugin("org.spire-math" %% "kind-projector" % Ver.KindProjector)))
 
-  def testSettings: Project => Project =
+  def testSettings = ConfigureBoth(
     _.settings(
       libraryDependencies ++= Seq(
-        "com.lihaoyi"                   %% "utest"     % Ver.MTest     % Test,
-        "com.github.japgolly.microlibs" %% "test-util" % Ver.Microlibs % Test),
-      testFrameworks += new TestFramework("utest.runner.Framework"))
+        "com.lihaoyi"                   %%% "utest"     % Ver.MTest     % Test,
+        "com.github.japgolly.microlibs" %%% "test-util" % Ver.Microlibs % Test),
+      testFrameworks += new TestFramework("utest.runner.Framework")))
+    .jsConfigure(
+      _.settings(jsEnv in Test := new JSDOMNodeJSEnv))
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -65,17 +74,27 @@ object ScalaGraal {
 
   lazy val root =
     Project("root", file("."))
-      .configure(commonSettings, preventPublication)
-      .aggregate(core, benchmark)
+      .configure(commonSettings.jvm, preventPublication)
+      .aggregate(core, extBoopickleJVM, extBoopickleJS, benchmark)
 
   lazy val core = project
-    .configure(commonSettings, publicationSettings, testSettings)
+    .configure(commonSettings.jvm, publicationSettings.jvm, testSettings.jvm)
     .settings(
       libraryDependencies += "org.graalvm.sdk" % "graal-sdk" % Ver.Graal,
       genExprBoilerplate := GenExprBoilerplate(sourceDirectory.value / "main" / "scala"))
 
+  lazy val extBoopickle = crossProject(JSPlatform, JVMPlatform)
+    .in(file("ext-boopickle"))
+    .configureCross(commonSettings, publicationSettings, testSettings)
+    .jvmConfigure(_.dependsOn(core))
+    .settings(libraryDependencies += "io.suzaku" %%% "boopickle" % Ver.BooPickle)
+
+  lazy val extBoopickleJS  = extBoopickle.js
+  lazy val extBoopickleJVM = extBoopickle.jvm
+    .settings(unmanagedResources in Test += (fastOptJS in Test in extBoopickleJS).value.data)
+
   lazy val benchmark = project
-    .configure(commonSettings, preventPublication)
+    .configure(commonSettings.jvm, preventPublication)
     .enablePlugins(JmhPlugin)
     .dependsOn(core)
 }

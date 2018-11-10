@@ -1,30 +1,67 @@
 import sbt._
-import Keys._
-import com.typesafe.sbt.pgp.PgpKeys._
+import sbt.Keys._
+import org.scalajs.core.tools.io.{FileVirtualJSFile, VirtualJSFile}
+import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport.{CrossType => _, crossProject => _, _}
+import sbtcrossproject.CrossProject
+import sbtcrossproject.CrossPlugin.autoImport._
+import scalajscrossproject.ScalaJSCrossPlugin.autoImport._
 
 object Lib {
 
-  def publicationSettings(ghProject: String): Project => Project =
-    _.settings(
-      publishTo := {
-        val nexus = "https://oss.sonatype.org/"
-        if (isSnapshot.value)
-          Some("snapshots" at nexus + "content/repositories/snapshots")
-        else
-          Some("releases"  at nexus + "service/local/staging/deploy/maven2")
-      },
-      pomExtra :=
-        <scm>
-          <connection>scm:git:github.com/japgolly/{ghProject}</connection>
-          <developerConnection>scm:git:git@github.com:japgolly/{ghProject}.git</developerConnection>
-          <url>github.com:japgolly/{ghProject}.git</url>
-        </scm>
-        <developers>
-          <developer>
-            <id>japgolly</id>
-            <name>David Barri</name>
-          </developer>
-        </developers>)
+  type CPE = CrossProject => CrossProject
+  type PE = Project => Project
+
+  class ConfigureBoth(val jvm: PE, val js: PE) {
+    def jvmConfigure(f: PE) = new ConfigureBoth(f compose jvm, js)
+    def  jsConfigure(f: PE) = new ConfigureBoth(jvm, f compose js)
+  }
+
+  def ConfigureBoth(both: PE) = new ConfigureBoth(both, both)
+
+  implicit def _configureBothToCPE(p: ConfigureBoth): CPE =
+    _.jvmConfigure(p.jvm).jsConfigure(p.js)
+
+  implicit class CrossProjectExt(val cp: CrossProject) extends AnyVal {
+    def bothConfigure(fs: PE*): CrossProject =
+      fs.foldLeft(cp)((q, f) =>
+        q.jvmConfigure(f).jsConfigure(f))
+  }
+  implicit def CrossProjectExtB(b: CrossProject.Builder) =
+    new CrossProjectExt(b)
+
+  def publicationSettings(ghProject: String) =
+    ConfigureBoth(
+      _.settings(
+        publishTo := {
+          val nexus = "https://oss.sonatype.org/"
+          if (isSnapshot.value)
+            Some("snapshots" at nexus + "content/repositories/snapshots")
+          else
+            Some("releases" at nexus + "service/local/staging/deploy/maven2")
+        },
+        pomExtra :=
+          <scm>
+            <connection>scm:git:github.com/japgolly/{ghProject}</connection>
+            <developerConnection>scm:git:git@github.com:japgolly/{ghProject}.git</developerConnection>
+            <url>github.com:japgolly/{ghProject}.git</url>
+          </scm>
+          <developers>
+            <developer>
+              <id>japgolly</id>
+              <name>David Barri</name>
+            </developer>
+          </developers>))
+      .jsConfigure(
+        sourceMapsToGithub(ghProject))
+
+  def sourceMapsToGithub(ghProject: String): Project => Project =
+    p => p.settings(
+      scalacOptions ++= (if (isSnapshot.value) Seq.empty else Seq({
+        val a = p.base.toURI.toString.replaceFirst("[^/]+/?$", "")
+        val g = s"https://raw.githubusercontent.com/japgolly/$ghProject"
+        s"-P:scalajs:mapSourceURI:$a->$g/v${version.value}/"
+      }))
+    )
 
   def preventPublication: Project => Project =
     _.settings(
@@ -36,4 +73,18 @@ object Lib {
 
   def byScalaVersion[A](f: PartialFunction[(Long, Long), Seq[A]]): Def.Initialize[Seq[A]] =
     Def.setting(CrossVersion.partialVersion(scalaVersion.value).flatMap(f.lift).getOrElse(Nil))
+
+  def expectRealJsFile(jsf: VirtualJSFile): File =
+    jsf match {
+      case f: FileVirtualJSFile => f.file
+      case other => sys.error("Unsupported virtual file type: " + other)
+    }
+
+  def copyScalaJs(jsf: VirtualJSFile, to: File): Unit =
+    jsf match {
+      case f: FileVirtualJSFile =>
+        IO.copyFile(f.file, to, preserveLastModified = true)
+      case other =>
+        sys.error("Unsupported virtual file type: " + other)
+    }
 }
