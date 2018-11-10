@@ -51,13 +51,11 @@ def demo(p: Pickled[ScalaData]): String =
 Scala (JVM) code:
 
 ```scala
-// This will be converted from JVM -> binary -> Scala.JS
-val data = ScalaData(9999,3)
-
-val expr: Expr[Unit] =
+val expr =
   for {
-    _ <- Expr.requireFileOnClasspath("my_scalajs-fastopt.js") // Load our Scala.JS code
-    s <- Expr.callFn1("myScalaJsFn", data).asString           // Call Scala.JS with a case class
+    _ ← Expr.requireFileOnClasspath("my_scalajs-fastopt.js") // Load our Scala.JS code
+    d = ScalaData(9999,3)                                    // Data to be converted JVM → binary → Scala.JS
+    s ← Expr.callFn1("myScalaJsFn", d).asString              // Call Scala.JS with a case class
   } yield s
 
 val result = ContextSync().eval(expr)
