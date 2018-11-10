@@ -34,9 +34,8 @@ Shared code:
 import boopickle.Default._
 
 final case class ScalaData(a: Int, b: Int)
-
 object ScalaData {
-  // This is the binary format shared between JVM & JS
+  // Binary format shared between JVM & JS
   implicit val pickler: Pickler[ScalaData] = generatePickler
 }
 ```
@@ -44,13 +43,9 @@ object ScalaData {
 Scala.JS code:
 
 ```scala
-object Js {
-
-  @scalajs.js.annotation.JSExportTopLevel("myScalaJsFn")
-  def demo(p: Pickled[ScalaData]): String =
-    s"a is ${p.value.a} and b is ${p.value.b}"
-}
-
+@scalajs.js.annotation.JSExportTopLevel("myScalaJsFn")
+def demo(p: Pickled[ScalaData]): String =
+  s"a is ${p.value.a} and b is ${p.value.b}"
 ```
 
 Scala (JVM) code:
@@ -61,15 +56,12 @@ import GraalBoopickle._
 
 val expr: Expr[Unit] =
   for {
-
     // 1. Load our Scala.JS code.
     _ <- Expr.requireFileOnClasspath("my_scalajs-fastopt.js")
-
     // 2. Call the function we exposed.
     //    Because we defined a Pickler instance, this will use binary to transform
     //    our Scala case class from JVM to a Scala.JS representation
     s <- Expr.apply1(a => s"myScalaJsFn($a)", ScalaData(9999, 3)).asString
-
   } yield s
 
 val result = ContextSync().eval(expr)
