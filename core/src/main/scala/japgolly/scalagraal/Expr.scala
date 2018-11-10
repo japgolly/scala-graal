@@ -43,6 +43,9 @@ final class Expr[A] private[Expr] (private[Expr] val run: Context => A) extends 
     _as(_.as(t))
   }
 
+  def void: Expr[Unit] =
+    new Expr(c => {run(c); ()})
+
   def asOption[F, B](f: Expr[Value] => Expr[B])(implicit ev: Expr[A] =:= Expr[Value]): Expr[Option[B]] = {
     val self = ev(this)
     new Expr(c => {
