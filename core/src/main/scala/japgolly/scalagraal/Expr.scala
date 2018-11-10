@@ -54,6 +54,9 @@ final class Expr[A] private[Expr] (private[Expr] val run: Context => A) extends 
     })
   }
 
+  def >>[B](next: Expr[B]): Expr[B] =
+    flatMap(_ => next)
+
   def timed: Expr[(Duration, A)] =
     new Expr(ctx => {
       val start = System.nanoTime()
