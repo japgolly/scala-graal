@@ -174,14 +174,12 @@ object Expr extends ExprBoilerplate {
           lift { ctx =>
             val data = new Array[Any](arity)
             setValueFns.foreach(_ (data, ctx))
-            l.argBinding.set(ctx, data)
-            run(ctx)
+            l.argBinding.withValue(ctx, data)(run(ctx))
           }
         } else {
           val data = mkValuesCtxFree(args)
           lift { ctx =>
-            l.argBinding.set(ctx, data)
-            run(ctx)
+            l.argBinding.withValue(ctx, data)(run(ctx))
           }
         }
       )
