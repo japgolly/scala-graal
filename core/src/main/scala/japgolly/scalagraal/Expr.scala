@@ -71,7 +71,7 @@ final class Expr[A] private[Expr] (private[Expr] val run: Context => A) extends 
 }
 
 object Expr extends ExprBoilerplate {
-  type Result[A] = Either[ExprError, A]
+  type Result[+A] = Either[ExprError, A]
 
   def apply(source: CharSequence)(implicit language: Language): Expr[Value] =
     apply(Source.create(language.name, source))
@@ -87,6 +87,9 @@ object Expr extends ExprBoilerplate {
 
   def point[A](a: => A): Expr[A] =
     new Expr(_ => a)
+
+  val unit: Expr[Unit] =
+    new Expr(_ => ())
 
   def stdlibDist[F[x] <: Traversable[x], A, B](fa: F[A])(f: A => Expr[B])
                                               (implicit cbf: CanBuildFrom[F[A], B, F[B]]): Expr[F[B]] =
