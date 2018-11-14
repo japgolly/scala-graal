@@ -24,6 +24,7 @@ object ScalaGraal {
     final val KindProjector = "0.9.8"
     final val Microlibs     = "1.18"
     final val MTest         = "0.6.6"
+    final val Prometheus    = "0.5.0"
     final val Scala211      = "2.11.12"
     final val Scala212      = "2.12.7"
   }
@@ -75,7 +76,10 @@ object ScalaGraal {
   lazy val root =
     Project("root", file("."))
       .configure(commonSettings.jvm, preventPublication)
-      .aggregate(core, extBoopickleJVM, extBoopickleJS, benchmark)
+      .aggregate(
+        core,
+        extBoopickleJVM, extBoopickleJS, extPrometheus,
+        benchmark)
 
   lazy val core = project
     .configure(commonSettings.jvm, publicationSettings.jvm, testSettings.jvm)
@@ -94,6 +98,14 @@ object ScalaGraal {
   lazy val extBoopickleJS  = extBoopickle.js
   lazy val extBoopickleJVM = extBoopickle.jvm
     .settings(unmanagedResources in Test += (fastOptJS in Test in extBoopickleJS).value.data)
+
+  lazy val extPrometheus = project
+    .in(file("ext-prometheus"))
+    .configure(commonSettings.jvm, publicationSettings.jvm, testSettings.jvm)
+    .dependsOn(core)
+    .settings(
+      name := "ext-prometheus",
+      libraryDependencies += "io.prometheus" % "simpleclient" % Ver.Prometheus)
 
   lazy val benchmark = project
     .configure(commonSettings.jvm, preventPublication)

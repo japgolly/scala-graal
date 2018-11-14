@@ -12,7 +12,8 @@ object TestUtil
     with scalaz.std.StringInstances
     with scalaz.std.TupleInstances {
 
-  val sync = ContextSync()
+  val sync = ContextSync.newContextPerUse()
+//  val sync = ContextSync.Builder.newContextPerUse().writeMetrics(ContextMetrics.Println).build()
 
   def assertEvalResult[A: Equal](actual: Expr.Result[A], expect: A): Unit =
     assertEq(actual.left.map(_.toString), Right(expect))
