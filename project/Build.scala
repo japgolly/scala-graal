@@ -101,7 +101,7 @@ object ScalaGraal {
 
   lazy val extPrometheus = project
     .in(file("ext-prometheus"))
-    .configure(commonSettings.jvm, publicationSettings.jvm)
+    .configure(commonSettings.jvm, publicationSettings.jvm, testSettings.jvm)
     .dependsOn(core)
     .settings(
       name := "ext-prometheus",

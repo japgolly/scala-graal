@@ -1,6 +1,6 @@
 package japgolly.scalagraal
 
-import io.prometheus.client._
+import io.prometheus.client.{CollectorRegistry, Histogram}
 import japgolly.scalagraal.ContextMetrics.Metric
 
 /** Example:
@@ -73,7 +73,7 @@ object GraalPrometheus {
       mod(_.subsystem(subsystem))
   }
 
-  private object Default {
+  private[scalagraal] object Default {
 
     val NamePrefix = "scalagraal_context_eval_"
 

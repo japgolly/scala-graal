@@ -203,10 +203,10 @@ object ContextSync {
         val durTotal = timerTotal.stop()
         val stats = ContextMetrics.Stats(
           waited = durWaited,
-          pre = durPre,
-          body = durBody,
-          post = durPost,
-          total = durTotal)
+          pre    = durPre,
+          body   = durBody,
+          post   = durPost,
+          total  = durTotal)
         metricWriter(stats)
       }
     }
