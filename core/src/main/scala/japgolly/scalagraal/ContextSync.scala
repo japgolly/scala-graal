@@ -3,7 +3,9 @@ package japgolly.scalagraal
 import org.graalvm.polyglot.{Context, Engine}
 
 trait ContextSync {
-  def eval[A](f: Expr[A]): Expr.Result[A]
+  def eval[A](expr: Expr[A]): Expr.Result[A]
+
+  private[scalagraal] def evalT[A](startTime: DurationLite.StartTime, expr: Expr[A]): Expr.Result[A]
 }
 
 object ContextSync {
@@ -11,21 +13,30 @@ object ContextSync {
   def apply()(implicit l: Language): ContextSync = fixedContext()
 
   def fixedContext()(implicit l: Language): ContextSync = Builder.fixedContext().build()
+  def fixedContext(ls: Seq[Language]): ContextSync = Builder.fixedContext(ls).build()
   def fixedContext(c: Context): ContextSync = Builder.fixedContext(c).build()
+
   def newContextPerUse()(implicit l: Language): ContextSync = Builder.newContextPerUse().build()
+  def newContextPerUse(ls: Seq[Language]): ContextSync = Builder.newContextPerUse(ls).build()
   def newContextPerUse(c: => Context): ContextSync = Builder.newContextPerUse(c).build()
   def newContextPerUse(f: Engine => Context): ContextSync = Builder.newContextPerUse(f).build()
 
   object Builder {
 
     def fixedContext()(implicit l: Language): Builder =
-      fixedContext(Context.create(l.name))
+      fixedContext(l :: Nil)
+
+    def fixedContext(ls: Seq[Language]): Builder =
+      fixedContext(Context.create(ls.map(_.name): _*))
 
     def fixedContext(c: Context): Builder =
       start(Right(c), useMutex = true)
 
     def newContextPerUse()(implicit l: Language): Builder =
-      newContextPerUse(Context.newBuilder(l.name).engine(_).build())
+      newContextPerUse(l :: Nil)
+
+    def newContextPerUse(ls: Seq[Language]): Builder =
+      newContextPerUse(Context.newBuilder(ls.map(_.name): _*).engine(_).build())
 
     def newContextPerUse(c: => Context): Builder =
       start(Left(() => c), useMutex = false)
@@ -98,8 +109,10 @@ object ContextSync {
     private[this] val lock: AnyRef =
       if (useMutex) new AnyRef else null
 
-    override def eval[A](expr: Expr[A]): Expr.Result[A] = {
-      val timerTotal = DurationLite.start()
+    override def eval[A](expr: Expr[A]): Expr.Result[A] =
+      evalT(DurationLite.start(), expr)
+
+    override private[scalagraal] def evalT[A](timerTotal: DurationLite.StartTime, expr: Expr[A]): Expr.Result[A] = {
       var durWaited, durPre, durEval, durPost = DurationLite.Zero
       var afterEvalResult: Expr.Result[_] = null
       try {
