@@ -83,7 +83,7 @@ assert(result == Right("a is 9999 and b is 3"))
   * [ ] synchronous resource pool
   * [ ] pure scheduling & execution (?)
   * [ ] higher-level profunctor-like (?)
-  * [ ] metrics
+  * [x] metrics
   * [ ] logging
   * [ ] caching
 * [ ] warmup
@@ -105,7 +105,7 @@ assert(result == Right("a is 9999 and b is 3"))
   * [ ] Scalaz
   * [ ] Cats
   * [ ] Cats Effect (?)
-  * [ ] Prometheus
+  * [x] Prometheus
   * [x] BooPickle
   * [ ] circe
   * [ ] clear-config

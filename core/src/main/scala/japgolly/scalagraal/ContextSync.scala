@@ -151,7 +151,7 @@ object ContextSync {
       // 2. Fixed contexts will throw an exception anyway when closed.
       // 3. NewCtxPerEval will still work after closed but it closed itself and it can be argued close != pool.shutdown
       // 4. The reason I'm adding close is literally only for the fixed context case
-      var durWaited, durPre, durEval, durPost = DurationLite.Zero
+      var durWaited, durPre, durBody, durPost = DurationLite.Zero
       var afterEvalResult: Expr.Result[_] = null
       try {
         val resultFn = () => {
@@ -170,9 +170,9 @@ object ContextSync {
               } else {
                 // ----------------------------------------------------
                 try {
-                  val timerEval = DurationLite.start()
+                  val timerBody = DurationLite.start()
                   val result = expr(ctx)
-                  durEval = timerEval.stop()
+                  durBody = timerBody.stop()
                   result
                   // ----------------------------------------------------
                 } finally {
@@ -201,12 +201,13 @@ object ContextSync {
 
       } finally {
         val durTotal = timerTotal.stop()
-        metricWriter(
+        val stats = ContextMetrics.Stats(
           waited = durWaited,
           pre = durPre,
-          eval = durEval,
+          body = durBody,
           post = durPost,
           total = durTotal)
+        metricWriter(stats)
       }
     }
 
