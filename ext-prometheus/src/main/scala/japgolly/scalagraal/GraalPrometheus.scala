@@ -13,6 +13,9 @@ import japgolly.scalagraal.ContextMetrics.Metric
   */
 object GraalPrometheus {
 
+  def apply(): ContextMetrics.Writer =
+    Builder().registerAndBuild()
+
   object Builder {
     def apply(): Builder = {
       import Default._
