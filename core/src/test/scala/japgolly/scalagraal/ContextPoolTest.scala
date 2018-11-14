@@ -17,14 +17,11 @@ object ContextPoolTest extends TestSuite {
       val mutex = new AnyRef
       var threadNames = Set.empty[String]
 
-      val pool = ContextPool.fixedThreadPool(2, { e =>
-          val c = mutex.synchronized {
-            threadNames += Thread.currentThread().getName
-            Context.newBuilder("js").engine(e).build()
-          }
-          ContextSync.Builder.fixedContext(c) //.writeMetrics(ContextMetrics.Println)
-            .build()
-        })
+      val pool = ContextPool.Builder
+          .fixedThreadPool(2)
+          .fixedContextPerThread()
+          .configure(_.afterContextCreate(Expr.point{mutex.synchronized(threadNames += Thread.currentThread().getName)}))
+          .build()
 
       assertEq(pool.poolState(), ContextPool.State.Active)
 
@@ -48,10 +45,9 @@ object ContextPoolTest extends TestSuite {
         assertEq(threadNames, Set("ScalaGraal-pool-1-thread-1", "ScalaGraal-pool-1-thread-2"))
       }
 
+      assert(pool.poolState() == ContextPool.State.Active)
       pool.shutdown()
-      pool.poolState()
-
-//      eventually(pool.state() == ContextAsync.State.Active)
+      eventually(pool.poolState() == ContextPool.State.Terminated)
     }
 
   }

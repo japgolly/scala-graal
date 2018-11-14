@@ -20,11 +20,17 @@ object ContextPool {
     case object Terminated   extends State
   }
 
+  sealed trait OnShutdown
+  object OnShutdown {
+    case object CloseContexts extends OnShutdown
+    case object DoNothing extends OnShutdown
+  }
+
   def fixedThreadPool(poolSize: Int)(implicit l: Language): ContextPool =
     Builder.fixedThreadPool(poolSize).fixedContextPerThread().build()
 
-  def fixedThreadPool(poolSize: Int, f: Engine => ContextSync): ContextPool =
-    Builder.fixedThreadPool(poolSize).context(f).build()
+//  def fixedThreadPool(poolSize: Int, f: Engine => ContextSync): ContextPool =
+//    Builder.fixedThreadPool(poolSize).context(f).build()
 
   object Builder {
     def fixedThreadPool(poolSize: Int): Fixed.Step1 =
@@ -33,18 +39,20 @@ object ContextPool {
     object Fixed {
       final class Step1(poolSize: Int) {
 
-        def context(f: Engine => ContextSync): Step2B =
-          new Step2B(poolSize, f)
+//        def context(f: Engine => ContextSync): Step2B =
+//          new Step2B(poolSize, f)
 
         def fixedContextPerThread()(implicit l: Language): Step2A =
           fixedContextPerThread(l :: Nil)
 
         def fixedContextPerThread(ls: Seq[Language]): Step2A =
-          new Step2A(poolSize, e => ContextSync.Builder.fixedContext(
-            Context.newBuilder(ls.map(_.name): _*).engine(e).build()))
+          new Step2A(
+            poolSize,
+            e => ContextSync.Builder.fixedContext(Context.newBuilder(ls.map(_.name): _*).engine(e).build()),
+            OnShutdown.CloseContexts)
 
         def fixedContextPerThread(f: Engine => Context): Step2A =
-          new Step2A(poolSize, e => ContextSync.Builder.fixedContext(f(e)))
+          new Step2A(poolSize, e => ContextSync.Builder.fixedContext(f(e)), OnShutdown.CloseContexts)
 
         def newContextPerUse()(implicit l: Language): Step2A =
           newContextPerUse(l :: Nil)
@@ -53,36 +61,42 @@ object ContextPool {
           newContextPerUse(Context.newBuilder(ls.map(_.name): _*).engine(_).build())
 
         def newContextPerUse(f: Engine => Context): Step2A =
-          new Step2A(poolSize, e => ContextSync.Builder.newContextPerUse(f(e)))
+          new Step2A(poolSize, e => ContextSync.Builder.newContextPerUse(f(e)), OnShutdown.DoNothing)
       }
 
-      final class Step2A(poolSize: Int, perThread: Engine => ContextSync.Builder) {
+      final class Step2A(poolSize: Int, perThread: Engine => ContextSync.Builder, onShutdown: OnShutdown) {
         def configure(f: ContextSync.Builder => ContextSync.Builder): Step2A =
-          new Step2A(poolSize, f compose perThread)
+          new Step2A(poolSize, f compose perThread, onShutdown)
 
         def build(): ContextPool =
-          new Step2B(poolSize, perThread.andThen(_.build())).build()
+          new Step2B(poolSize, perThread.andThen(_.build()), onShutdown).build()
       }
 
-      final class Step2B(poolSize: Int, perThread: Engine => ContextSync) {
+      final class Step2B(poolSize: Int, perThread: Engine => ContextSync, onShutdown: OnShutdown) {
         def build(): ContextPool = {
           val e = Engine.create()
-          fixedPool(poolSize, () => perThread(e))
+          fixedPool(poolSize, () => perThread(e), onShutdown)
         }
       }
     }
   }
 
-
-  private def fixedPool(poolSize: Int, newContext: () => ContextSync): ContextPool = {
+  private def fixedPool(poolSize: Int, newContext: () => ContextSync, onShutdown: OnShutdown): ContextPool = {
     val poolNo = poolCount.getAndIncrement()
     val threadCount = new AtomicInteger(1)
-    fixedPool(poolSize, DefaultContextThread(poolNo, threadCount, newContext, _))
+    fixedPool(poolSize, DefaultContextThread(poolNo, threadCount, newContext, _), onShutdown)
   }
 
-  private def fixedPool(poolSize: Int, createNewThread: Runnable => ContextThread): ContextPool = {
+  private def fixedPool(poolSize: Int, createNewThread: Runnable => ContextThread, onShutdown: OnShutdown): ContextPool = {
+    val lock = new AnyRef
+    var threads = List.empty[ContextThread]
+
     val threadFactory = new ThreadFactory {
-      override def newThread(r: Runnable) = createNewThread(r)
+      override def newThread(r: Runnable) = {
+        val t = createNewThread(r)
+        lock.synchronized(threads ::= t)
+        t
+      }
     }
 
     val executor = new ThreadPoolExecutor(
@@ -91,9 +105,20 @@ object ContextPool {
       new LinkedBlockingQueue[Runnable],
       threadFactory)
 
+    val shutdown = () => {
+      executor.shutdown()
+      executor.awaitTermination(900, TimeUnit.DAYS)
+      onShutdown match {
+        case OnShutdown.CloseContexts =>
+          lock.synchronized(threads).foreach(_.contextSync.close())
+        case OnShutdown.DoNothing =>
+          ()
+      }
+    }
+
     executor.prestartAllCoreThreads()
 
-    new ExecutorServiceBased(executor)
+    new ExecutorServiceBased(executor, shutdown)
   }
 
   private val poolCount = new AtomicInteger(1)
@@ -124,7 +149,7 @@ object ContextPool {
     }
   }
 
-  private class ExecutorServiceBased(es: ExecutorService) extends ContextPool {
+  private class ExecutorServiceBased(es: ExecutorService, doShutdown: () => Unit) extends ContextPool {
     private[this] implicit val ec = asExecutionContext(es)
 
     override def eval[A](expr: Expr[A]): Future[Expr.Result[A]] = {
@@ -138,8 +163,12 @@ object ContextPool {
     private val shutdownLock = new AnyRef
     override def shutdown(): Unit =
       shutdownLock.synchronized {
-        // TODO check state first
-        // TODO Close all contexts
+        poolState() match {
+          case State.Active =>
+            doShutdown()
+          case State.ShuttingDown | State.Terminated =>
+            ()
+        }
         es.shutdown()
       }
 

@@ -17,6 +17,9 @@ final class Expr[A] private[Expr] (private[Expr] val run: Context => A) extends 
       case t: Throwable => throw t
     }
 
+  def evalOrThrow(context: Context): A =
+    run(context)
+
   def map[B](f: A => B): Expr[B] =
     new Expr(f compose run)
 
@@ -90,6 +93,9 @@ object Expr extends ExprBoilerplate {
 
   val unit: Expr[Unit] =
     new Expr(_ => ())
+
+  def fail[A](e: ExprError): Expr[A] =
+    new Expr(_ => throw e)
 
   def stdlibDist[F[x] <: Traversable[x], A, B](fa: F[A])(f: A => Expr[B])
                                               (implicit cbf: CanBuildFrom[F[A], B, F[B]]): Expr[F[B]] =

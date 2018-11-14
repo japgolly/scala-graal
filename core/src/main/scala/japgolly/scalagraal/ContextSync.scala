@@ -4,6 +4,7 @@ import org.graalvm.polyglot.{Context, Engine}
 
 trait ContextSync {
   def eval[A](expr: Expr[A]): Expr.Result[A]
+  def close(): Unit
 
   private[scalagraal] def evalT[A](startTime: DurationLite.StartTime, expr: Expr[A]): Expr.Result[A]
 }
@@ -58,7 +59,7 @@ object ContextSync {
                       _afterCreate: Option[Expr[_]],
                       _beforeEval: Option[Expr[_]],
                       _afterEval: Option[Expr[_]],
-                      _preClose: Option[Expr[_]],
+                      _beforeClose: Option[Expr[_]],
                       _metricWriter: Option[ContextMetrics.Writer]) {
     //                      _metricsDims: List[Metrics.Dimension]) {
 
@@ -67,9 +68,9 @@ object ContextSync {
                      _afterCreate: Option[Expr[_]] = _afterCreate,
                      _beforeEval: Option[Expr[_]] = _beforeEval,
                      _afterEval: Option[Expr[_]] = _afterEval,
-                      _preClose: Option[Expr[_]] = _preClose,
+                      _beforeClose: Option[Expr[_]] = _beforeClose,
                      _metricWriter: Option[ContextMetrics.Writer] = _metricWriter): Builder =
-      new Builder(_ctxProvider, _useMutex, _afterCreate, _beforeEval, _afterEval, _preClose, _metricWriter)
+      new Builder(_ctxProvider, _useMutex, _afterCreate, _beforeEval, _afterEval, _beforeClose, _metricWriter)
 
     def useMutex(b: Boolean): Builder =
       copy(_useMutex = b)
@@ -84,19 +85,50 @@ object ContextSync {
       copy(_afterEval = Some(_afterEval.fold[Expr[_]](e)(_ >> e)))
 
     def beforeContextClose(e: Expr[_]): Builder =
-      copy(_preClose = Some(_preClose.fold[Expr[_]](e)(_ >> e)))
+      copy(_beforeClose = Some(_beforeClose.fold[Expr[_]](e)(_ >> e)))
 
     def writeMetrics(w: ContextMetrics.Writer): Builder =
       copy(_metricWriter = Some(_metricWriter.fold(w)(_ >> w)))
 
-    def build(): ContextSync =
-      new Impl(
-        useMutex = _useMutex,
-        getCtx = _ctxProvider.fold(identity, () => _),
-        beforeEval = _beforeEval.getOrElse(Expr.unit),
-        afterEval = _afterEval.getOrElse(Expr.unit),
-        closeCtx = if (_ctxProvider.isLeft) Builder.close else Builder.dontClose,
-        metricWriter = _metricWriter.getOrElse(ContextMetrics.Noop))
+    def build(): ContextSync = {
+      def append(a: Option[Expr[_]], b: Option[Expr[_]]): Expr[_] =
+        (a, b) match {
+          case (Some(x), Some(y)) => x >> y
+          case (Some(x), None   ) => x
+          case (None   , Some(y)) => y
+          case (None   , None   ) => Expr.unit
+        }
+
+      _ctxProvider match {
+
+        case Left(newCtx) =>
+          // new context per eval
+          new Impl(
+            useMutex = _useMutex,
+            getCtx = newCtx,
+            beforeEval = append(_afterCreate, _beforeEval),
+            afterEval = append(_afterEval, _beforeClose),
+            closeCtx = Builder.close,
+            metricWriter = _metricWriter.getOrElse(ContextMetrics.Noop),
+            onClose = () => ())
+
+        case Right(fixedCtx) =>
+          def evalOrThrow(e: Expr[_]): Unit = {
+            fixedCtx.enter()
+            try e.evalOrThrow(fixedCtx) finally fixedCtx.leave()
+            ()
+          }
+          _afterCreate.foreach(evalOrThrow)
+          new Impl(
+            useMutex = _useMutex,
+            getCtx = () => fixedCtx,
+            beforeEval = _beforeEval.getOrElse(Expr.unit),
+            afterEval = _afterEval.getOrElse(Expr.unit),
+            closeCtx = Builder.dontClose,
+            metricWriter = _metricWriter.getOrElse(ContextMetrics.Noop),
+            onClose = () => try _beforeClose.foreach(evalOrThrow) finally fixedCtx.close())
+      }
+    }
   }
 
   private final class Impl(useMutex: Boolean,
@@ -104,15 +136,21 @@ object ContextSync {
                            beforeEval: Expr[_],
                            afterEval: Expr[_],
                            closeCtx: Context => Unit,
-                           metricWriter: ContextMetrics.Writer) extends ContextSync {
+                           metricWriter: ContextMetrics.Writer,
+                           onClose: () => Unit) extends ContextSync {
 
-    private[this] val lock: AnyRef =
+    private[this] val evalLock: AnyRef =
       if (useMutex) new AnyRef else null
 
     override def eval[A](expr: Expr[A]): Expr.Result[A] =
       evalT(DurationLite.start(), expr)
 
     override private[scalagraal] def evalT[A](timerTotal: DurationLite.StartTime, expr: Expr[A]): Expr.Result[A] = {
+      // We should really check here if were closed but...
+      // 1. That would require making closed volatile (or using a lock; yuk)
+      // 2. Fixed contexts will throw an exception anyway when closed.
+      // 3. NewCtxPerEval will still work after closed but it closed itself and it can be argued close != pool.shutdown
+      // 4. The reason I'm adding close is literally only for the fixed context case
       var durWaited, durPre, durEval, durPost = DurationLite.Zero
       var afterEvalResult: Expr.Result[_] = null
       try {
@@ -154,7 +192,7 @@ object ContextSync {
         }
 
         val result =
-          if (lock eq null) resultFn() else lock.synchronized(resultFn())
+          if (evalLock eq null) resultFn() else evalLock.synchronized(resultFn())
 
         if ((afterEvalResult ne null) && afterEvalResult.isLeft && result.isRight)
           afterEvalResult.asInstanceOf[Expr.Result[A]]
@@ -171,6 +209,18 @@ object ContextSync {
           total = durTotal)
       }
     }
+
+    private[this] val closeLock = new AnyRef
+    private[this] var closed = false
+
+    override def close(): Unit =
+      closeLock.synchronized {
+        if (!closed) {
+          closed = true
+          onClose()
+        }
+      }
+
   }
 }
 
