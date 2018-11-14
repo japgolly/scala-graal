@@ -1,7 +1,8 @@
 package japgolly.scalagraal
 
 final case class DurationLite(nanos: Long) extends AnyVal {
-  override def toString = "%,d ns".format(nanos)
+  override def toString = toStrNs
+  def toStrNs = "%,d ns".format(nanos)
   def toStrUs = "%,d us".format(nanos / 1000)
   def toStrMs = "%,d ms".format(nanos / 1000000)
   def +(b: DurationLite) = DurationLite(nanos + b.nanos)

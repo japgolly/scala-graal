@@ -1,5 +1,7 @@
 package japgolly.scalagraal
 
+import java.io.PrintStream
+
 object ContextMetrics {
 
   final case class Dimension(name: String, value: Expr.Result[Any] => String)
@@ -42,14 +44,15 @@ object ContextMetrics {
     override def >>(next: Writer) = next
   }
 
-  object Println extends Writer {
-    private val f: DurationLite => String = _.toStrUs
+  final case class Print(fmt : DurationLite => String = _.toStrMs,
+                         name: String                 = "graal-eval",
+                         to  : PrintStream            = System.out) extends Writer {
+
     override def apply(waited: DurationLite,
                        pre: DurationLite,
                        eval: DurationLite,
                        post: DurationLite,
-                       total: DurationLite): Unit = {
-      println(s"[eval] waited: ${f(waited)} | pre: ${f(pre)} | eval: ${f(eval)} | post: ${f(post)} | total: ${f(total)}")
-    }
+                       total: DurationLite): Unit =
+      to.println(s"[$name] waited: ${fmt(waited)} | pre: ${fmt(pre)} | eval: ${fmt(eval)} | post: ${fmt(post)} | total: ${fmt(total)}")
   }
 }
