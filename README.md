@@ -84,6 +84,7 @@ assert(result == Right("a is 9999 and b is 3"))
   * [ ] pure scheduling & execution (?)
   * [ ] higher-level profunctor-like (?)
   * [x] metrics
+  * [ ] metrics: labels from `Expr`
   * [ ] logging
   * [ ] caching
 * [ ] warmup
