@@ -20,7 +20,7 @@ object ContextPoolTest extends TestSuite {
       val pool = ContextPool.Builder
           .fixedThreadPool(2)
           .fixedContextPerThread()
-          .configure(_.afterContextCreate(Expr.point{mutex.synchronized(threadNames += Thread.currentThread().getName)}))
+          .configure(_.onContextCreate(Expr.point{mutex.synchronized(threadNames += Thread.currentThread().getName)}))
           .build()
 
       assertEq(pool.poolState(), ContextPool.State.Active)

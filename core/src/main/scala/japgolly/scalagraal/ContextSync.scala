@@ -75,7 +75,7 @@ object ContextSync {
     def useMutex(b: Boolean): Builder =
       copy(_useMutex = b)
 
-    def afterContextCreate(e: Expr[_]): Builder =
+    def onContextCreate(e: Expr[_]): Builder =
       copy(_afterCreate = Some(_afterCreate.fold[Expr[_]](e)(_ >> e)))
 
     def beforeEval(e: Expr[_]): Builder =
@@ -84,7 +84,7 @@ object ContextSync {
     def afterEval(e: Expr[_]): Builder =
       copy(_afterEval = Some(_afterEval.fold[Expr[_]](e)(_ >> e)))
 
-    def beforeContextClose(e: Expr[_]): Builder =
+    def onContextClose(e: Expr[_]): Builder =
       copy(_beforeClose = Some(_beforeClose.fold[Expr[_]](e)(_ >> e)))
 
     def writeMetrics(w: ContextMetrics.Writer): Builder =
