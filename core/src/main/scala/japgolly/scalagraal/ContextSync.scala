@@ -61,7 +61,6 @@ object ContextSync {
                       _afterEval: Option[Expr[_]],
                       _beforeClose: Option[Expr[_]],
                       _metricWriter: Option[ContextMetrics.Writer]) {
-    //                      _metricsDims: List[Metrics.Dimension]) {
 
     private def copy(_ctxProvider: Either[() => Context, Context] = _ctxProvider,
                      _useMutex: Boolean = _useMutex,

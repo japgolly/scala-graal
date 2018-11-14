@@ -4,8 +4,6 @@ import java.io.PrintStream
 
 object ContextMetrics {
 
-  final case class Dimension(name: String, value: Expr.Result[Any] => String)
-
   trait Writer { self =>
     def apply(stats: Stats): Unit
 
