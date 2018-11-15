@@ -85,18 +85,25 @@ object ContextMetrics {
     def total              : DurationLite = get(4)
   }
 
-  def Stats(waited: DurationLite,
-            pre   : DurationLite,
-            body  : DurationLite,
-            post  : DurationLite,
-            total : DurationLite): Stats = {
-    val a = Array[Long](
-      waited.nanos,
-      pre   .nanos,
-      body  .nanos,
-      post  .nanos,
-      total .nanos)
-    new Stats(a)
+  object Stats {
+    def apply(waited: DurationLite,
+              pre   : DurationLite,
+              body  : DurationLite,
+              post  : DurationLite,
+              total : DurationLite): Stats = {
+      val a = Array[Long](
+        waited.nanos,
+        pre   .nanos,
+        body  .nanos,
+        post  .nanos,
+        total .nanos)
+      new Stats(a)
+    }
+
+    val Zero: Stats = {
+      val z = DurationLite.Zero
+      apply(z, z, z, z, z)
+    }
   }
 }
 
