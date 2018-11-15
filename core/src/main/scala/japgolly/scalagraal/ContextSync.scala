@@ -3,10 +3,16 @@ package japgolly.scalagraal
 import org.graalvm.polyglot.{Context, Engine}
 
 trait ContextSync {
-  def eval[A](expr: Expr[A]): Expr.Result[A]
+
+  def eval[A](expr: Expr[A],
+              additionalMetricWriter: ContextMetrics.Writer = ContextMetrics.Writer.Noop): Expr.Result[A] =
+    evalT(expr, DurationLite.start(), additionalMetricWriter)
+
   def close(): Unit
 
-  private[scalagraal] def evalT[A](startTime: DurationLite.StartTime, expr: Expr[A]): Expr.Result[A]
+  private[scalagraal] def evalT[A](expr: Expr[A],
+                                   startTime: DurationLite.StartTime,
+                                   metricWriter2: ContextMetrics.Writer): Expr.Result[A]
 }
 
 object ContextSync {
@@ -143,10 +149,9 @@ object ContextSync {
     private[this] val evalLock: AnyRef =
       if (useMutex) new AnyRef else null
 
-    override def eval[A](expr: Expr[A]): Expr.Result[A] =
-      evalT(DurationLite.start(), expr)
-
-    override private[scalagraal] def evalT[A](timerTotal: DurationLite.StartTime, expr: Expr[A]): Expr.Result[A] = {
+    override private[scalagraal] def evalT[A](expr: Expr[A],
+                                              timerTotal: DurationLite.StartTime,
+                                              metricWriter2: ContextMetrics.Writer): Expr.Result[A] = {
       // We should really check here if were closed but...
       // 1. That would require making closed volatile (or using a lock; yuk)
       // 2. Fixed contexts will throw an exception anyway when closed.
@@ -201,6 +206,7 @@ object ContextSync {
           result
 
       } finally {
+        val mw = metricWriter2 >> metricWriter
         val durTotal = timerTotal.stop()
         val stats = ContextMetrics.Stats(
           waited = durWaited,
@@ -208,7 +214,7 @@ object ContextSync {
           body   = durBody,
           post   = durPost,
           total  = durTotal)
-        metricWriter(stats)
+        mw(stats)
       }
     }
 
