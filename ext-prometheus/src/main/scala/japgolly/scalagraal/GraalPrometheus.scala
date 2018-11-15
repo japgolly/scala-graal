@@ -39,7 +39,7 @@ object GraalPrometheus {
       build(_.register(registry))
 
     private def build(register: Histogram.Builder => Histogram): ContextMetrics.Writer =
-      ContextMetrics.Writer { m =>
+      ContextMetrics.Writer.perMetric { m =>
         val r = bh(m)
         val h = register(r.b.labelNames(r.l.map(_._1): _*))
         if (r.l.isEmpty)

@@ -8,7 +8,7 @@ object ContextMetrics {
     def apply(stats: Stats): Unit
 
     def >>(next: Writer): Writer =
-      if (next eq Noop)
+      if (next eq Writer.Noop)
         this
       else
         new Writer {
@@ -20,7 +20,7 @@ object ContextMetrics {
   }
 
   object Writer {
-    def apply(f: Metric => DurationLite => Unit): Writer = {
+    def perMetric(f: Metric => DurationLite => Unit): Writer = {
       val fWait  = f(Metric.Wait)
       val fPre   = f(Metric.Pre)
       val fBody  = f(Metric.Body)
@@ -36,20 +36,25 @@ object ContextMetrics {
         }
       }
     }
-  }
 
-  object Noop extends Writer {
-    override def apply(stats: Stats) = ()
-    override def >>(next: Writer) = next
-  }
+    def apply(f: Stats => Unit): Writer =
+      new Writer {
+        override def apply(stats: Stats): Unit = f(stats)
+      }
 
-  final case class Print(fmt : DurationLite => String = _.toStrMs,
-                         name: String                 = "graal-eval",
-                         to  : PrintStream            = System.out) extends Writer {
+    object Noop extends Writer {
+      override def apply(stats: Stats) = ()
+      override def >>(next: Writer) = next
+    }
 
-    override def apply(stats: Stats): Unit = {
-      import stats._
-      to.println(s"[$name] waited: ${fmt(waited)} | pre: ${fmt(pre)} | eval: ${fmt(body)} | post: ${fmt(post)} | total: ${fmt(total)}")
+    final case class Print(fmt : DurationLite => String = _.toStrMs,
+                           name: String                 = "graal-eval",
+                           to  : PrintStream            = System.out) extends Writer {
+
+      override def apply(stats: Stats): Unit = {
+        import stats._
+        to.println(s"[$name] waited: ${fmt(waited)} | pre: ${fmt(pre)} | eval: ${fmt(body)} | post: ${fmt(post)} | total: ${fmt(total)}")
+      }
     }
   }
 

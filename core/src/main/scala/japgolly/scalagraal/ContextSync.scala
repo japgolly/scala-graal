@@ -98,6 +98,8 @@ object ContextSync {
           case (None   , None   ) => Expr.unit
         }
 
+      val metricWriter = _metricWriter.getOrElse(ContextMetrics.Writer.Noop)
+
       _ctxProvider match {
 
         case Left(newCtx) =>
@@ -108,7 +110,7 @@ object ContextSync {
             beforeEval = append(_afterCreate, _beforeEval),
             afterEval = append(_afterEval, _beforeClose),
             closeCtx = Builder.close,
-            metricWriter = _metricWriter.getOrElse(ContextMetrics.Noop),
+            metricWriter = metricWriter,
             onClose = () => ())
 
         case Right(fixedCtx) =>
@@ -124,7 +126,7 @@ object ContextSync {
             beforeEval = _beforeEval.getOrElse(Expr.unit),
             afterEval = _afterEval.getOrElse(Expr.unit),
             closeCtx = Builder.dontClose,
-            metricWriter = _metricWriter.getOrElse(ContextMetrics.Noop),
+            metricWriter = metricWriter,
             onClose = () => try _beforeClose.foreach(evalOrThrow) finally fixedCtx.close())
       }
     }
