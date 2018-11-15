@@ -5,8 +5,17 @@ import org.graalvm.polyglot.{Context, Engine}
 trait ContextSync {
 
   def eval[A](expr: Expr[A],
-              additionalMetricWriter: ContextMetrics.Writer = ContextMetrics.Writer.Noop): Expr.Result[A] =
+              additionalMetricWriter: ContextMetrics.Writer = ContextMetrics.Writer.Noop
+             ): Expr.Result[A] =
     evalT(expr, DurationLite.start(), additionalMetricWriter)
+
+  def evalWithStats[A](expr: Expr[A],
+                       additionalMetricWriter: ContextMetrics.Writer = ContextMetrics.Writer.Noop
+                      ): (Expr.Result[A], ContextMetrics.Stats) = {
+    val v = ContextMetrics.Writer.StoreLast()
+    val r = evalT(expr, DurationLite.start(), additionalMetricWriter >> v)
+    (r, v.last)
+  }
 
   def close(): Unit
 

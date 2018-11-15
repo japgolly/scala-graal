@@ -56,6 +56,12 @@ object ContextMetrics {
         to.println(s"[$name] waited: ${fmt(waited)} | pre: ${fmt(pre)} | eval: ${fmt(body)} | post: ${fmt(post)} | total: ${fmt(total)}")
       }
     }
+
+    final case class StoreLast() extends Writer {
+      var last = Stats.Zero
+      override def apply(stats: Stats): Unit =
+        this.last = stats
+    }
   }
 
   sealed abstract class Metric(final val ord: Int)

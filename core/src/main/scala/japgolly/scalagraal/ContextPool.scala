@@ -152,12 +152,24 @@ object ContextPool {
   private class ExecutorServiceBased(es: ExecutorService, doShutdown: () => Unit) extends ContextPool {
     private[this] implicit val ec = asExecutionContext(es)
 
+    private def contextSync(): ContextSync =
+      Thread.currentThread().asInstanceOf[ContextThread].contextSync
+
     override def eval[A](expr: Expr[A],
-                         mw2: ContextMetrics.Writer = ContextMetrics.Writer.Noop): Future[Expr.Result[A]] = {
+                         mw2: ContextMetrics.Writer = ContextMetrics.Writer.Noop) = {
       val startTime = DurationLite.start()
       Future {
-        val t = Thread.currentThread().asInstanceOf[ContextThread]
-        t.contextSync.evalT(expr, startTime, mw2)
+        contextSync().evalT(expr, startTime, mw2)
+      }
+    }
+
+    override def evalWithStats[A](expr: Expr[A],
+                                  mw2: ContextMetrics.Writer = ContextMetrics.Writer.Noop) = {
+      val startTime = DurationLite.start()
+      Future {
+        val v = ContextMetrics.Writer.StoreLast()
+        val r = contextSync().evalT(expr, startTime, mw2 >> v)
+        (r, v.last)
       }
     }
 
