@@ -2,7 +2,7 @@ package japgolly.scalagraal
 
 import org.graalvm.polyglot.{PolyglotException, Value}
 
-sealed trait ExprError extends RuntimeException {
+sealed abstract class ExprError(t: Throwable) extends RuntimeException(t.getMessage, t) {
   val underlying: Throwable
 }
 
@@ -10,7 +10,7 @@ object ExprError {
 
   // ===================================================================================================================
 
-  sealed trait InEval extends ExprError
+  sealed abstract class InEval(t: Throwable) extends ExprError(t)
 
   object InEval {
     def capture[A](a: => A): A =
@@ -24,15 +24,15 @@ object ExprError {
     }
   }
 
-  final case class EvalError(underlying: PolyglotException) extends InEval
+  final case class EvalError(underlying: PolyglotException) extends InEval(underlying)
 
-  final case class ContextClosed(underlying: IllegalStateException) extends InEval
+  final case class ContextClosed(underlying: IllegalStateException) extends InEval(underlying)
 
-  final case class UnsupportedLanguageOrMimeType(underlying: IllegalArgumentException) extends InEval
+  final case class UnsupportedLanguageOrMimeType(underlying: IllegalArgumentException) extends InEval(underlying)
 
   // ===================================================================================================================
 
-  sealed trait InResult extends ExprError {
+  sealed abstract class InResult(t: Throwable) extends ExprError(t) {
     val value: Value
   }
 
@@ -50,13 +50,13 @@ object ExprError {
   }
 
   /** a guest language error occurred during execution */
-  final case class ValueError(value: Value, underlying: PolyglotException) extends InResult
+  final case class ValueError(value: Value, underlying: PolyglotException) extends InResult(underlying)
 
-  final case class ValueIsNull(value: Value, underlying: NullPointerException) extends InResult
+  final case class ValueIsNull(value: Value, underlying: NullPointerException) extends InResult(underlying)
 
   /** the value could not be converted to the expected type */
-  final case class ValueCastError(value: Value, underlying: ClassCastException) extends InResult
+  final case class ValueCastError(value: Value, underlying: ClassCastException) extends InResult(underlying)
 
   /** the value does not represent the expected type */
-  final case class ValueReprError(value: Value, underlying: UnsupportedOperationException) extends InResult
+  final case class ValueReprError(value: Value, underlying: UnsupportedOperationException) extends InResult(underlying)
 }
