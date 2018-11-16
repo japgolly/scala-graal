@@ -142,10 +142,11 @@ object Expr extends ExprBoilerplate {
       }
       val es = mkExprStr(tokens)
       val src = Source.create(l.name, es)
-      if (usesBindings)
-        l.argBinder(src)
-      else
-        _.eval(src)
+      if (usesBindings) {
+        val run = l.argBinder(src)
+        c => ExprError.InEval.capture(run(c))
+      } else
+        c => ExprError.InEval.capture(c.eval(src))
     }
 
     def mkValuesCtxFree(args: Array[X]): Array[Any] = {

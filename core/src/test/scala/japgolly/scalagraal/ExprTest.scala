@@ -70,5 +70,11 @@ object ExprTest extends TestSuite {
       }
     }
 
+    'errors {
+      def test[A](e: Expr[A]): Unit = assert(sync.eval(e).isLeft)
+      'eval    - test(Expr("xxxxxxx"))
+      'compile - test(Expr.compileExpr1[Int](_ => "xxx").apply(1))
+    }
+
   }
 }
