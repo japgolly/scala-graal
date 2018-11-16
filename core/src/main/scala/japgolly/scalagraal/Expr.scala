@@ -109,16 +109,16 @@ object Expr extends ExprBoilerplate {
                                                  (implicit cbf: CanBuildFrom[F[Expr[A]], A, F[A]]): Expr[F[A]] =
     stdlibDist[F, Expr[A], A](fea)(identity)
 
-  def fileOnClasspath(filename: String)(implicit lang: Language, codec: Codec): Option[Expr[Value]] =
+  def fileOnClasspath(filename: String)(implicit lang: Language): Option[Expr[Value]] =
     SourceUtil.fileOnClasspath(filename).map(apply)
 
-  def fileOnClasspath(lang: String, filename: String)(implicit codec: Codec): Option[Expr[Value]] =
+  def fileOnClasspath(lang: String, filename: String): Option[Expr[Value]] =
     SourceUtil.fileOnClasspath(lang, filename).map(apply)
 
-  def requireFileOnClasspath(filename: String)(implicit lang: Language, codec: Codec): Expr[Value] =
+  def requireFileOnClasspath(filename: String)(implicit lang: Language): Expr[Value] =
     apply(SourceUtil.requireFileOnClasspath(filename))
 
-  def requireFileOnClasspath(lang: String, filename: String)(implicit codec: Codec): Expr[Value] =
+  def requireFileOnClasspath(lang: String, filename: String): Expr[Value] =
     apply(SourceUtil.requireFileOnClasspath(lang, filename))
 
   override protected def genericOpt[Z](params: Array[ExprParam[X]],
