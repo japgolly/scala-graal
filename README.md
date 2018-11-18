@@ -80,13 +80,13 @@ assert(result == Right("a is 9999 and b is 3"))
   * multi-threaded service
     * [x] fixed pool
     * [x] shutdown
-  * [ ] synchronous resource pool
+  * [ ] synchronous with time limit
+  * [ ] synchronous resource pool (?)
   * [ ] pure scheduling & execution (?)
   * [ ] higher-level profunctor-like (?)
   * [x] metrics
   * [ ] metrics: labels from `Expr`
-  * [ ] logging
-  * [ ] caching
+  * [ ] caching (?)
 * [ ] warmup
   * [ ] rules - eg. `up to 10000 reps/thread & up to 30 sec | until completes within 20ms`
   * [ ] on idle (?)
@@ -101,15 +101,16 @@ assert(result == Right("a is 9999 and b is 3"))
     * main scala howto
     * testing howto
     * Graal flags?
-    * xsbt-web-plugin
+    * jetty
 * Integration
-  * [ ] Scalaz
-  * [ ] Cats
+  * [ ] Scalaz (?)
+  * [ ] Cats (?)
   * [ ] Cats Effect (?)
   * [x] Prometheus
   * [x] BooPickle
-  * [ ] circe
+  * [ ] circe (?)
   * [ ] clear-config
+  * [ ] caffiene (?)
 * build
   * [ ] travis
   * [ ] tut
