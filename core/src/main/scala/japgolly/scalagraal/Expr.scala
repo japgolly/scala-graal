@@ -2,6 +2,7 @@ package japgolly.scalagraal
 
 import java.time.Duration
 import org.graalvm.polyglot._
+import scala.annotation.tailrec
 import scala.collection.generic.CanBuildFrom
 import scala.reflect.ClassTag
 import scala.runtime.AbstractFunction1
@@ -95,6 +96,16 @@ object Expr extends ExprBoilerplate {
 
   def fail[A](e: ExprError): Expr[A] =
     new Expr(_ => throw e)
+
+  def tailrec[A, B](init: => A)(f: A => Expr[Either[A, B]]): Expr[B] =
+    lift[B] { ctx =>
+      @tailrec def go(a1: A): B =
+        f(a1).run(ctx) match {
+          case Left(a2) => go(a2)
+          case Right(b) => b
+        }
+      go(init)
+    }
 
   def stdlibDist[F[x] <: Traversable[x], A, B](fa: F[A])(f: A => Expr[B])
                                               (implicit cbf: CanBuildFrom[F[A], B, F[B]]): Expr[F[B]] =
