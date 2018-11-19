@@ -7,7 +7,7 @@ import scala.collection.generic.CanBuildFrom
 import scala.reflect.ClassTag
 import scala.runtime.AbstractFunction1
 
-final class Expr[+A] private[Expr] (private[Expr] val run: Context => A) extends AbstractFunction1[Context, Expr.Result[A]] {
+final class Expr[+A] private[Expr] (private[scalagraal] val run: Context => A) extends AbstractFunction1[Context, Expr.Result[A]] {
 
   override def apply(context: Context): Expr.Result[A] =
     try {
