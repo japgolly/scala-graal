@@ -97,6 +97,9 @@ object Expr extends ExprBoilerplate {
   def fail[A](e: ExprError): Expr[A] =
     new Expr(_ => throw e)
 
+  def byName[A](e: => Expr[A]): Expr[A] =
+    unit.flatMap(_ => e)
+
   def tailrec[A, B](init: => A)(f: A => Expr[Either[A, B]]): Expr[B] =
     lift[B] { ctx =>
       @tailrec def go(a1: A): B =
