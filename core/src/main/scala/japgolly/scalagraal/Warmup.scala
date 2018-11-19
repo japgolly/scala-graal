@@ -6,11 +6,15 @@ object Warmup {
 
   final case class State(outerReps: Int,
                          totalInnerReps: Int,
-                         firstEvalInLastRep: DurationLite,
-                         lastEvalInLastRep: DurationLite,
+                         repEvalTimes: Vector[DurationLite],
                          totalWarmupTime: DurationLite) {
     override def toString =
-      s"Warmup.State(outerReps = $outerReps, totalInnerReps = $totalInnerReps, firstEvalInLastRep = $firstEvalInLastRep, lastEvalInLastRep = $lastEvalInLastRep, totalWarmupTime = ${totalWarmupTime.toStrSec})"
+      s"Warmup.State(outerReps = $outerReps, totalInnerReps = $totalInnerReps, repEvalTimes = [${repEvalTimes.head}, …, ${repEvalTimes.last}], totalWarmupTime = ${totalWarmupTime.toStrSec})"
+
+    def firstEvalInLastRep: DurationLite = repEvalTimes.head
+    def lastEval: DurationLite = repEvalTimes.last
+    def lastEvals(size: Int): Vector[DurationLite] = repEvalTimes.takeRight(size)
+    def lastEvalAverage(size: Int): DurationLite = lastEvals(size).reduce(_ + _) / size
   }
 
   def apply(ctx: ContextSync)
@@ -20,19 +24,15 @@ object Warmup {
 
     val warmupStart = DurationLite.start()
 
-    val innerExpr: Expr[(DurationLite, DurationLite)] = Expr.lift { ctx =>
-      val first = DurationLite.timeAndDiscardResult(expr.run(ctx))
-      var i = innerReps - 2
+    val innerExpr: Expr[Vector[DurationLite]] = Expr.lift { ctx =>
+      val b = Vector.newBuilder[DurationLite]
+      b.sizeHint(innerReps)
+      var i = innerReps
       while (i > 0) {
         i -= 1
-        expr.run(ctx)
+        b += DurationLite.timeAndDiscardResult(expr.run(ctx))
       }
-      val last =
-        if (innerReps > 1)
-          DurationLite.timeAndDiscardResult(expr.run(ctx))
-        else
-          first
-      (first, last)
+      b.result()
     }
 
 
@@ -44,13 +44,12 @@ object Warmup {
         go(State(
           outerReps = s.outerReps + 1,
           totalInnerReps = s.totalInnerReps + innerReps,
-          firstEvalInLastRep = result._1,
-          lastEvalInLastRep = result._2,
+          repEvalTimes = result,
           totalWarmupTime = warmupStart.stop()
         ))
       }
 
-    go(State(0, 0, DurationLite.Zero, DurationLite.Zero, DurationLite.Zero))
+    go(State(0, 0, Vector.empty, DurationLite.Zero))
   }
 
   // TODO what about ContextAsync?
