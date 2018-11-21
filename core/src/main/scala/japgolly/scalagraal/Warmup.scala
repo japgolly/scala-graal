@@ -2,7 +2,7 @@ package japgolly.scalagraal
 
 import scala.annotation.tailrec
 import scala.concurrent.{Future, Promise}
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 object Warmup {
 
@@ -67,7 +67,7 @@ object Warmup {
     val warmupStart  = DurationLite.start()
     val innerExpr    = mkInnerExpr(innerReps, expr)
     val mutex        = new AnyRef
-    var futures      = List.fill(pool.poolSize)(pool.eval(innerExpr))
+    var pending      = 0
     var stopped      = false
     var state        = State.empty
     var failure      = Option.empty[Throwable]
@@ -82,52 +82,58 @@ object Warmup {
         totalWarmupTime = warmupStart.stop()
       )
 
-    def onFailure(t: Throwable) = {
-      if (failure.isEmpty)
-        failure = Some(t)
-      if (!stopped) {
-        promiseFirst.failure(t)
-        stopped = true
-      }
+    var task = Expr.unit
+
+    def schedule(): Unit = {
+      mutex.synchronized(pending += 1)
+      pool.eval(task)
+      ()
     }
 
-    def onComplete(f: Future[Expr.Result[Vector[DurationLite]]]): Unit =
-      f.onComplete { result =>
-        mutex.synchronized {
-          futures = futures.filter(_ ne f)
+    task = Expr.lift { ctx =>
+      val result = Try(innerExpr.run(ctx))
 
-          result match {
-            case Success(Right(times)) =>
-              updateState(times)
-              val stop = stopWhen(state) // always run, even if stopped, for side-effects like logging
-              if (!stopped) {
-                if (stop) {
-                  promiseFirst.success(state)
-                  stopped = true
-                } else {
-                  val f2 = pool.eval(innerExpr)
-                  futures ::= f2
-                  onComplete(f2)
-                }
-              }
+      mutex.synchronized {
+        pending -= 1
 
-            case Success(Left(e)) => onFailure(e)
-            case Failure(e)       => onFailure(e)
-          }
-
-          if (futures.isEmpty)
-            failure match {
-              case None    => promiseAll.success(state)
-              case Some(t) => promiseAll.failure(t)
+        result match {
+          case Success(times) =>
+            updateState(times)
+            val stop = stopWhen(state) // always run, even if stopped, for side-effects like logging
+            if (!stopped) {
+              if (stop) {
+                promiseFirst.success(state)
+                stopped = true
+              } else
+                schedule()
             }
-        } // mutex
-      }
 
-    futures.foreach(onComplete)
+          case Failure(t) =>
+            if (failure.isEmpty)
+              failure = Some(t)
+            if (!stopped) {
+              promiseFirst.failure(t)
+              stopped = true
+            }
+        }
+
+        if (pending == 0)
+          failure match {
+            case None    => promiseAll.success(state)
+            case Some(t) => promiseAll.failure(t)
+          }
+      }
+      ()
+    }
+
+    for (_ <- 1 to pool.poolSize)
+      schedule()
 
     PoolResult(promiseFirst.future, promiseAll.future)
   }
 
-  // TODO rename fields
-  final case class PoolResult(first: Future[State], all: Future[State])
+  /** @param warm The [[State]] when the warmup condition is first met.
+    * @param done The [[State]] after all threads have finished.
+    */
+  final case class PoolResult(warm: Future[State], done: Future[State])
 }
