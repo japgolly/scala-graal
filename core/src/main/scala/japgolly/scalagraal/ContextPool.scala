@@ -7,6 +7,7 @@ import scala.concurrent.Future
 import scala.concurrent.JavaConversions.asExecutionContext
 
 trait ContextPool extends ContextAsync {
+  def poolSize: Int
   def shutdown(): Unit
   def poolState(): ContextPool.State
 }
@@ -118,7 +119,7 @@ object ContextPool {
 
     executor.prestartAllCoreThreads()
 
-    new ExecutorServiceBased(executor, shutdown)
+    new ExecutorServiceBased(poolSize, executor, shutdown)
   }
 
   private val poolCount = new AtomicInteger(1)
@@ -149,7 +150,7 @@ object ContextPool {
     }
   }
 
-  private class ExecutorServiceBased(es: ExecutorService, doShutdown: () => Unit) extends ContextPool {
+  private class ExecutorServiceBased(val poolSize: Int, es: ExecutorService, doShutdown: () => Unit) extends ContextPool {
     private[this] implicit val ec = asExecutionContext(es)
 
     private def contextSync(): ContextSync =
