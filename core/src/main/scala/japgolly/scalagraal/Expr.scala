@@ -2,12 +2,12 @@ package japgolly.scalagraal
 
 import java.time.Duration
 import org.graalvm.polyglot._
+import scala.annotation.tailrec
 import scala.collection.generic.CanBuildFrom
-import scala.io.Codec
 import scala.reflect.ClassTag
 import scala.runtime.AbstractFunction1
 
-final class Expr[A] private[Expr] (private[Expr] val run: Context => A) extends AbstractFunction1[Context, Expr.Result[A]] {
+final class Expr[+A] private[Expr] (private[scalagraal] val run: Context => A) extends AbstractFunction1[Context, Expr.Result[A]] {
 
   override def apply(context: Context): Expr.Result[A] =
     try {
@@ -26,22 +26,22 @@ final class Expr[A] private[Expr] (private[Expr] val run: Context => A) extends 
   def flatMap[B](f: A => Expr[B]): Expr[B] =
     new Expr(c => f(run(c)).run(c))
 
-  @inline private def _as[B](f: Value => B)(implicit ev: Expr[A] =:= Expr[Value]): Expr[B] =
+  @inline private def _as[B](f: Value => B)(implicit ev: Expr[A] <:< Expr[Value]): Expr[B] =
     ev(this).map(v => ExprError.InResult.capture(v, f))
 
-  def asBoolean(implicit ev: Expr[A] =:= Expr[Value]): Expr[Boolean] = _as(_.asBoolean())
-  def asByte   (implicit ev: Expr[A] =:= Expr[Value]): Expr[Byte   ] = _as(_.asByte())
-  def asDouble (implicit ev: Expr[A] =:= Expr[Value]): Expr[Double ] = _as(_.asDouble())
-  def asFloat  (implicit ev: Expr[A] =:= Expr[Value]): Expr[Float  ] = _as(_.asFloat())
-  def asInt    (implicit ev: Expr[A] =:= Expr[Value]): Expr[Int    ] = _as(_.asInt())
-  def asLong   (implicit ev: Expr[A] =:= Expr[Value]): Expr[Long   ] = _as(_.asLong())
-  def asShort  (implicit ev: Expr[A] =:= Expr[Value]): Expr[Short  ] = _as(_.asShort())
-  def asString (implicit ev: Expr[A] =:= Expr[Value]): Expr[String ] = _as(_.asString())
+  def asBoolean(implicit ev: Expr[A] <:< Expr[Value]): Expr[Boolean] = _as(_.asBoolean())
+  def asByte   (implicit ev: Expr[A] <:< Expr[Value]): Expr[Byte   ] = _as(_.asByte())
+  def asDouble (implicit ev: Expr[A] <:< Expr[Value]): Expr[Double ] = _as(_.asDouble())
+  def asFloat  (implicit ev: Expr[A] <:< Expr[Value]): Expr[Float  ] = _as(_.asFloat())
+  def asInt    (implicit ev: Expr[A] <:< Expr[Value]): Expr[Int    ] = _as(_.asInt())
+  def asLong   (implicit ev: Expr[A] <:< Expr[Value]): Expr[Long   ] = _as(_.asLong())
+  def asShort  (implicit ev: Expr[A] <:< Expr[Value]): Expr[Short  ] = _as(_.asShort())
+  def asString (implicit ev: Expr[A] <:< Expr[Value]): Expr[String ] = _as(_.asString())
 
-  def as[T](t: TypeLiteral[T])(implicit ev: Expr[A] =:= Expr[Value]): Expr[T] =
+  def as[T](t: TypeLiteral[T])(implicit ev: Expr[A] <:< Expr[Value]): Expr[T] =
     _as(_.as(t))
 
-  def as[T](implicit ev: Expr[A] =:= Expr[Value], ct: ClassTag[T]): Expr[T] = {
+  def as[T](implicit ev: Expr[A] <:< Expr[Value], ct: ClassTag[T]): Expr[T] = {
     val t = ct.runtimeClass.asInstanceOf[Class[T]]
     _as(_.as(t))
   }
@@ -49,7 +49,7 @@ final class Expr[A] private[Expr] (private[Expr] val run: Context => A) extends 
   def void: Expr[Unit] =
     new Expr(c => {run(c); ()})
 
-  def asOption[F, B](f: Expr[Value] => Expr[B])(implicit ev: Expr[A] =:= Expr[Value]): Expr[Option[B]] = {
+  def asOption[F, B](f: Expr[Value] => Expr[B])(implicit ev: Expr[A] <:< Expr[Value]): Expr[Option[B]] = {
     val self = ev(this)
     new Expr(c => {
       val v = self.run(c)
@@ -62,6 +62,9 @@ final class Expr[A] private[Expr] (private[Expr] val run: Context => A) extends 
 
   def >>[B](next: Expr[B]): Expr[B] =
     flatMap(_ => next)
+
+  def <<[B](prev: Expr[B]): Expr[A] =
+    prev >> this
 
   def timed: Expr[(Duration, A)] =
     new Expr(ctx => {
@@ -96,6 +99,19 @@ object Expr extends ExprBoilerplate {
 
   def fail[A](e: ExprError): Expr[A] =
     new Expr(_ => throw e)
+
+  def byName[A](e: => Expr[A]): Expr[A] =
+    unit.flatMap(_ => e)
+
+  def tailrec[A, B](init: => A)(f: A => Expr[Either[A, B]]): Expr[B] =
+    lift[B] { ctx =>
+      @tailrec def go(a1: A): B =
+        f(a1).run(ctx) match {
+          case Left(a2) => go(a2)
+          case Right(b) => b
+        }
+      go(init)
+    }
 
   def stdlibDist[F[x] <: Traversable[x], A, B](fa: F[A])(f: A => Expr[B])
                                               (implicit cbf: CanBuildFrom[F[A], B, F[B]]): Expr[F[B]] =

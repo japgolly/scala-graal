@@ -71,41 +71,41 @@ object ContextSync {
 
   final class Builder(_ctxProvider: Either[() => Context, Context],
                       _useMutex: Boolean,
-                      _afterCreate: Option[Expr[_]],
-                      _beforeEval: Option[Expr[_]],
-                      _afterEval: Option[Expr[_]],
-                      _beforeClose: Option[Expr[_]],
+                      _afterCreate: Option[Expr[Any]],
+                      _beforeEval: Option[Expr[Any]],
+                      _afterEval: Option[Expr[Any]],
+                      _beforeClose: Option[Expr[Any]],
                       _metricWriter: Option[ContextMetrics.Writer]) {
 
     private def copy(_ctxProvider: Either[() => Context, Context] = _ctxProvider,
                      _useMutex: Boolean = _useMutex,
-                     _afterCreate: Option[Expr[_]] = _afterCreate,
-                     _beforeEval: Option[Expr[_]] = _beforeEval,
-                     _afterEval: Option[Expr[_]] = _afterEval,
-                      _beforeClose: Option[Expr[_]] = _beforeClose,
+                     _afterCreate: Option[Expr[Any]] = _afterCreate,
+                     _beforeEval: Option[Expr[Any]] = _beforeEval,
+                     _afterEval: Option[Expr[Any]] = _afterEval,
+                      _beforeClose: Option[Expr[Any]] = _beforeClose,
                      _metricWriter: Option[ContextMetrics.Writer] = _metricWriter): Builder =
       new Builder(_ctxProvider, _useMutex, _afterCreate, _beforeEval, _afterEval, _beforeClose, _metricWriter)
 
     def useMutex(b: Boolean): Builder =
       copy(_useMutex = b)
 
-    def onContextCreate(e: Expr[_]): Builder =
-      copy(_afterCreate = Some(_afterCreate.fold[Expr[_]](e)(_ >> e)))
+    def onContextCreate(e: Expr[Any]): Builder =
+      copy(_afterCreate = Some(_afterCreate.fold[Expr[Any]](e)(_ >> e)))
 
-    def beforeEval(e: Expr[_]): Builder =
-      copy(_beforeEval = Some(_beforeEval.fold[Expr[_]](e)(_ >> e)))
+    def beforeEval(e: Expr[Any]): Builder =
+      copy(_beforeEval = Some(_beforeEval.fold[Expr[Any]](e)(_ >> e)))
 
-    def afterEval(e: Expr[_]): Builder =
-      copy(_afterEval = Some(_afterEval.fold[Expr[_]](e)(_ >> e)))
+    def afterEval(e: Expr[Any]): Builder =
+      copy(_afterEval = Some(_afterEval.fold[Expr[Any]](e)(_ >> e)))
 
-    def onContextClose(e: Expr[_]): Builder =
-      copy(_beforeClose = Some(_beforeClose.fold[Expr[_]](e)(_ >> e)))
+    def onContextClose(e: Expr[Any]): Builder =
+      copy(_beforeClose = Some(_beforeClose.fold[Expr[Any]](e)(_ >> e)))
 
     def writeMetrics(w: ContextMetrics.Writer): Builder =
       copy(_metricWriter = Some(_metricWriter.fold(w)(_ >> w)))
 
     def build(): ContextSync = {
-      def append(a: Option[Expr[_]], b: Option[Expr[_]]): Expr[_] =
+      def append(a: Option[Expr[Any]], b: Option[Expr[Any]]): Expr[Any] =
         (a, b) match {
           case (Some(x), Some(y)) => x >> y
           case (Some(x), None   ) => x
@@ -129,7 +129,7 @@ object ContextSync {
             onClose = () => ())
 
         case Right(fixedCtx) =>
-          def evalOrThrow(e: Expr[_]): Unit = {
+          def evalOrThrow(e: Expr[Any]): Unit = {
             fixedCtx.enter()
             try e.evalOrThrow(fixedCtx) finally fixedCtx.leave()
             ()
@@ -149,8 +149,8 @@ object ContextSync {
 
   private final class Impl(useMutex: Boolean,
                            getCtx: () => Context,
-                           beforeEval: Expr[_],
-                           afterEval: Expr[_],
+                           beforeEval: Expr[Any],
+                           afterEval: Expr[Any],
                            closeCtx: Context => Unit,
                            metricWriter: ContextMetrics.Writer,
                            onClose: () => Unit) extends ContextSync {
