@@ -61,9 +61,9 @@ final class Expr[+A] private[Expr] (private[scalagraal] val run: Context => A) e
   }
 
   def >>[B](next: Expr[B]): Expr[B] =
-    flatMap(_ => next)
+    new Expr(c => {run(c); next.run(c)})
 
-  def <<[B](prev: Expr[B]): Expr[A] =
+  @inline def <<[B](prev: Expr[B]): Expr[A] =
     prev >> this
 
   def timed: Expr[(Duration, A)] =
