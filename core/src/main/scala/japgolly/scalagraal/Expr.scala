@@ -95,13 +95,13 @@ object Expr extends ExprBoilerplate {
     new Expr(_ => a)
 
   val unit: Expr[Unit] =
-    new Expr(_ => ())
+    const(())
 
   def fail[A](e: ExprError): Expr[A] =
-    new Expr(_ => throw e)
+    point(throw e)
 
   def byName[A](e: => Expr[A]): Expr[A] =
-    unit.flatMap(_ => e)
+    new Expr(c => e.run(c))
 
   def tailrec[A, B](init: => A)(f: A => Expr[Either[A, B]]): Expr[B] =
     lift[B] { ctx =>
