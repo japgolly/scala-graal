@@ -46,10 +46,10 @@ object GraalPrometheusTest extends TestSuite {
       val registry = new CollectorRegistry
 
       val writer = GraalPrometheus.Builder()
-        .configureAll(_.addLabel("all", "AHH"))
-        .configure(ContextMetrics.Metric.Body, _.addLabel("body", "yep"))
-        .configure(ContextMetrics.Metric.Total, _.addLabel("T", "tt"))
-        .configure(ContextMetrics.Metric.Body, _.addLabel("body2", "such amazing"))
+        .configure(_.addLabel("all", "AHH"))
+        .configureByMetric{ case ContextMetrics.Metric.Body  => _.addLabel("body", "yep") }
+        .configureByMetric{ case ContextMetrics.Metric.Total => _.addLabel("T", "tt") }
+        .configureByMetric{ case ContextMetrics.Metric.Body  => _.addLabel("body2", "such amazing") }
         .registerAndBuild(registry)
 
       writer(ContextMetrics.Stats(

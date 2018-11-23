@@ -7,7 +7,7 @@ import japgolly.scalagraal.ContextMetrics.Metric
   *
   * {{{
   *   GraalPrometheus.Builder()
-  *     .configureAll(_.addLabel("name", "example"))
+  *     .configure(_.addLabel("name", "example"))
   *     .registerAndBuild()
   * }}}
   */
@@ -26,11 +26,16 @@ object GraalPrometheus {
   }
 
   final class Builder(bh: Metric => RestrictedHistogramBuilder) {
-    def configureAll(f: RestrictedHistogramBuilder => RestrictedHistogramBuilder): Builder =
+    def configure(f: RestrictedHistogramBuilder => RestrictedHistogramBuilder): Builder =
       new Builder(f compose bh)
 
-    def configure(m: Metric, f: RestrictedHistogramBuilder => RestrictedHistogramBuilder): Builder =
-      new Builder(i => if (i == m) f(bh(m)) else bh(i))
+    def configureByMetric(pf: PartialFunction[Metric, RestrictedHistogramBuilder => RestrictedHistogramBuilder]): Builder = {
+      val f = pf.lift
+      new Builder(m => {
+        val b = bh(m)
+        f(m).fold(b)(_ (b))
+      })
+    }
 
     def registerAndBuild(): ContextMetrics.Writer =
       build(_.register())
