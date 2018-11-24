@@ -3,7 +3,11 @@ package japgolly.scalagraal
 import java.util.concurrent.TimeUnit
 
 final case class DurationLite(nanos: Long) extends AnyVal {
-  override def toString = toStrNs
+  override def toString =
+    if (nanos < 1000)       toStrNs else
+    if (nanos < 1000000)    toStrUs else
+    if (nanos < 1000000000) toStrMs else
+    toStrSec
 
   def +(b: DurationLite) = DurationLite(nanos + b.nanos)
   def -(b: DurationLite) = DurationLite(nanos - b.nanos)
