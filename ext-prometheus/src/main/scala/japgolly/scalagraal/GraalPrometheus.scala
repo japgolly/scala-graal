@@ -65,14 +65,23 @@ object GraalPrometheus {
     def addLabel(name: String, value: String): RestrictedHistogramBuilder =
       new RestrictedHistogramBuilder(b, l :+ ((name, value)))
 
-    def buckets(buckets: Double*): RestrictedHistogramBuilder =
+    def bucketsInSec(buckets: Double*): RestrictedHistogramBuilder =
       mod(_.buckets(buckets: _*))
 
-    def exponentialBuckets(start: Double, factor: Double, count: Int): RestrictedHistogramBuilder =
+    def exponentialBucketsInSec(start: Double, factor: Double, count: Int): RestrictedHistogramBuilder =
       mod(_.exponentialBuckets(start, factor, count))
 
-    def linearBuckets(start: Double, width: Double, count: Int): RestrictedHistogramBuilder =
+    def linearBucketsInSec(start: Double, width: Double, count: Int): RestrictedHistogramBuilder =
       mod(_.linearBuckets(start, width, count))
+
+    def bucketsInMs(buckets: Double*): RestrictedHistogramBuilder =
+      bucketsInSec(buckets.map(_ / 1000): _*)
+
+    def exponentialBucketsInMs(start: Double, factor: Double, count: Int): RestrictedHistogramBuilder =
+      exponentialBucketsInSec(start / 1000, factor / 1000, count)
+
+    def linearBucketsInMs(start: Double, width: Double, count: Int): RestrictedHistogramBuilder =
+      linearBucketsInSec(start / 1000, width / 1000, count)
 
     def namespace(namespace: String): RestrictedHistogramBuilder =
       mod(_.namespace(namespace))
