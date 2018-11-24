@@ -1,6 +1,5 @@
 package japgolly.scalagraal
 
-import java.time.Duration
 import org.graalvm.polyglot._
 import scala.annotation.tailrec
 import scala.collection.generic.CanBuildFrom
@@ -66,13 +65,12 @@ final class Expr[+A] private[Expr] (private[scalagraal] val run: Context => A) e
   @inline def <<[B](prev: Expr[B]): Expr[A] =
     prev >> this
 
-  def timed: Expr[(Duration, A)] =
+  def timed: Expr[(A, DurationLite)] =
     new Expr(ctx => {
-      val start = System.nanoTime()
+      val timer = DurationLite.start()
       val a = run(ctx)
-      val end = System.nanoTime()
-      val dur = Duration.ofNanos(end - start)
-      (dur, a)
+      val dur = timer.stop()
+      (a, dur)
     })
 }
 
