@@ -123,6 +123,12 @@ object Expr extends ExprBoilerplate {
                                                  (implicit cbf: CanBuildFrom[F[Expr[A]], A, F[A]]): Expr[F[A]] =
     stdlibDist[F, Expr[A], A](fea)(identity)
 
+  def stdlibDistDiscard[A, B](fa: Traversable[A])(f: A => Expr[B]): Expr[Unit] =
+    lift(c => fa.foreach(f(_).run(c)))
+
+  def stdlibCosequenceDiscard[A](es: Traversable[Expr[A]]): Expr[Unit] =
+    lift(c => es.foreach(_.run(c)))
+
   def fileOnClasspath(filename: String)(implicit lang: Language): Option[Expr[Value]] =
     SourceUtil.fileOnClasspath(filename).map(apply)
 
