@@ -19,7 +19,7 @@ object ScalaGraal {
     Lib.publicationSettings(ghProject)
 
   object Ver {
-    final val BooPickle     = "1.3.0"
+    final val BooPickle     = "1.3.1"
     final val Graal         = "1.0.0-rc9"
     final val KindProjector = "0.9.10"
     final val Microlibs     = "1.18"
