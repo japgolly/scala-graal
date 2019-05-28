@@ -19,14 +19,14 @@ object ScalaGraal {
     Lib.publicationSettings(ghProject)
 
   object Ver {
-    final val BooPickle     = "1.3.0"
-    final val Graal         = "1.0.0-rc9"
+    final val BooPickle     = "1.3.1"
+    final val Graal         = "1.0.0-rc14"
     final val KindProjector = "0.9.10"
     final val Microlibs     = "1.18"
-    final val MTest         = "0.6.6"
-    final val Prometheus    = "0.5.0"
+    final val MTest         = "0.6.7"
+    final val Prometheus    = "0.6.0"
     final val Scala211      = "2.11.12"
-    final val Scala212      = "2.12.7"
+    final val Scala212      = "2.12.8"
   }
 
   def scalacFlags = Seq(
