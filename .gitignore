@@ -21,3 +21,4 @@ target
 .classpath
 .metadata
 .bloop
+.metals
