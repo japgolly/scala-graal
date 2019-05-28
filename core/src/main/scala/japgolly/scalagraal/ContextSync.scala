@@ -43,7 +43,7 @@ object ContextSync {
       fixedContext(l :: Nil)
 
     def fixedContext(ls: Seq[Language]): Builder =
-      fixedContext(Context.create(ls.map(_.name): _*))
+      fixedContext(InternalUtils.newContext(ls.map(_.name)))
 
     def fixedContext(c: Context): Builder =
       start(Right(c), useMutex = true)
@@ -52,7 +52,7 @@ object ContextSync {
       newContextPerUse(l :: Nil)
 
     def newContextPerUse(ls: Seq[Language]): Builder =
-      newContextPerUse(Context.newBuilder(ls.map(_.name): _*).engine(_).build())
+      newContextPerUse(InternalUtils.newContext(ls.map(_.name), _))
 
     def newContextPerUse(c: => Context): Builder =
       start(Left(() => c), useMutex = false)

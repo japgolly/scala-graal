@@ -1,6 +1,6 @@
 package japgolly.scalagraal.benchmark
 
-import japgolly.scalagraal.SourceUtil
+import japgolly.scalagraal.{InternalUtils, SourceUtil}
 import java.util.concurrent.TimeUnit
 import org.graalvm.polyglot.{Context, Engine, Source}
 import org.openjdk.jmh.annotations._
@@ -30,7 +30,7 @@ object WarmupBM {
   }
 
   def newCtx(engine: Engine) = {
-    implicit val ctx = Context.newBuilder("js").engine(engine).build()
+    implicit val ctx = InternalUtils.newContext("js" :: Nil, engine)
     ctx.enter()
     Libs.foreach(ctx.eval)
     ctx

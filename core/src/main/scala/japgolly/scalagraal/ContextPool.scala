@@ -49,7 +49,7 @@ object ContextPool {
         def fixedContextPerThread(ls: Seq[Language]): Step2A =
           new Step2A(
             poolSize,
-            e => ContextSync.Builder.fixedContext(Context.newBuilder(ls.map(_.name): _*).engine(e).build()),
+            e => ContextSync.Builder.fixedContext(InternalUtils.newContext(ls.map(_.name), e)),
             OnShutdown.CloseContexts)
 
         def fixedContextPerThread(f: Engine => Context): Step2A =
@@ -59,7 +59,7 @@ object ContextPool {
           newContextPerUse(l :: Nil)
 
         def newContextPerUse(ls: Seq[Language]): Step2A =
-          newContextPerUse(Context.newBuilder(ls.map(_.name): _*).engine(_).build())
+          newContextPerUse(InternalUtils.newContext(ls.map(_.name), _))
 
         def newContextPerUse(f: Engine => Context): Step2A =
           new Step2A(poolSize, e => ContextSync.Builder.newContextPerUse(f(e)), OnShutdown.DoNothing)
