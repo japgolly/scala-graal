@@ -51,6 +51,7 @@ object ScalaGraal {
       scalacOptions                ++= scalacFlags,
       scalacOptions in Compile     ++= byScalaVersion { case (2, 12) => Seq("-opt:l:method") }.value,
       scalacOptions in Test        --= Seq("-Ywarn-dead-code"),
+      testFrameworks                := Nil,
       shellPrompt in ThisBuild      := ((s: State) => Project.extract(s).currentRef.project + "> "),
       triggeredMessage              := Watched.clearWhenTriggered,
       incOptions                    := incOptions.value.withLogRecompileOnMacro(false),
