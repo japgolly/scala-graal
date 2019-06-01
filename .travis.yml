@@ -19,7 +19,7 @@ install:
   - . ./install-jdk.sh --url "https://github.com/oracle/graal/releases/download/vm-${GRAAL_VER}/graalvm-ce-linux-amd64-${GRAAL_VER}.tar.gz"
 
 script:
-  - sbt ++$TRAVIS_SCALA_VERSION test
+  - sbt ++$TRAVIS_SCALA_VERSION 'set parallelExecution in ThisBuild := false' test
 
 before_cache:
   - rm -f $HOME/.ivy2/.sbt.ivy.lock
