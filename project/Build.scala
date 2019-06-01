@@ -110,5 +110,6 @@ object ScalaGraal {
   lazy val benchmark = project
     .configure(commonSettings.jvm, preventPublication)
     .enablePlugins(JmhPlugin)
-    .dependsOn(core)
+    .dependsOn(core, extBoopickleJVM)
+    .settings(unmanagedResources in Compile += (fullOptJS in Test in extBoopickleJS).value.data)
 }
