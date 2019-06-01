@@ -1,0 +1,35 @@
+language: scala
+
+scala:
+  - 2.11.12
+  - 2.12.8
+
+before_install:
+- wget https://github.com/sormuras/bach/raw/master/install-jdk.sh
+
+matrix:
+  include:
+    - env: JDK='GraalVM 19.0.0'
+      install: . ./install-jdk.sh --url "https://github.com/oracle/graal/releases/download/vm-19.0.0/graalvm-ce-linux-amd64-19.0.0.tar.gz"
+
+install:
+  - . $HOME/.nvm/nvm.sh
+  - nvm install 10
+  - nvm use 10
+  - export NODE_PATH="$(npm config get prefix)"/lib/node_modules
+  - npm install
+  - npm install jsdom@9.12.0 source-map-support
+
+script:
+  - sbt ++$TRAVIS_SCALA_VERSION test
+
+before_cache:
+  - rm -f $HOME/.ivy2/.sbt.ivy.lock
+  - find $HOME/.ivy2/cache -name "ivydata-*.properties" -type f -delete
+  - find $HOME/.sbt -name "*.lock" -type f -delete
+cache:
+  directories:
+    - $HOME/.coursier
+    - $HOME/.ivy2/cache
+    - $HOME/.sbt
+
