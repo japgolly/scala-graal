@@ -10,13 +10,13 @@ before_install:
 - wget https://github.com/sormuras/bach/raw/master/install-jdk.sh
 
 install:
-  - . ./install-jdk.sh --url "https://github.com/oracle/graal/releases/download/vm-${GRAAL_VER}/graalvm-ce-linux-amd64-${GRAAL_VER}.tar.gz"
   - . $HOME/.nvm/nvm.sh
   - nvm install 10
   - nvm use 10
   - export NODE_PATH="$(npm config get prefix)"/lib/node_modules
   - npm install
   - npm install jsdom@9.12.0 source-map-support
+  - . ./install-jdk.sh --url "https://github.com/oracle/graal/releases/download/vm-${GRAAL_VER}/graalvm-ce-linux-amd64-${GRAAL_VER}.tar.gz"
 
 script:
   - sbt ++$TRAVIS_SCALA_VERSION test
