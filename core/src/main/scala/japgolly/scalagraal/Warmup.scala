@@ -26,7 +26,7 @@ object Warmup {
   def sync(ctx: ContextSync)
           (innerReps: Int,
            expr: Expr[Any],
-           stopWhen: State => Boolean): State = {
+           stopWhen: State => Boolean = _ => true): State = {
 
     val warmupStart = DurationLite.start()
 
