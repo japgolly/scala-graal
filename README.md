@@ -1,3 +1,7 @@
+# scala-graal
+
+[![Build Status](https://travis-ci.org/japgolly/scala-graal.svg?branch=master)](https://travis-ci.org/japgolly/scala-graal)
+
 > I've begun work on #Scala / @graalvm integration. My goals:
 >
 > * FP & nice ergonomics from Scala
@@ -112,5 +116,5 @@ assert(result == Right("a is 9999 and b is 3"))
   * [ ] clear-config
   * [ ] caffiene (?)
 * build
-  * [ ] travis
-  * [ ] tut
+  * [x] travis
+  * [ ] tut/mdoc
