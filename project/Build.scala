@@ -25,7 +25,6 @@ object ScalaGraal {
     final val Microlibs     = "1.20"
     final val MTest         = "0.6.7"
     final val Prometheus    = "0.6.0"
-    final val Scala211      = "2.11.12"
     final val Scala212      = "2.12.8"
   }
 
@@ -47,7 +46,7 @@ object ScalaGraal {
       homepage                      := Some(url("https://github.com/japgolly/" + ghProject)),
       licenses                      += ("Apache-2.0", url("http://opensource.org/licenses/Apache-2.0")),
       scalaVersion                  := Ver.Scala212,
-      crossScalaVersions            := Seq(Ver.Scala211, Ver.Scala212),
+      crossScalaVersions            := Seq(Ver.Scala212),
       scalacOptions                ++= scalacFlags,
       scalacOptions in Compile     ++= byScalaVersion { case (2, 12) => Seq("-opt:l:method") }.value,
       scalacOptions in Test        --= Seq("-Ywarn-dead-code"),
