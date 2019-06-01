@@ -22,7 +22,7 @@ object ScalaGraal {
     final val BooPickle     = "1.3.1"
     final val Graal         = "19.0.0"
     final val KindProjector = "0.9.10"
-    final val Microlibs     = "1.18"
+    final val Microlibs     = "1.20"
     final val MTest         = "0.6.7"
     final val Prometheus    = "0.6.0"
     final val Scala211      = "2.11.12"
