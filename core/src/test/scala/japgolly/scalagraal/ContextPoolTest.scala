@@ -25,6 +25,9 @@ object ContextPoolTest extends TestSuite {
 
       assertEq(pool.poolState(), ContextPool.State.Active)
 
+      val threadPoolRegex = "ScalaGraal-pool-(\\d+)-thread-.*".r
+      var threadPool = Option.empty[Int]
+
       for (_ <- 1 to 4) {
         val fa = pool.eval(Expr("(1+1) * 100").asInt)
         val fb = pool.eval(Expr("10 * (5+3)").asInt)
@@ -42,7 +45,13 @@ object ContextPoolTest extends TestSuite {
         val a = Await.result(f, 1 second)
         assertEq(a.toOption, Some((200, 80)))
 
-        assertEq(threadNames, Set("ScalaGraal-pool-1-thread-1", "ScalaGraal-pool-1-thread-2"))
+        if (threadPool.isEmpty)
+          threadNames.head match {
+            case threadPoolRegex(p) => threadPool = Some(p.toInt)
+          }
+
+        val expectedThreadNames = Set(1, 2).map(i => s"ScalaGraal-pool-${threadPool.get}-thread-$i")
+        assertSet(threadNames, expectedThreadNames)
       }
 
       assert(pool.poolState() == ContextPool.State.Active)
