@@ -82,7 +82,7 @@ object ScalaGraal {
     .settings(
       name := "ext-boopickle",
       libraryDependencies += "io.suzaku" %%% "boopickle" % Ver.BooPickle)
-    .jsSettings(libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.14.0" % Test)
+    .jsSettings(libraryDependencies += "org.scalacheck" %%% "scalacheck" % "1.14.0" % Test)
 
   lazy val extBoopickleJS  = extBoopickle.js
   lazy val extBoopickleJVM = extBoopickle.jvm
