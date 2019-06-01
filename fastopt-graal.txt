@@ -1,0 +1,21 @@
+[error] org.scalajs.testcommon.RPCCore$RPCException: scala.scalajs.js.JavaScriptException: TypeError: Access to host class org.scalacheck.ScalaCheckFramework is not allowed or does not exist.
+[error] 	at org.scalajs.testcommon.RPCCore.$anonfun$handleMessage$4(RPCCore.scala:79)
+[error] 	at scala.Option.foreach(Option.scala:257)
+[error] 	at org.scalajs.testcommon.RPCCore.$anonfun$handleMessage$1(RPCCore.scala:77)
+[error] 	at org.scalajs.testcommon.RPCCore.$anonfun$handleMessage$1$adapted(RPCCore.scala:57)
+[error] 	at org.scalajs.testcommon.Serializer$.withInputStream(Serializer.scala:60)
+[error] 	at org.scalajs.testcommon.RPCCore.handleMessage(RPCCore.scala:57)
+[error] 	at org.scalajs.testadapter.ComJSEnvRPC$$anon$1.run(ComJSEnvRPC.scala:34)
+[error] Caused by: scala.scalajs.js.JavaScriptException: TypeError: Access to host class org.scalacheck.ScalaCheckFramework is not allowed or does not exist.
+[error] 	at <jscode>.@TypeError: Access to host class org.scalacheck.ScalaCheckFramework is not allowed or does not exist.(Unknown Source)
+[error] 	at <jscode>.file:ext-boopickle/js/target/scala-2.12/ext-boopickle-test-fastopt.js:5804:111@$c_Lorg_scalajs_testinterface_internal_FrameworkLoader$.loadFramework__T__Lsbt_testing_Framework(Unknown Source)
+[error] 	at <jscode>.(file:ext-boopickle/js/target/scala-2.12/ext-boopickle-test-fastopt.js:5528)
+[error] 	at <jscode>.(file:ext-boopickle/js/target/scala-2.12/ext-boopickle-test-fastopt.js:5550)
+[error] 	at <jscode>.file:ext-boopickle/js/target/scala-2.12/ext-boopickle-test-fastopt.js:20828:11@$c_sjsr_AnonFunction1.apply__O__O(Unknown Source)
+[error] 	at <jscode>.(file:ext-boopickle/js/target/scala-2.12/ext-boopickle-test-fastopt.js:3916)
+[error] 	at <jscode>.file:ext-boopickle/js/target/scala-2.12/ext-boopickle-test-fastopt.js:20828:11@$c_sjsr_AnonFunction1.apply__O__O(Unknown Source)
+[error] 	at <jscode>.(file:ext-boopickle/js/target/scala-2.12/ext-boopickle-test-fastopt.js:8667)
+[error] 	at <jscode>.file:ext-boopickle/js/target/scala-2.12/ext-boopickle-test-fastopt.js:20828:11@$c_sjsr_AnonFunction1.apply__O__O(Unknown Source)
+[error] 	at <jscode>.(file:ext-boopickle/js/target/scala-2.12/ext-boopickle-test-fastopt.js:20183)
+[error] 	at <jscode>.file:ext-boopickle/js/target/scala-2.12/ext-boopickle-test-fastopt.js:20828:11@$c_sjsr_AnonFunction1.apply__O__O(Unknown Source)
+
