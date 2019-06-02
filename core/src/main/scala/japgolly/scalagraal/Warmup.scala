@@ -59,10 +59,10 @@ object Warmup {
     b.result()
   }
 
-  def pool(pool: ContextPool)
-          (innerReps: Int,
-           expr: Expr[Any],
-           stopWhen: State => Boolean): PoolResult = {
+  def pool[F[_]](pool: ContextPool[F])
+                (innerReps: Int,
+                 expr: Expr[Any],
+                 stopWhen: State => Boolean): PoolResult = {
 
     val warmupStart  = DurationLite.start()
     val innerExpr    = mkInnerExpr(innerReps, expr)

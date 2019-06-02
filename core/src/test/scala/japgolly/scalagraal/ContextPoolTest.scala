@@ -1,8 +1,7 @@
 package japgolly.scalagraal
 
 import TestUtil.{sync => _, _}
-import org.graalvm.polyglot.Context
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
 import scalaz.Equal
 import utest._

@@ -1,13 +1,12 @@
 package japgolly.scalagraal
 
-import java.util.concurrent._
+import japgolly.scalagraal.Effect.{Async, AsyncES}
+import java.util.concurrent.{Future => _, _}
 import java.util.concurrent.atomic.AtomicInteger
 import org.graalvm.polyglot.{Context, Engine}
 import scala.concurrent.Future
-import scala.concurrent.JavaConversions.asExecutionContext
 
-// TODO Future... yuk -- although we *are* creating our own ExecutorService...
-trait ContextPool extends ContextF[Future] {
+trait ContextPool[F[_]] extends ContextF[F] {
   def poolSize: Int
   def shutdown(): Unit
   def poolState(): ContextPool.State
@@ -28,7 +27,7 @@ object ContextPool {
     case object DoNothing extends OnShutdown
   }
 
-  def fixedThreadPool(poolSize: Int)(implicit l: Language): ContextPool =
+  def fixedThreadPool(poolSize: Int)(implicit l: Language): ContextPool[Future] =
     Builder.fixedThreadPool(poolSize).fixedContextPerThread().build()
 
 //  def fixedThreadPool(poolSize: Int, f: Engine => ContextSync): ContextPool =
@@ -44,38 +43,44 @@ object ContextPool {
 //        def context(f: Engine => ContextSync): Step2B =
 //          new Step2B(poolSize, f)
 
-        def fixedContextPerThread()(implicit l: Language): Step2A =
+        def fixedContextPerThread()(implicit l: Language): Step2A[Future] =
           fixedContextPerThread(l :: Nil)
 
-        def fixedContextPerThread(ls: Seq[Language]): Step2A =
-          new Step2A(
+        def fixedContextPerThread(ls: Seq[Language]): Step2A[Future] =
+          new Step2A[Future](
             poolSize,
             e => ContextSync.Builder.fixedContext(InternalUtils.newContext(ls.map(_.name), e)),
             OnShutdown.CloseContexts)
 
-        def fixedContextPerThread(f: Engine => Context): Step2A =
-          new Step2A(poolSize, e => ContextSync.Builder.fixedContext(f(e)), OnShutdown.CloseContexts)
+        def fixedContextPerThread(f: Engine => Context): Step2A[Future] =
+          new Step2A[Future](poolSize, e => ContextSync.Builder.fixedContext(f(e)), OnShutdown.CloseContexts)
 
-        def newContextPerUse()(implicit l: Language): Step2A =
+        def newContextPerUse()(implicit l: Language): Step2A[Future] =
           newContextPerUse(l :: Nil)
 
-        def newContextPerUse(ls: Seq[Language]): Step2A =
+        def newContextPerUse(ls: Seq[Language]): Step2A[Future] =
           newContextPerUse(InternalUtils.newContext(ls.map(_.name), _))
 
-        def newContextPerUse(f: Engine => Context): Step2A =
-          new Step2A(poolSize, e => ContextSync.Builder.newContextPerUse(f(e)), OnShutdown.DoNothing)
+        def newContextPerUse(f: Engine => Context): Step2A[Future] =
+          new Step2A[Future](poolSize, e => ContextSync.Builder.newContextPerUse(f(e)), OnShutdown.DoNothing)
       }
 
-      final class Step2A(poolSize: Int, perThread: Engine => ContextSync.Builder, onShutdown: OnShutdown) {
-        def configure(f: ContextSync.Builder => ContextSync.Builder): Step2A =
+      final class Step2A[F[_]: AsyncES](poolSize: Int, perThread: Engine => ContextSync.Builder, onShutdown: OnShutdown) {
+        def configure(f: ContextSync.Builder => ContextSync.Builder): Step2A[F] =
           new Step2A(poolSize, f compose perThread, onShutdown)
 
-        def build(): ContextPool =
+        def resultType[G[_]: AsyncES]: Step2A[G] =
+          new Step2A(poolSize, perThread, onShutdown)
+
+        def build(): ContextPool[F] =
           new Step2B(poolSize, perThread.andThen(_.build()), onShutdown).build()
       }
 
-      final class Step2B(poolSize: Int, perThread: Engine => ContextSync, onShutdown: OnShutdown) {
-        def build(): ContextPool = {
+      final class Step2B[F[_]: AsyncES](poolSize: Int, perThread: Engine => ContextSync, onShutdown: OnShutdown) {
+        def resultType[G[_]: AsyncES]: Step2B[G] =
+          new Step2B(poolSize, perThread, onShutdown)
+
+        def build(): ContextPool[F] = {
           val e = Engine.create()
           fixedPool(poolSize, () => perThread(e), onShutdown)
         }
@@ -83,13 +88,14 @@ object ContextPool {
     }
   }
 
-  private def fixedPool(poolSize: Int, newContext: () => ContextSync, onShutdown: OnShutdown): ContextPool = {
+  private def fixedPool[F[_]: AsyncES](poolSize: Int, newContext: () => ContextSync, onShutdown: OnShutdown): ContextPool[F] = {
     val poolNo = poolCount.getAndIncrement()
     val threadCount = new AtomicInteger(1)
     fixedPool(poolSize, DefaultContextThread(poolNo, threadCount, newContext, _), onShutdown)
   }
 
-  private def fixedPool(poolSize: Int, createNewThread: Runnable => ContextThread, onShutdown: OnShutdown): ContextPool = {
+  private def fixedPool[F[_]](poolSize: Int, createNewThread: Runnable => ContextThread, onShutdown: OnShutdown)
+                             (implicit F: AsyncES[F]): ContextPool[F] = {
     val lock = new AnyRef
     var threads = List.empty[ContextThread]
 
@@ -119,6 +125,8 @@ object ContextPool {
     }
 
     executor.prestartAllCoreThreads()
+
+    implicit val async = F(executor)
 
     new ExecutorServiceBased(poolSize, executor, shutdown)
   }
@@ -151,22 +159,22 @@ object ContextPool {
     }
   }
 
-  private class ExecutorServiceBased(val poolSize: Int, es: ExecutorService, doShutdown: () => Unit) extends ContextPool {
-    private[this] implicit val ec = asExecutionContext(es)
+  private class ExecutorServiceBased[F[_]](val poolSize: Int, es: ExecutorService, doShutdown: () => Unit)
+                                          (implicit F: Async[F]) extends ContextPool[F] {
 
     private def contextSync(): ContextSync =
       Thread.currentThread().asInstanceOf[ContextThread].contextSync
 
     override def eval[A](expr: Expr[A], mw2: ContextMetrics.Writer) = {
       val startTime = DurationLite.start()
-      Future {
+      F.delay {
         contextSync().evalT(expr, startTime, mw2)
       }
     }
 
     override def evalWithStats[A](expr: Expr[A], mw2: ContextMetrics.Writer) = {
       val startTime = DurationLite.start()
-      Future {
+      F.delay {
         val cm = ContextMetrics.Writer.StoreLast()
         val er = contextSync().evalT(expr, startTime, mw2 >> cm)
         ContextMetrics.AndExprResult(cm.last, er)

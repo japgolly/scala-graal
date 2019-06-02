@@ -2,7 +2,7 @@ package japgolly.scalagraal
 
 import org.graalvm.polyglot.{Context, Engine}
 
-trait ContextSync extends ContextF[ContextSync.Id] {
+trait ContextSync extends ContextF[Effect.Id] {
 
   override def eval[A](expr: Expr[A], metricWriter: ContextMetrics.Writer): Expr.Result[A] =
     evalT(expr, DurationLite.start(), metricWriter)
@@ -21,8 +21,6 @@ trait ContextSync extends ContextF[ContextSync.Id] {
 }
 
 object ContextSync {
-
-  type Id[A] = A
 
   def apply()(implicit l: Language): ContextSync = fixedContext()
 
