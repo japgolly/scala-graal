@@ -1,68 +1,46 @@
 package japgolly.scalagraal
 
 import java.io.PrintStream
+import ContextMetrics._
+
+final class ContextMetrics(private val data: Array[Long]) extends AnyVal {
+  private def get(i: Int): DurationLite = new DurationLite(data(i))
+  def apply(m: Metric)   : DurationLite = get(m.ord)
+  def waited             : DurationLite = get(0)
+  def pre                : DurationLite = get(1)
+  def body               : DurationLite = get(2)
+  def post               : DurationLite = get(3)
+  def total              : DurationLite = get(4)
+}
 
 object ContextMetrics {
 
-  trait Writer { self =>
-    def apply(stats: Stats): Unit
+  // TODO Lots of yuk in this file to be fast as possible. Benchmark without some of the yuk, it might not be necessary.
 
-    def >>(next: Writer): Writer =
-      if (next eq Writer.Noop)
-        this
-      else
-        new Writer {
-          override def apply(stats: Stats): Unit = {
-            self(stats)
-            next(stats)
-          }
-        }
+  def apply(waited: DurationLite,
+            pre   : DurationLite,
+            body  : DurationLite,
+            post  : DurationLite,
+            total : DurationLite): ContextMetrics = {
+    val a = Array[Long](
+      waited.nanos,
+      pre   .nanos,
+      body  .nanos,
+      post  .nanos,
+      total .nanos)
+    new ContextMetrics(a)
   }
 
-  object Writer {
-    def perMetric(f: Metric => DurationLite => Unit): Writer = {
-      val fWait  = f(Metric.Wait)
-      val fPre   = f(Metric.Pre)
-      val fBody  = f(Metric.Body)
-      val fPost  = f(Metric.Post)
-      val fTotal = f(Metric.Total)
-      new Writer {
-        override def apply(stats: Stats): Unit = {
-          fWait (stats.waited)
-          fPre  (stats.pre)
-          fBody (stats.body)
-          fPost (stats.post)
-          fTotal(stats.total)
-        }
-      }
-    }
-
-    def apply(f: Stats => Unit): Writer =
-      new Writer {
-        override def apply(stats: Stats): Unit = f(stats)
-      }
-
-    object Noop extends Writer {
-      override def apply(stats: Stats) = ()
-      override def >>(next: Writer) = next
-    }
-
-    final case class Print(fmt : DurationLite => String = _.toStrMs,
-                           name: String                 = "graal-eval",
-                           to  : PrintStream            = System.out) extends Writer {
-
-      override def apply(stats: Stats): Unit = {
-        import stats._
-        to.println(s"[$name] waited: ${fmt(waited)} | pre: ${fmt(pre)} | eval: ${fmt(body)} | post: ${fmt(post)} | total: ${fmt(total)}")
-      }
-    }
-
-    final case class StoreLast() extends Writer {
-      var last = Stats.Zero
-      override def apply(stats: Stats): Unit =
-        this.last = stats
-    }
+  val Zero: ContextMetrics = {
+    val z = DurationLite.Zero
+    apply(z, z, z, z, z)
   }
+
+  final case class AndExprResult[+A](metrics: ContextMetrics, result: Expr.Result[A]) {
+    override def toString = s"ContextMetrics.AndResult($metrics, $result)"
+  }
+
+  // ===================================================================================================================
 
   sealed abstract class Metric(final val ord: Int)
   object Metric {
@@ -81,36 +59,66 @@ object ContextMetrics {
     }
   }
 
-  final class Stats(private val data: Array[Long]) extends AnyVal {
-    private def get(i: Int): DurationLite = new DurationLite(data(i))
-    def apply(m: Metric)   : DurationLite = get(m.ord)
-    def waited             : DurationLite = get(0)
-    def pre                : DurationLite = get(1)
-    def body               : DurationLite = get(2)
-    def post               : DurationLite = get(3)
-    def total              : DurationLite = get(4)
+  // ===================================================================================================================
+
+  trait Writer { self =>
+    def apply(m: ContextMetrics): Unit
+
+    def >>(next: Writer): Writer =
+      if (next eq Writer.Noop)
+        this
+      else
+        new Writer {
+          override def apply(m: ContextMetrics): Unit = {
+            self(m)
+            next(m)
+          }
+        }
   }
 
-  object Stats {
-    def apply(waited: DurationLite,
-              pre   : DurationLite,
-              body  : DurationLite,
-              post  : DurationLite,
-              total : DurationLite): Stats = {
-      val a = Array[Long](
-        waited.nanos,
-        pre   .nanos,
-        body  .nanos,
-        post  .nanos,
-        total .nanos)
-      new Stats(a)
+  object Writer {
+    def perMetric(f: Metric => DurationLite => Unit): Writer = {
+      val fWait  = f(Metric.Wait)
+      val fPre   = f(Metric.Pre)
+      val fBody  = f(Metric.Body)
+      val fPost  = f(Metric.Post)
+      val fTotal = f(Metric.Total)
+      new Writer {
+        override def apply(m: ContextMetrics): Unit = {
+          fWait (m.waited)
+          fPre  (m.pre)
+          fBody (m.body)
+          fPost (m.post)
+          fTotal(m.total)
+        }
+      }
     }
 
-    val Zero: Stats = {
-      val z = DurationLite.Zero
-      apply(z, z, z, z, z)
+    def apply(f: ContextMetrics => Unit): Writer =
+      new Writer {
+        override def apply(m: ContextMetrics): Unit = f(m)
+      }
+
+    object Noop extends Writer {
+      override def apply(stats: ContextMetrics) = ()
+      override def >>(next: Writer) = next
+    }
+
+    final case class Print(fmt : DurationLite => String = _.toStrMs,
+                           name: String                 = "graal-eval",
+                           to  : PrintStream            = System.out) extends Writer {
+
+      override def apply(stats: ContextMetrics): Unit = {
+        import stats._
+        to.println(s"[$name] waited: ${fmt(waited)} | pre: ${fmt(pre)} | eval: ${fmt(body)} | post: ${fmt(post)} | total: ${fmt(total)}")
+      }
+    }
+
+    final case class StoreLast() extends Writer {
+      var last = ContextMetrics.Zero
+      override def apply(stats: ContextMetrics): Unit =
+        this.last = stats
     }
   }
+
 }
-
-// TODO Lots of yuk in this file to be fast as possible. Benchmark without some of the yuk, it might not be necessary.

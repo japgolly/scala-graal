@@ -23,7 +23,7 @@ object GraalPrometheusTest extends TestSuite {
       val writer = GraalPrometheus.Builder()
         .registerAndBuild(registry)
 
-      writer(ContextMetrics.Stats(
+      writer(ContextMetrics(
         waited = sec(1),
         pre = sec(3),
         body = sec(5),
@@ -52,7 +52,7 @@ object GraalPrometheusTest extends TestSuite {
         .configureByMetric{ case ContextMetrics.Metric.Body  => _.addLabel("body2", "such amazing") }
         .registerAndBuild(registry)
 
-      writer(ContextMetrics.Stats(
+      writer(ContextMetrics(
         waited = sec(1),
         pre = sec(3),
         body = sec(5),

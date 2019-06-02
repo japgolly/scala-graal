@@ -6,7 +6,8 @@ import org.graalvm.polyglot.{Context, Engine}
 import scala.concurrent.Future
 import scala.concurrent.JavaConversions.asExecutionContext
 
-trait ContextPool extends ContextAsync {
+// TODO Future... yuk -- although we *are* creating our own ExecutorService...
+trait ContextPool extends ContextF[Future] {
   def poolSize: Int
   def shutdown(): Unit
   def poolState(): ContextPool.State
@@ -156,21 +157,19 @@ object ContextPool {
     private def contextSync(): ContextSync =
       Thread.currentThread().asInstanceOf[ContextThread].contextSync
 
-    override def eval[A](expr: Expr[A],
-                         mw2: ContextMetrics.Writer = ContextMetrics.Writer.Noop) = {
+    override def eval[A](expr: Expr[A], mw2: ContextMetrics.Writer) = {
       val startTime = DurationLite.start()
       Future {
         contextSync().evalT(expr, startTime, mw2)
       }
     }
 
-    override def evalWithStats[A](expr: Expr[A],
-                                  mw2: ContextMetrics.Writer = ContextMetrics.Writer.Noop) = {
+    override def evalWithStats[A](expr: Expr[A], mw2: ContextMetrics.Writer) = {
       val startTime = DurationLite.start()
       Future {
-        val v = ContextMetrics.Writer.StoreLast()
-        val r = contextSync().evalT(expr, startTime, mw2 >> v)
-        (r, v.last)
+        val cm = ContextMetrics.Writer.StoreLast()
+        val er = contextSync().evalT(expr, startTime, mw2 >> cm)
+        ContextMetrics.AndExprResult(cm.last, er)
       }
     }
 

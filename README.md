@@ -108,8 +108,7 @@ assert(result == Right("a is 9999 and b is 3"))
     * jetty
 * Integration
   * [ ] Scalaz (?)
-  * [ ] Cats (?)
-  * [ ] Cats Effect (?)
+  * [ ] Cats Effect & Cats (?)
   * [x] Prometheus
   * [x] BooPickle
   * [ ] circe (?)

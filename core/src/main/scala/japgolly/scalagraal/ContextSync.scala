@@ -2,19 +2,15 @@ package japgolly.scalagraal
 
 import org.graalvm.polyglot.{Context, Engine}
 
-trait ContextSync {
+trait ContextSync extends ContextF[ContextSync.Id] {
 
-  def eval[A](expr: Expr[A],
-              additionalMetricWriter: ContextMetrics.Writer = ContextMetrics.Writer.Noop
-             ): Expr.Result[A] =
-    evalT(expr, DurationLite.start(), additionalMetricWriter)
+  override def eval[A](expr: Expr[A], metricWriter: ContextMetrics.Writer): Expr.Result[A] =
+    evalT(expr, DurationLite.start(), metricWriter)
 
-  def evalWithStats[A](expr: Expr[A],
-                       additionalMetricWriter: ContextMetrics.Writer = ContextMetrics.Writer.Noop
-                      ): (Expr.Result[A], ContextMetrics.Stats) = {
-    val v = ContextMetrics.Writer.StoreLast()
-    val r = evalT(expr, DurationLite.start(), additionalMetricWriter >> v)
-    (r, v.last)
+  override def evalWithStats[A](expr: Expr[A], metricWriter: ContextMetrics.Writer): ContextMetrics.AndExprResult[A] = {
+    val cm = ContextMetrics.Writer.StoreLast()
+    val er = evalT(expr, DurationLite.start(), metricWriter >> cm)
+    ContextMetrics.AndExprResult(cm.last, er)
   }
 
   def close(): Unit
@@ -25,6 +21,8 @@ trait ContextSync {
 }
 
 object ContextSync {
+
+  type Id[A] = A
 
   def apply()(implicit l: Language): ContextSync = fixedContext()
 
@@ -217,13 +215,13 @@ object ContextSync {
       } finally {
         val mw = metricWriter2 >> metricWriter
         val durTotal = timerTotal.stop()
-        val stats = ContextMetrics.Stats(
+        val metrics = ContextMetrics(
           waited = durWaited,
           pre    = durPre,
           body   = durBody,
           post   = durPost,
           total  = durTotal)
-        mw(stats)
+        mw(metrics)
       }
     }
 

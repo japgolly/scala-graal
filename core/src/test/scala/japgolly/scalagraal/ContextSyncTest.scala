@@ -12,10 +12,10 @@ object ContextSyncTest extends TestSuite {
     }
 
     'evalWithStats {
-      val (r, s) = sync.evalWithStats(Expr("(1+1) * 100").asInt)
-      assertEvalResult(r, 200)
-      assert(s.total.nanos != 0)
-      s.total.toStrNs
+      val r = sync.evalWithStats(Expr("(1+1) * 100").asInt)
+      assertEvalResult(r.result, 200)
+      assert(r.metrics.total.nanos != 0)
+      r.metrics.total.toStrNs
     }
 
   }
