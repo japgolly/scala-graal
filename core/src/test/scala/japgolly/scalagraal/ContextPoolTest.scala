@@ -22,7 +22,7 @@ object ContextPoolTest extends TestSuite {
           .configure(_.onContextCreate(Expr.point{mutex.synchronized(threadNames += Thread.currentThread().getName)}))
           .build()
 
-      assertEq(pool.poolState(), ContextPool.State.Active)
+      assertEq(pool.unsafePoolState(), ContextPool.State.Active)
 
       val threadPoolRegex = "ScalaGraal-pool-(\\d+)-thread-.*".r
       var threadPool = Option.empty[Int]
@@ -53,9 +53,9 @@ object ContextPoolTest extends TestSuite {
         assertSet(threadNames, expectedThreadNames)
       }
 
-      assert(pool.poolState() == ContextPool.State.Active)
-      pool.shutdown()
-      eventually(pool.poolState() == ContextPool.State.Terminated)
+      assert(pool.unsafePoolState() == ContextPool.State.Active)
+      pool.unsafeShutdown()
+      eventually(pool.unsafePoolState() == ContextPool.State.Terminated)
     }
 
   }

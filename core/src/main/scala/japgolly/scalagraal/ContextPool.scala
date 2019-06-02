@@ -7,9 +7,13 @@ import org.graalvm.polyglot.{Context, Engine}
 import scala.concurrent.Future
 
 trait ContextPool[F[_]] extends ContextF[F] {
-  def poolSize: Int
-  def shutdown(): Unit
-  def poolState(): ContextPool.State
+  val poolSize: Int
+
+  /** unsafe because impure */
+  def unsafeShutdown(): Unit
+
+  /** unsafe because impure */
+  def unsafePoolState(): ContextPool.State
 }
 
 object ContextPool {
@@ -182,9 +186,9 @@ object ContextPool {
     }
 
     private val shutdownLock = new AnyRef
-    override def shutdown(): Unit =
+    override def unsafeShutdown(): Unit =
       shutdownLock.synchronized {
-        poolState() match {
+        unsafePoolState() match {
           case State.Active =>
             doShutdown()
           case State.ShuttingDown | State.Terminated =>
@@ -193,7 +197,7 @@ object ContextPool {
         es.shutdown()
       }
 
-    override def poolState(): State =
+    override def unsafePoolState(): State =
       if (es.isTerminated)
         State.Terminated
       else if (es.isShutdown)

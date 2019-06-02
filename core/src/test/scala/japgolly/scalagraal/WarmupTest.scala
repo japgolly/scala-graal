@@ -29,7 +29,7 @@ object WarmupTest extends TestSuite {
         warm <- result.warm
         done <- result.done
       } yield {
-        pool.shutdown()
+        pool.unsafeShutdown()
         assertEq("warm.outerReps", warm.outerReps, 3)
         assertEq("done.outerReps", done.outerReps, 4)
         done
