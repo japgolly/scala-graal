@@ -71,13 +71,13 @@ object ContextPoolTest extends TestSuite {
 
         val fib = Expr.compile1[Int](n => s"function fibonacci(n){for(var r,c=1,f=0;0<=n;)r=c,c+=f,f=r,n--;return f}; fibonacci($n) + ''")(_.asString)
 
-        val ok = pool.eval(fib(10))
-        assertEq(ok, Some(Right("89")))
-
         // scala> ctx.evalWithStats(fib(20000000))
         // res0 = ContextMetrics.AndResult(ContextMetrics(590 ms), Right(Infinity))
         val ko = pool.eval(fib(20000000))
         assertEq(ko, None)
+
+        val ok = pool.eval(fib(0))
+        assertEq(ok, Some(Right("1")))
 
       } finally {
         pool.unsafeShutdown()
