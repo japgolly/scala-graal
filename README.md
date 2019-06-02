@@ -66,6 +66,14 @@ val result = ContextSync().eval(expr)
 assert(result == Right("a is 9999 and b is 3"))
 ```
 
+# Additional doc & examples
+
+Will be added later. For now, I suggest having a look at the:
+
+1. tests (for more usage examples)
+2. benchmarks (for warmup examples)
+3. the source code
+
 
 # Roadmap
 
