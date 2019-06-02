@@ -85,6 +85,7 @@ object ScalaGraal {
     .configure(commonSettings.jvm, publicationSettings.jvm, testSettings.jvm)
     .settings(
       libraryDependencies += "org.graalvm.sdk" % "graal-sdk" % Ver.Graal,
+      initialCommands := "import japgolly.scalagraal._, GraalJs._; val ctx = ContextSync()",
       genExprBoilerplate := GenExprBoilerplate(sourceDirectory.value / "main" / "scala"))
 
   lazy val extBoopickle = crossProject(JSPlatform, JVMPlatform)

@@ -92,7 +92,7 @@ Will be added later. For now, I suggest having a look at the:
   * multi-threaded service
     * [x] fixed pool
     * [x] shutdown
-  * [ ] synchronous with time limit
+  * [x] synchronous with time limit
   * [ ] synchronous resource pool (?)
   * [ ] pure scheduling & execution (?)
   * [ ] higher-level profunctor-like (?)

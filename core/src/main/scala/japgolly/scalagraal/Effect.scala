@@ -21,6 +21,29 @@ object Effect {
 
     implicit def futureInstance: AsyncES[Future] =
       es => Async.futureInstance(JavaConversions.asExecutionContext(es))
+
+    def syncTimed(timeout: Long, timeUnit: TimeUnit): AsyncES[Option] =
+      es => {
+        val asyncJ = Async.javaFutureInstance(es)
+        new Async[Option] {
+          override def delay[A](a: => A) = {
+            val f = asyncJ.delay(a)
+            try
+              Some(f.get(timeout, timeUnit))
+            catch {
+              case _: TimeoutException =>
+                f.cancel(true)
+                None
+              case _: InterruptedException =>
+                f.cancel(true)
+                Thread.currentThread().interrupt()
+                None
+              case _: CancellationException =>
+                None
+            }
+          }
+        }
+      }
   }
 
   // ===================================================================================================================

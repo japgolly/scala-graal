@@ -1,14 +1,16 @@
 package japgolly.scalagraal
 
 import TestUtil.{sync => _, _}
-import scala.concurrent.{Await, ExecutionContext, Future}
+import java.util.concurrent.TimeUnit
+import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration._
 import scalaz.Equal
 import utest._
 
 object ContextPoolTest extends TestSuite {
 
-  implicit val stateEq: Equal[ContextPool.State] = Equal.equalA
+  private implicit val stateEq: Equal[ContextPool.State] = Equal.equalA
+  private implicit val resultEq: Equal[Option[Expr.Result[String]]] = Equal.equalA
 
   override def tests = Tests {
 
@@ -58,5 +60,28 @@ object ContextPoolTest extends TestSuite {
       eventually(pool.unsafePoolState() == ContextPool.State.Terminated)
     }
 
+    'awaitResultsWithTimeout {
+      val pool = ContextPool.Builder
+        .fixedThreadPool(1)
+        .fixedContextPerThread()
+        .awaitResultsWithTimeout(100, TimeUnit.MILLISECONDS)
+        .build()
+
+      try {
+
+        val fib = Expr.compile1[Int](n => s"function fibonacci(n){for(var r,c=1,f=0;0<=n;)r=c,c+=f,f=r,n--;return f}; fibonacci($n) + ''")(_.asString)
+
+        val ok = pool.eval(fib(10))
+        assertEq(ok, Some(Right("89")))
+
+        // scala> ctx.evalWithStats(fib(20000000))
+        // res0 = ContextMetrics.AndResult(ContextMetrics(590 ms), Right(Infinity))
+        val ko = pool.eval(fib(20000000))
+        assertEq(ko, None)
+
+      } finally {
+        pool.unsafeShutdown()
+      }
+    }
   }
 }

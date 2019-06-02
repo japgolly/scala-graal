@@ -4,6 +4,8 @@ import java.io.PrintStream
 import ContextMetrics._
 
 final class ContextMetrics(private val data: Array[Long]) extends AnyVal {
+  override def toString = s"ContextMetrics($total)"
+
   private def get(i: Int): DurationLite = new DurationLite(data(i))
   def apply(m: Metric)   : DurationLite = get(m.ord)
   def waited             : DurationLite = get(0)

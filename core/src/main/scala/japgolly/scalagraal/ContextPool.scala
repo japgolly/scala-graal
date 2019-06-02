@@ -76,6 +76,9 @@ object ContextPool {
         def resultType[G[_]: AsyncES]: Step2A[G] =
           new Step2A(poolSize, perThread, onShutdown)
 
+        def awaitResultsWithTimeout(timeout: Long, timeUnit: TimeUnit) =
+          resultType(AsyncES.syncTimed(timeout, timeUnit))
+
         def build(): ContextPool[F] =
           new Step2B(poolSize, perThread.andThen(_.build()), onShutdown).build()
       }
@@ -83,6 +86,9 @@ object ContextPool {
       final class Step2B[F[_]: AsyncES](poolSize: Int, perThread: Engine => ContextSync, onShutdown: OnShutdown) {
         def resultType[G[_]: AsyncES]: Step2B[G] =
           new Step2B(poolSize, perThread, onShutdown)
+
+        def awaitResultsWithTimeout(timeout: Long, timeUnit: TimeUnit) =
+          resultType(AsyncES.syncTimed(timeout, timeUnit))
 
         def build(): ContextPool[F] = {
           val e = Engine.create()
