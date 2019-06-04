@@ -11,6 +11,12 @@ import java.util.UUID
   *
   * This assumes provided functions treat their inputs as opaque values (e.g. inspecting an argument representing a
   * username to provide "john" a different result than "mary" is a violation.)
+  *
+  * Note: If you call compileN with a function that returns an [[japgolly.scalagraal.Expr]] and see an error about
+  * an implicit Functor not found, add this import:
+  * {{{
+  *   import cats.instances.either._
+  * }}}
   */
 object CacheAndReplace extends CacheAndReplaceBoilerplate {
 
