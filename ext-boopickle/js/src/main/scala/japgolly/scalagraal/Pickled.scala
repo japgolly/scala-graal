@@ -20,7 +20,7 @@ final class Pickled[A](buf: ByteBuffer) {
 }
 
 object Pickled {
-  @JSExportTopLevel("_scalagraal_bookpickle_Pickled")
+  @JSExportTopLevel("ScalaGraalBookpicklePickled")
   def fromGraal(i: Int8Array) =
     new Pickled(TypedArrayBuffer.wrap(i))
 }

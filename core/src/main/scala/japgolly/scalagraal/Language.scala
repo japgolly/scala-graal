@@ -10,7 +10,7 @@ sealed trait Language {
   def bound(b: Binding): Source => Context => Value
   def translateValue(value: Any): Any
 
-  private[scalagraal] val argBinding = Language.Binding("__scalagraal_arg")
+  private[scalagraal] val argBinding = Language.Binding("ScalaGraalArg")
   private[scalagraal] val argBinder = bound(argBinding)
   private[scalagraal] val argElement = (0 until 22).map(i => s"${argBinding.localValue}[$i]").toVector
 }
