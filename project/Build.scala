@@ -20,10 +20,12 @@ object ScalaGraal {
 
   object Ver {
     final val BooPickle     = "1.3.1"
+    final val Cats          = "1.6.1"
     final val Graal         = "19.0.0"
     final val KindProjector = "0.9.10"
     final val Microlibs     = "1.20"
     final val MTest         = "0.6.7"
+    final val Nyaya         = "0.8.1"
     final val Prometheus    = "0.6.0"
     final val Scala212      = "2.12.8"
   }
@@ -73,6 +75,10 @@ object ScalaGraal {
 
   lazy val genExprBoilerplate = TaskKey[File]("genExprBoilerplate")
 
+  lazy val genTemplateBoilerplate = TaskKey[File]("genTemplateBoilerplate")
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
   lazy val root =
     Project("root", file("."))
       .configure(commonSettings.jvm, preventPublication)
@@ -94,7 +100,13 @@ object ScalaGraal {
   lazy val util = crossProject(JSPlatform, JVMPlatform)
     .in(file("util"))
     .configureCross(commonSettings, publicationSettings, testSettings)
-    .jvmConfigure(_.dependsOn(core))
+    .jvmConfigure(_
+      .dependsOn(core)
+      .settings(
+        libraryDependencies ++= Seq(
+          "org.typelevel"             %% "cats-core"  % Ver.Cats,
+          "com.github.japgolly.nyaya" %% "nyaya-test" % Ver.Nyaya % Test),
+        genTemplateBoilerplate := GenTemplateBoilerplate(sourceDirectory.value / "main" / "scala")))
 
   lazy val extBoopickle = crossProject(JSPlatform, JVMPlatform)
     .in(file("ext-boopickle"))
