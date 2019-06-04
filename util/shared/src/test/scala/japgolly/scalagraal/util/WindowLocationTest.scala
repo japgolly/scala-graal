@@ -31,6 +31,16 @@ object WindowLocationTest extends TestSuite {
           search   = "?x",
           hash     = ""))
 
+    * - assertParses("https://what.com.au:123", WindowLocation(
+          href     = "https://what.com.au:123",
+          origin   = "https://what.com.au:123",
+          protocol = "https:",
+          hostname = "what.com.au",
+          port     = "123",
+          pathname = "",
+          search   = "",
+          hash     = ""))
+
     * - assertParses("https://what.com.au:123/", WindowLocation(
           href     = "https://what.com.au:123/",
           origin   = "https://what.com.au:123",
