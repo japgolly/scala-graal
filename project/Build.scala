@@ -24,6 +24,7 @@ object ScalaGraal {
     final val Graal         = "19.0.0"
     final val KindProjector = "0.9.10"
     final val Microlibs     = "1.20"
+    final val MonadicFor    = "0.3.0"
     final val MTest         = "0.6.7"
     final val Nyaya         = "0.8.1"
     final val Prometheus    = "0.6.0"
@@ -60,6 +61,7 @@ object ScalaGraal {
       releasePublishArtifactsAction := PgpKeys.publishSigned.value,
       releaseTagComment             := s"v${(version in ThisBuild).value}",
       releaseVcsSign                := true,
+      addCompilerPlugin("com.olegpy" %% "better-monadic-for" % Ver.MonadicFor),
       addCompilerPlugin("org.spire-math" %% "kind-projector" % Ver.KindProjector)))
 
   def testSettings = ConfigureBoth(
