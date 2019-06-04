@@ -3,6 +3,17 @@ package japgolly.scalagraal.util
 import japgolly.scalagraal._
 import GraalJs._
 
+/** Instructions for basic React SSR on the GraalVM:
+  *
+  * 1. Bundle React JS into your application yourself.
+  * 2. Use [[Expr.requireFileOnClasspath()]] to load React JS files.
+  * 3. Provide the above [[Expr]]s to [[ReactSsrUtil.Setup.apply()]].
+  * 4. Run the resulting [[Expr]] of above to initialise your [[ContextF]] instance(s).
+  * 5. Optionally call [[ReactSsrUtil.setUrl()]] if your component expects to read it (eg. has a router).
+  * 6. Call [[ReactSsrUtil.renderToString()]] or [[ReactSsrUtil.renderToStaticMarkup()]] to render a component.
+  *
+  * See ScalaGraal's tests for concrete usage examples.
+  */
 object ReactSsrUtil {
 
   private val SetWindowLocationFnName = "ScalaGraalSWL"
@@ -28,6 +39,8 @@ object ReactSsrUtil {
         _ <- postReact
       } yield ()
   }
+
+  // ===================================================================================================================
 
   val setWindowLocation: WindowLocation => Expr[Unit] = {
     implicit val e = ExprParam.RawValueFn[WindowLocation]
