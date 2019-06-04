@@ -78,6 +78,7 @@ object ScalaGraal {
       .configure(commonSettings.jvm, preventPublication)
       .aggregate(
         core,
+        utilJVM, utilJS,
         extBoopickleJVM, extBoopickleJS, extPrometheus,
         benchmark)
 
@@ -87,6 +88,13 @@ object ScalaGraal {
       libraryDependencies += "org.graalvm.sdk" % "graal-sdk" % Ver.Graal,
       initialCommands := "import japgolly.scalagraal._, GraalJs._; val ctx = ContextSync()",
       genExprBoilerplate := GenExprBoilerplate(sourceDirectory.value / "main" / "scala"))
+
+  lazy val utilJS  = util.js
+  lazy val utilJVM = util.jvm
+  lazy val util = crossProject(JSPlatform, JVMPlatform)
+    .in(file("util"))
+    .configureCross(commonSettings, publicationSettings, testSettings)
+    .jvmConfigure(_.dependsOn(core))
 
   lazy val extBoopickle = crossProject(JSPlatform, JVMPlatform)
     .in(file("ext-boopickle"))
@@ -111,6 +119,6 @@ object ScalaGraal {
   lazy val benchmark = project
     .configure(commonSettings.jvm, preventPublication)
     .enablePlugins(JmhPlugin)
-    .dependsOn(core, extBoopickleJVM)
+    .dependsOn(core, utilJVM, extBoopickleJVM)
     .settings(unmanagedResources in Compile += (fullOptJS in Test in extBoopickleJS).value.data)
 }
