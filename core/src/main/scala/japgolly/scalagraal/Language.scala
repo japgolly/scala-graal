@@ -8,11 +8,10 @@ sealed trait Language {
   val name: String
   def polyglotImport(b: Binding): String
   def bound(b: Binding): Source => Context => Value
-  def translateValue(value: Any): Any
 
   private[scalagraal] val argBinding = Language.Binding("ScalaGraalArg")
   private[scalagraal] val argBinder = bound(argBinding)
-  private[scalagraal] val argElement = (0 until 22).map(i => s"${argBinding.localValue}[$i]").toVector
+  private[scalagraal] val argElement = (0 until 22).map(i => s"${argBinding.localValue}[$i]").toArray.apply _
 }
 
 object Language {
@@ -40,6 +39,8 @@ object Language {
       new Binding(bindingName, localValue)
   }
 
+  // ===================================================================================================================
+
   type JS = JS.type
   case object JS extends Language {
     override val name = "js"
@@ -48,7 +49,7 @@ object Language {
       s"Polyglot.import('${b.bindingName}')"
 
     override def bound(b: Binding): Source => Context => Value = {
-      val set   = Source.create("js", s"${b.localValue}=Polyglot.import('${b.bindingName}')")
+      val set   = Source.create("js", s"${b.localValue}=${polyglotImport(b)}")
       val unset = Source.create("js", s"${b.localValue}=null")
       body => ctx => {
         ctx.eval(set)
@@ -59,12 +60,6 @@ object Language {
           ()
         }
       }
-    }
-
-    override def translateValue(value: Any): Any = value match {
-      case Some(a) => translateValue(a)
-      case None    => null
-      case a       => a
     }
   }
 }
