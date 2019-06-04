@@ -61,6 +61,10 @@ object ReactSsrUtilTest extends TestSuite {
       assertEvalResult(sync.eval(expr), "lol")
     }
 
+    'navigator - {
+      sync.eval(setup >> Expr("JSON.stringify(window.navigator)").asString).right.get
+    }
+
     'sample - {
       val expr = for {
         _ <- setup

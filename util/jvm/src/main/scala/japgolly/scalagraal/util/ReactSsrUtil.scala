@@ -28,8 +28,16 @@ object ReactSsrUtil {
       Expr(s"function $SetWindowLocationFnName(i){window.location=i?$mkObject:{}}")
     }
 
+    private val defaultUserAgent: String = {
+      val jvm = for {
+        name <- sys.props.get("java.vm.name")
+        ver  <- sys.props.get("java.vm.version")
+      } yield s"$name ($ver)"
+      jvm.getOrElse("")
+    }
+
     val postReact = Expr.runAll(
-      Expr("window = {console: console, navigator: {userAgent:''}}"),
+      Expr.apply1(u => s"window = {console: console, navigator: {userAgent:$u}}", defaultUserAgent),
       addSetWindowLocationFn,
     )
 
