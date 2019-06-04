@@ -111,6 +111,9 @@ object Expr extends ExprBoilerplate {
       go(init)
     }
 
+  def runAll(es: Expr[Any]*): Expr[Unit] =
+    stdlibCosequenceDiscard(es)
+
   def stdlibDist[F[x] <: Traversable[x], A, B](fa: F[A])(f: A => Expr[B])
                                               (implicit cbf: CanBuildFrom[F[A], B, F[B]]): Expr[F[B]] =
     lift(c => {
