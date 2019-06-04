@@ -6,7 +6,7 @@ import org.graalvm.polyglot.Source
 
 object GraalBoopickle {
 
-  private[scalagraal] val tmpBinding = Language.Binding("ScalaGraalBoopickle")
+  private[scalagraal] val tmpBinding = Language.JS.Binding("ScalaGraalBoopickle")
 
   private[scalagraal] val tmpToPickled = {
     val mkInt8Array = "const i=new Int8Array(a.limit());const b=a.array();let j=i.length;while(j-->0)i[j]=b[j]"

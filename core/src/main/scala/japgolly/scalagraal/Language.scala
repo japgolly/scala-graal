@@ -2,21 +2,27 @@ package japgolly.scalagraal
 
 import org.graalvm.polyglot.{Context, Source, Value}
 
-sealed trait Language {
-  import Language.Binding
+sealed abstract class Language(final val name: String) { self =>
 
-  val name: String
   def polyglotImport(b: Binding): String
-  def bound(b: Binding): Source => Context => Value
 
-  private[scalagraal] val argBinding = Language.Binding("ScalaGraalArg")
-  private[scalagraal] val argBinder = bound(argBinding)
-  private[scalagraal] val argElement = (0 until 22).map(i => s"${argBinding.localValue}[$i]").toArray.apply _
-}
+  final object Binding {
+    def apply(name: String): Binding =
+      apply(name, name)
 
-object Language {
+    def apply(bindingName: String, localValue: String): Binding =
+      new Binding(bindingName, localValue)
+  }
 
-  final case class Binding(bindingName: String, localValue: String) {
+  final class Binding(val bindingName: String, val localValue: String) {
+    override def toString = {
+      val a = if (bindingName == localValue) localValue else s"$bindingName, $localValue"
+      s"$self.Binding($a)"
+    }
+
+    private[scalagraal] val set   = Source.create(name, setBinding(localValue, polyglotImport(this)))
+    private[scalagraal] val unset = Source.create(name, unsetBinding(localValue))
+
     def set(ctx: Context, value: AnyRef): Unit =
       ctx.getPolyglotBindings.putMember(bindingName, value)
 
@@ -31,35 +37,31 @@ object Language {
     }
   }
 
-  object Binding {
-    def apply(name: String): Binding =
-      apply(name, name)
+  protected def setBinding(varName: String, value: String): String
+  protected def unsetBinding(varName: String): String
 
-    def apply(bindingName: String, localValue: String): Binding =
-      new Binding(bindingName, localValue)
-  }
-
-  // ===================================================================================================================
-
-  type JS = JS.type
-  case object JS extends Language {
-    override val name = "js"
-
-    override def polyglotImport(b: Binding): String =
-      s"Polyglot.import('${b.bindingName}')"
-
-    override def bound(b: Binding): Source => Context => Value = {
-      val set   = Source.create("js", s"${b.localValue}=${polyglotImport(b)}")
-      val unset = Source.create("js", s"${b.localValue}=null")
-      body => ctx => {
-        ctx.eval(set)
-        try
-          ctx.eval(body)
-        finally {
-          ctx.eval(unset)
-          ()
-        }
+  final def bound(b: Binding): Source => Context => Value =
+    body => ctx => {
+      ctx.eval(b.set)
+      try
+        ctx.eval(body)
+      finally {
+        ctx.eval(b.unset)
+        ()
       }
     }
+
+  private[scalagraal] val argBinding = Binding("ScalaGraalArg")
+  private[scalagraal] val argBinder = bound(argBinding)
+  private[scalagraal] val argElement = (0 until 22).map(i => s"${argBinding.localValue}[$i]").toArray.apply _
+}
+
+object Language {
+
+  type JS = JS.type
+  case object JS extends Language("js") {
+    override def polyglotImport(b: Binding)                 = s"Polyglot.import('${b.bindingName}')"
+    override protected def setBinding(a: String, b: String) = a + "=" + b
+    override protected def unsetBinding(a: String)          = a + "=null"
   }
 }
