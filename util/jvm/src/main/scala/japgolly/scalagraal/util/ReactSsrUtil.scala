@@ -54,6 +54,9 @@ object ReactSsrUtil {
   def setUrl(url: String): Expr[Unit] =
     setWindowLocation(WindowLocation.parse(url).orNull)
 
+  val setUserAgent: String => Expr[Unit] =
+    Expr.compile1[String](v => s"window.navigator.userAgent=$v")(_.void)
+
   /** Render a React element to its initial HTML. React will return an HTML string. You can use this method to generate
     * HTML on the server and send the markup down on the initial request for faster page loads and to allow search
     * engines to crawl your pages for SEO purposes.

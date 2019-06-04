@@ -52,6 +52,15 @@ object ReactSsrUtilTest extends TestSuite {
       assertEvalResult(sync.eval(test), ())
     }
 
+    'setUserAgent - {
+      val expr = for {
+        _ <- setup
+        _ <- ReactSsrUtil.setUserAgent("lol")
+        r <- Expr("window.navigator.userAgent").asString
+      } yield r
+      assertEvalResult(sync.eval(expr), "lol")
+    }
+
     'sample - {
       val expr = for {
         _ <- setup
