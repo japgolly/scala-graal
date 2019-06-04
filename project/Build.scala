@@ -75,7 +75,7 @@ object ScalaGraal {
 
   lazy val genExprBoilerplate = TaskKey[File]("genExprBoilerplate")
 
-  lazy val genTemplateBoilerplate = TaskKey[File]("genTemplateBoilerplate")
+  lazy val genCacheAndReplaceBoilerplate = TaskKey[File]("genCacheAndReplaceBoilerplate")
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -106,7 +106,7 @@ object ScalaGraal {
         libraryDependencies ++= Seq(
           "org.typelevel"             %% "cats-core"  % Ver.Cats,
           "com.github.japgolly.nyaya" %% "nyaya-test" % Ver.Nyaya % Test),
-        genTemplateBoilerplate := GenTemplateBoilerplate(sourceDirectory.value / "main" / "scala")))
+        genCacheAndReplaceBoilerplate := GenCacheAndReplaceBoilerplate(sourceDirectory.value / "main" / "scala")))
 
   lazy val extBoopickle = crossProject(JSPlatform, JVMPlatform)
     .in(file("ext-boopickle"))

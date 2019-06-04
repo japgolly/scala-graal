@@ -98,7 +98,7 @@ Will be added later. For now, I suggest having a look at the:
   * [x] metrics
   * [ ] metrics: labels from `Expr`
   * [x] ~~caching (unlimited)~~
-  * [x] caching for string eval fns (like SSR) via templates
+  * [x] caching for string fns (like SSR): `CacheAndReplace`
 * [x] warmup
   * [x] rules - eg. `up to 10000 reps/thread & up to 30 sec | until completes within 20ms`
   * [x] ~~on idle (?)~~

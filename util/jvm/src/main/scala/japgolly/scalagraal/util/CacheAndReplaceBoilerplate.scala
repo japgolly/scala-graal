@@ -2,9 +2,9 @@ package japgolly.scalagraal.util
 
 import cats.{Functor, Id}
 import cats.syntax.functor._
-import Template.Param
+import CacheAndReplace.Param
 
-abstract class TemplateBoilerplate private[util]() {
+abstract class CacheAndReplaceBoilerplate private[util]() {
 
   protected def compileGeneric[F[_]: Functor](arity: Int, f: Array[String] => F[String]): F[Array[String] => String]
 

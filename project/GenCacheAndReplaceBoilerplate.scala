@@ -1,6 +1,6 @@
 import sbt._
 
-object GenTemplateBoilerplate {
+object GenCacheAndReplaceBoilerplate {
 
   def apply(outputDir: File): File = {
 
@@ -23,7 +23,7 @@ object GenTemplateBoilerplate {
          """.stripMargin.trim.replaceFirst("^", "  ")
       }
 
-    val Name = "TemplateBoilerplate"
+    val Name = "CacheAndReplaceBoilerplate"
 
     val sep = s"\n  // ${"=" * 115}\n\n"
 
@@ -33,7 +33,7 @@ object GenTemplateBoilerplate {
          |
          |import cats.{Functor, Id}
          |import cats.syntax.functor._
-         |import Template.Param
+         |import CacheAndReplace.Param
          |
          |abstract class $Name private[util]() {
          |

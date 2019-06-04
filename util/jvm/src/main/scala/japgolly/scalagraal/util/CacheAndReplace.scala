@@ -1,15 +1,18 @@
 package japgolly.scalagraal.util
 
-import cats.{Functor, Id}
+import cats.Functor
 import cats.syntax.functor._
 import java.util.UUID
 
 /** Takes a potentially slow `String* => String` function and makes it super fast by executing it once,
-  * turning the result into a template, then using the template for all subsequent calls.
+  * optimising and caching the result, and then using it as template for all subsequent calls.
   *
-  * This assumes provided functions are pure.
+  * This assumes provided functions are pure (e.g. embedding the current time would be a violation).
+  *
+  * This assumes provided functions treat their inputs as opaque values (e.g. inspecting an argument representing a
+  * username to provide "john" a different result than "mary" is a violation.)
   */
-object Template extends TemplateBoilerplate {
+object CacheAndReplace extends CacheAndReplaceBoilerplate {
 
   final class Param[A](val fromStr: String => A, val toStr: A => String)
 

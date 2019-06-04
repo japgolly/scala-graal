@@ -7,7 +7,7 @@ import nyaya.test.PropTest._
 import scalaz.std.string._
 import utest._
 
-object TemplateTest extends TestSuite {
+object CacheAndReplaceTest extends TestSuite {
 
   private val genChar: Gen[Char] =
     Gen.chooseGen(
@@ -44,7 +44,7 @@ object TemplateTest extends TestSuite {
         }
 
       val prop = Prop.equal[D]("T(f)(a,b) = f(a,b)")(
-        { case (a, b, t) => Template.compileI2(t).apply(a, b) },
+        { case (a, b, t) => CacheAndReplace.compileI2(t).apply(a, b) },
         { case (a, b, t) => t(a, b) })
 
       gen.mustSatisfy(prop)
