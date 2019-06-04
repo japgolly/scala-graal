@@ -93,12 +93,12 @@ Will be added later. For now, I suggest having a look at the:
     * [x] fixed pool
     * [x] shutdown
   * [x] synchronous with time limit
-  * [ ] synchronous resource pool (?)
   * [ ] pure scheduling & execution (?)
-  * [ ] higher-level profunctor-like (?)
+  * [x] ~~higher-level profunctor-like (?)~~
   * [x] metrics
   * [ ] metrics: labels from `Expr`
-  * [ ] caching (?)
+  * [x] ~~caching (unlimited)~~
+  * [ ] caching for string eval fns (like SSR) via templates
 * [x] warmup
   * [x] rules - eg. `up to 10000 reps/thread & up to 30 sec | until completes within 20ms`
   * [x] ~~on idle (?)~~
@@ -106,7 +106,7 @@ Will be added later. For now, I suggest having a look at the:
 * React SSR
   * [ ] render util (so one needn't write direct JS) (?)
   * [ ] `window` and especially `window.location` management
-  * [ ] test util
+  * [ ] test util (?)
   * [ ] howto guide
     * SBT howto
     * JS deps howto (webpack|SBT)
@@ -115,13 +115,13 @@ Will be added later. For now, I suggest having a look at the:
     * Graal flags?
     * jetty
 * Integration
-  * [ ] Scalaz (?)
+  * [x] ~~Scalaz (?)~~
   * [ ] Cats Effect & Cats (?)
   * [x] Prometheus
   * [x] BooPickle
   * [ ] circe (?)
   * [ ] clear-config
-  * [ ] caffiene (?)
+  * [x] ~~caffiene (?)~~
 * build
   * [x] travis
   * [ ] tut/mdoc
