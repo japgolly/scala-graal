@@ -20,6 +20,13 @@ object ReactSsrUtil {
 
   object Setup {
 
+    def apply(loadReact: Expr[Any]*): Expr[Unit] =
+      for {
+        _ <- preReact
+        _ <- Expr.stdlibCosequenceDiscard(loadReact)
+        _ <- postReact
+      } yield ()
+
     private val addSetWindowLocationFn = {
       val mkObject =
         List("href", "origin", "protocol", "hostname", "port", "pathname", "search", "hash")
@@ -36,16 +43,16 @@ object ReactSsrUtil {
       jvm.getOrElse("")
     }
 
-    val postReact = Expr.runAll(
-      Expr.apply1(u => s"window = {console: console, navigator: {userAgent:$u}}", defaultUserAgent),
-      addSetWindowLocationFn,
-    )
+    /** Preparation of the environment required before loading React JS. */
+    val preReact: Expr[Unit] =
+      Expr.unit
 
-    def apply(loadReact: Expr[Any]*): Expr[Unit] =
-      for {
-        _ <- Expr.stdlibCosequenceDiscard(loadReact)
-        _ <- postReact
-      } yield ()
+    /** Preparation of the environment required after loading React JS, but before attempting SSR. */
+    val postReact: Expr[Unit] =
+      Expr.runAll(
+        Expr.apply1(u => s"window = {console: console, navigator: {userAgent:$u}}", defaultUserAgent),
+        addSetWindowLocationFn,
+      )
   }
 
   // ===================================================================================================================
