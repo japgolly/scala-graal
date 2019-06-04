@@ -20,10 +20,12 @@ object ScalaGraal {
 
   object Ver {
     final val BooPickle     = "1.3.1"
+    final val Cats          = "1.6.1"
     final val Graal         = "19.0.0"
     final val KindProjector = "0.9.10"
     final val Microlibs     = "1.20"
     final val MTest         = "0.6.7"
+    final val Nyaya         = "0.8.1"
     final val Prometheus    = "0.6.0"
     final val Scala212      = "2.12.8"
   }
@@ -73,11 +75,16 @@ object ScalaGraal {
 
   lazy val genExprBoilerplate = TaskKey[File]("genExprBoilerplate")
 
+  lazy val genCacheAndReplaceBoilerplate = TaskKey[File]("genCacheAndReplaceBoilerplate")
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
   lazy val root =
     Project("root", file("."))
       .configure(commonSettings.jvm, preventPublication)
       .aggregate(
         core,
+        utilJVM, utilJS,
         extBoopickleJVM, extBoopickleJS, extPrometheus,
         benchmark)
 
@@ -88,6 +95,19 @@ object ScalaGraal {
       initialCommands := "import japgolly.scalagraal._, GraalJs._; val ctx = ContextSync()",
       genExprBoilerplate := GenExprBoilerplate(sourceDirectory.value / "main" / "scala"))
 
+  lazy val utilJS  = util.js
+  lazy val utilJVM = util.jvm
+  lazy val util = crossProject(JSPlatform, JVMPlatform)
+    .in(file("util"))
+    .configureCross(commonSettings, publicationSettings, testSettings)
+    .jvmConfigure(_
+      .dependsOn(core)
+      .settings(
+        libraryDependencies ++= Seq(
+          "org.typelevel"             %% "cats-core"  % Ver.Cats,
+          "com.github.japgolly.nyaya" %% "nyaya-test" % Ver.Nyaya % Test),
+        genCacheAndReplaceBoilerplate := GenCacheAndReplaceBoilerplate(sourceDirectory.value / "main" / "scala")))
+
   lazy val extBoopickle = crossProject(JSPlatform, JVMPlatform)
     .in(file("ext-boopickle"))
     .configureCross(commonSettings, publicationSettings, testSettings)
@@ -95,7 +115,6 @@ object ScalaGraal {
     .settings(
       name := "ext-boopickle",
       libraryDependencies += "io.suzaku" %%% "boopickle" % Ver.BooPickle)
-    .jsSettings(test := (())) // https://github.com/scala-js/scala-js/issues/3673
 
   lazy val extBoopickleJS  = extBoopickle.js
   lazy val extBoopickleJVM = extBoopickle.jvm
@@ -112,6 +131,6 @@ object ScalaGraal {
   lazy val benchmark = project
     .configure(commonSettings.jvm, preventPublication)
     .enablePlugins(JmhPlugin)
-    .dependsOn(core, extBoopickleJVM)
+    .dependsOn(core, utilJVM, extBoopickleJVM)
     .settings(unmanagedResources in Compile += (fullOptJS in Test in extBoopickleJS).value.data)
 }
