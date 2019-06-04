@@ -12,14 +12,18 @@ object ReactSsrUtilTest extends TestSuite {
       Expr.requireFileOnClasspath("react-dom-server.browser.production.min.js"),
     )
 
-  private def render(a: String): Expr[String] =
-    Expr(s"ReactDOMServer.renderToStaticMarkup(React.createElement('div', null, $a))").asString
-
   override def tests = Tests {
-    'hehe - {
-      val expr = setup >> render("'hehe'")
+
+    'renderToStaticMarkup - {
+      val expr = setup >> ReactSsrUtil.renderToStaticMarkup("React.createElement('div', null, 'hehe')")
       val r = sync.eval(expr)
       assertEvalResult(r, "<div>hehe</div>")
+    }
+
+    'renderToString - {
+      val expr = setup >> ReactSsrUtil.renderToString("React.createElement('div', null, 'hehe')")
+      val r = sync.eval(expr)
+      assertEvalResult(r, """<div data-reactroot="">hehe</div>""")
     }
 
     'setUrl - {

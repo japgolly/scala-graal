@@ -104,7 +104,7 @@ Will be added later. For now, I suggest having a look at the:
   * [x] ~~on idle (?)~~
   * [x] implement results of warmpup discussion with graal team
 * React SSR
-  * [ ] render util (so one needn't write direct JS) (?)
+  * [x] render util
   * [x] `window` and especially `window.location` management
   * [ ] test util (?)
   * [ ] howto guide
