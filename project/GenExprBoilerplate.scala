@@ -47,7 +47,6 @@ object GenExprBoilerplate {
     val content =
       s"""
          |package japgolly.scalagraal
-         |package boilerplate
          |
          |import org.graalvm.polyglot.Value
          |
@@ -64,7 +63,7 @@ object GenExprBoilerplate {
          |}
         """.stripMargin.trim
 
-    val file = (outputDir / "japgolly" / "scalagraal" / "boilerplate" / s"$Name.scala").asFile
+    val file = (outputDir / "japgolly" / "scalagraal" / s"$Name.scala").asFile
     IO.write(file, content)
     println(s"Generated ${file.getAbsolutePath}")
     file
