@@ -74,7 +74,7 @@ final class Expr[+A] private[Expr] (private[scalagraal] val run: Context => A) e
     })
 }
 
-object Expr extends ExprBoilerplate {
+object Expr extends boilerplate.ExprBoilerplate {
   type Result[+A] = Either[ExprError, A]
 
   def apply(source: CharSequence)(implicit language: Language): Expr[Value] =

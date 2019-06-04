@@ -1,4 +1,5 @@
 package japgolly.scalagraal
+package boilerplate
 
 import org.graalvm.polyglot.Value
 
