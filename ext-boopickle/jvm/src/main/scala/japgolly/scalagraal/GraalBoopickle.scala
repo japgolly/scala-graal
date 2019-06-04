@@ -16,8 +16,7 @@ object GraalBoopickle {
     Source.create("js", expr)
   }
 
-  implicit def exprParamBoopickle[A](implicit lang: Language, pickler: Pickler[A]): ExprParam[A] = {
-    assert(lang == Language.JS, s"Unsupported language: $lang. Only JavaScript is supported.")
+  implicit def exprParamBoopickle[A](implicit js: Language.JS, pickler: Pickler[A]): ExprParam[A] =
     ExprParam.CtxValueFn { a =>
       val byteBufferJvm = PickleImpl.intoBytes(a)
       ctx => {
@@ -26,5 +25,4 @@ object GraalBoopickle {
         }
       }
     }
-  }
 }

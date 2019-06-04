@@ -40,6 +40,7 @@ object Language {
       new Binding(bindingName, localValue)
   }
 
+  type JS = JS.type
   case object JS extends Language {
     override val name = "js"
 

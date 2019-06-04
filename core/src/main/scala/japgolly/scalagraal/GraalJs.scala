@@ -33,7 +33,7 @@ trait GraalJs
      with GraalJsComponents.JsValues
      with GraalJsComponents.Stdlib {
 
-  implicit final val graalLanguage: Language = Language.JS
+  implicit final val graalLanguage: Language.JS = Language.JS
 }
 
 object GraalJs extends GraalJs
