@@ -23,7 +23,7 @@ object ScalaGraal {
     final val Cats          = "1.6.1"
     final val Graal         = "19.0.0"
     final val KindProjector = "0.9.10"
-    final val Microlibs     = "1.21"
+    final val Microlibs     = "1.22"
     final val MonadicFor    = "0.3.0"
     final val MTest         = "0.6.7"
     final val Nyaya         = "0.8.1"
