@@ -7,7 +7,7 @@ import utest._
 object ReactSsrUtilTest extends TestSuite {
 
   private lazy val setup =
-    ReactSsrUtil.Setup(
+    ReactSsr.Setup(
       Expr.requireFileOnClasspath("react.production.min.js"),
       Expr.requireFileOnClasspath("react-dom-server.browser.production.min.js"),
     )
@@ -15,13 +15,13 @@ object ReactSsrUtilTest extends TestSuite {
   override def tests = Tests {
 
     'renderToStaticMarkup - {
-      val expr = setup >> ReactSsrUtil.renderToStaticMarkup("React.createElement('div', null, 'hehe')")
+      val expr = setup >> ReactSsr.renderToStaticMarkup("React.createElement('div', null, 'hehe')")
       val r = sync.eval(expr)
       assertEvalResult(r, "<div>hehe</div>")
     }
 
     'renderToString - {
-      val expr = setup >> ReactSsrUtil.renderToString("React.createElement('div', null, 'hehe')")
+      val expr = setup >> ReactSsr.renderToString("React.createElement('div', null, 'hehe')")
       val r = sync.eval(expr)
       assertEvalResult(r, """<div data-reactroot="">hehe</div>""")
     }
@@ -29,7 +29,7 @@ object ReactSsrUtilTest extends TestSuite {
     'setUrl - {
       val test = for {
         _        <- setup
-        _        <- ReactSsrUtil.setUrl("http://blah.com:123/hehe?q#h")
+        _        <- ReactSsr.setUrl("http://blah.com:123/hehe?q#h")
         href     <- Expr("window.location.href    ").asString
         origin   <- Expr("window.location.origin  ").asString
         protocol <- Expr("window.location.protocol").asString
@@ -55,7 +55,7 @@ object ReactSsrUtilTest extends TestSuite {
     'setUserAgent - {
       val expr = for {
         _ <- setup
-        _ <- ReactSsrUtil.setUserAgent("lol")
+        _ <- ReactSsr.setUserAgent("lol")
         r <- Expr("window.navigator.userAgent").asString
       } yield r
       assertEvalResult(sync.eval(expr), "lol")
@@ -69,7 +69,7 @@ object ReactSsrUtilTest extends TestSuite {
       val expr = for {
         _ <- setup
         _ <- Expr.requireFileOnClasspath("sample-sjr-spa.js")
-        _ <- ReactSsrUtil.setUrl("https://shipreq.com")
+        _ <- ReactSsr.setUrl("https://shipreq.com")
         r <- Expr("A.comp2()").asString
       } yield r
       val r = sync.eval(expr)
