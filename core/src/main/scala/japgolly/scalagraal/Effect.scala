@@ -2,7 +2,6 @@ package japgolly.scalagraal
 
 import java.util.concurrent.{Future => JavaFuture, _}
 import scala.concurrent.{ExecutionContext, Future}
-import scala.concurrent.JavaConversions
 
 object Effect {
 
@@ -20,7 +19,7 @@ object Effect {
       Async.javaFutureInstance
 
     implicit def futureInstance: AsyncES[Future] =
-      es => Async.futureInstance(JavaConversions.asExecutionContext(es))
+      es => Async.futureInstance(ExecutionContext.fromExecutorService(es))
 
     def syncTimed(timeout: Long, timeUnit: TimeUnit): AsyncES[Option] =
       es => {

@@ -4,7 +4,7 @@ import japgolly.scalagraal._
 import TestUtil._
 import utest._
 
-object ReactSsrUtilTest extends TestSuite {
+object ReactSsrTest extends TestSuite {
 
   private lazy val setup =
     ReactSsr.Setup(
@@ -62,7 +62,9 @@ object ReactSsrUtilTest extends TestSuite {
     }
 
     "navigator" - {
-      sync.eval(setup >> Expr("JSON.stringify(window.navigator)").asString).right.get
+      val x = sync.eval(setup >> Expr("JSON.stringify(window.navigator)").asString)
+      assert(x.isRight)
+      x.getOrElse(???)
     }
 
     "sample" - {

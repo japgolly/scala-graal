@@ -75,7 +75,7 @@ object ExprTest extends TestSuite {
         val r = sync.eval(e)
         assert(r.isLeft)
         // r.left.get.printStackTrace()
-        r.left.get
+        r.left.getOrElse(???)
       }
 
       "eval"    - test(Expr("xxx"))
