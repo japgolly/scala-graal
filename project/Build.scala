@@ -19,16 +19,16 @@ object ScalaGraal {
     Lib.publicationSettings(ghProject)
 
   object Ver {
-    final val BooPickle     = "1.3.1"
-    final val Cats          = "1.6.1"
-    final val Graal         = "19.0.0"
-    final val KindProjector = "0.9.10"
-    final val Microlibs     = "1.21"
-    final val MonadicFor    = "0.3.0"
-    final val MTest         = "0.6.7"
-    final val Nyaya         = "0.8.1"
-    final val Prometheus    = "0.6.0"
-    final val Scala212      = "2.12.8"
+    val BooPickle       = "1.3.1"
+    val Cats            = "2.0.0-RC2"
+    val Graal           = "19.2.0"
+    val KindProjector   = "0.10.3"
+    val Microlibs       = "2.0-RC1"
+    val MonadicFor      = "0.3.1"
+    val MTest           = "0.6.7"
+    val Nyaya           = "0.9.0-RC1"
+    val Prometheus      = "0.6.0"
+    val Scala212        = "2.12.8"
   }
 
   def scalacFlags = Seq(
@@ -62,7 +62,7 @@ object ScalaGraal {
       releaseTagComment             := s"v${(version in ThisBuild).value}",
       releaseVcsSign                := true,
       addCompilerPlugin("com.olegpy" %% "better-monadic-for" % Ver.MonadicFor),
-      addCompilerPlugin("org.spire-math" %% "kind-projector" % Ver.KindProjector)))
+      addCompilerPlugin("org.typelevel" %% "kind-projector" % Ver.KindProjector)))
 
   def testSettings = ConfigureBoth(
     _.settings(
