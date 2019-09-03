@@ -1,10 +1,11 @@
 language: scala
 
 scala:
+  - 2.13.0
   - 2.12.8
 
 env:
-  - GRAAL_VER=19.0.0
+  - GRAAL_VER=19.2.0
 
 before_install:
 - wget https://github.com/sormuras/bach/raw/master/install-jdk.sh

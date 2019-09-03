@@ -8,7 +8,7 @@ object WarmupTest extends TestSuite {
 
   override def tests = Tests {
 
-    'single {
+    "single" - {
       val counter = new AtomicInteger(0)
       val expr = Expr.point(counter.incrementAndGet())
       val result = Warmup.sync(sync)(3, expr, _.outerReps == 2)
@@ -18,7 +18,7 @@ object WarmupTest extends TestSuite {
       result
     }
 
-    'pool {
+    "pool" - {
       val counter = new AtomicInteger(0)
       val expr = Expr.point(counter.incrementAndGet())
       val pool = ContextPool.Builder.fixedThreadPool(2).fixedContextPerThread().build()

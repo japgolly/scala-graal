@@ -19,39 +19,42 @@ object ScalaGraal {
     Lib.publicationSettings(ghProject)
 
   object Ver {
-    final val BooPickle     = "1.3.1"
-    final val Cats          = "1.6.1"
-    final val Graal         = "19.0.0"
-    final val KindProjector = "0.9.10"
-    final val Microlibs     = "1.21"
-    final val MonadicFor    = "0.3.0"
-    final val MTest         = "0.6.7"
-    final val Nyaya         = "0.8.1"
-    final val Prometheus    = "0.6.0"
-    final val Scala212      = "2.12.8"
+    val BooPickle       = "1.3.1"
+    val Cats            = "2.0.0-RC2"
+    val Graal           = "19.2.0"
+    val KindProjector   = "0.10.3"
+    val Microlibs       = "2.0-RC1"
+    val MonadicFor      = "0.3.1"
+    val MTest           = "0.7.1"
+    val Nyaya           = "0.9.0-RC1"
+    val Prometheus      = "0.6.0"
+    val Scala212        = "2.12.8"
+    val Scala213        = "2.13.0"
+    val ScalaCollCompat = "2.1.2"
   }
 
   def scalacFlags = Seq(
     "-deprecation",
     "-unchecked",
-    "-Ywarn-dead-code",
-    // "-Ywarn-unused",
-    "-Ywarn-value-discard",
     "-feature",
     "-language:postfixOps",
     "-language:implicitConversions",
     "-language:higherKinds",
-    "-language:existentials")
+    "-language:existentials",
+    "-opt:l:inline",
+    "-opt-inline-from:japgolly.scalagraal.**",
+    "-Ywarn-dead-code",
+    // "-Ywarn-unused",
+    "-Ywarn-value-discard")
 
   val commonSettings = ConfigureBoth(
     _.settings(
       organization                  := "com.github.japgolly.scala-graal",
       homepage                      := Some(url("https://github.com/japgolly/" + ghProject)),
       licenses                      += ("Apache-2.0", url("http://opensource.org/licenses/Apache-2.0")),
-      scalaVersion                  := Ver.Scala212,
-      crossScalaVersions            := Seq(Ver.Scala212),
+      scalaVersion                  := Ver.Scala213,
+      crossScalaVersions            := Seq(Ver.Scala212, Ver.Scala213),
       scalacOptions                ++= scalacFlags,
-      scalacOptions in Compile     ++= byScalaVersion { case (2, 12) => Seq("-opt:l:method") }.value,
       scalacOptions in Test        --= Seq("-Ywarn-dead-code"),
       testFrameworks                := Nil,
       shellPrompt in ThisBuild      := ((s: State) => Project.extract(s).currentRef.project + "> "),
@@ -62,7 +65,7 @@ object ScalaGraal {
       releaseTagComment             := s"v${(version in ThisBuild).value}",
       releaseVcsSign                := true,
       addCompilerPlugin("com.olegpy" %% "better-monadic-for" % Ver.MonadicFor),
-      addCompilerPlugin("org.spire-math" %% "kind-projector" % Ver.KindProjector)))
+      addCompilerPlugin("org.typelevel" %% "kind-projector" % Ver.KindProjector)))
 
   def testSettings = ConfigureBoth(
     _.settings(
@@ -93,7 +96,10 @@ object ScalaGraal {
   lazy val core = project
     .configure(commonSettings.jvm, publicationSettings.jvm, testSettings.jvm)
     .settings(
-      libraryDependencies += "org.graalvm.sdk" % "graal-sdk" % Ver.Graal,
+      libraryDependencies ++= Seq(
+        "org.graalvm.sdk"         % "graal-sdk"               % Ver.Graal,
+        "org.scala-lang.modules" %% "scala-collection-compat" % Ver.ScalaCollCompat
+      ),
       initialCommands := "import japgolly.scalagraal._, GraalJs._; val ctx = ContextSync()",
       genExprBoilerplate := GenExprBoilerplate(sourceDirectory.value / "main" / "scala"))
 

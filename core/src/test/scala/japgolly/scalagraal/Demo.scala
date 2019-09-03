@@ -6,7 +6,7 @@ object Demo extends TestSuite {
 
   override def tests = Tests {
 
-    'demo {
+    "demo" - {
       // Use semantics and implicit config for JS
       // (Graal also supports Python, R, Ruby, LLVM)
       import GraalJs._

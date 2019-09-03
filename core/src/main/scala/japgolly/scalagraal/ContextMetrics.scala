@@ -56,7 +56,7 @@ object ContextMetrics {
       Vector(Wait, Pre, Body, Post, Total)
 
     def memo[A](f: Metric => A): Metric => A = {
-      val m: Map[Metric, A] = values.map(m => (m, f(m)))(collection.breakOut)
+      val m: Map[Metric, A] = values.iterator.map(m => (m, f(m))).toMap
       m.apply
     }
   }

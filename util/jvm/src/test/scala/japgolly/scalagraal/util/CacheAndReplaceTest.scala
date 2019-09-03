@@ -19,7 +19,7 @@ object CacheAndReplaceTest extends TestSuite {
     )
 
   override def tests = Tests {
-    'prop {
+    "prop" - {
       type T = (String, String) => String
       type D = (String, String, T)
 

@@ -1,8 +1,8 @@
 package japgolly.scalagraal
 
-import org.graalvm.polyglot._
+import org.graalvm.polyglot.{Language => _, _}
 import scala.annotation.tailrec
-import scala.collection.generic.CanBuildFrom
+import scala.collection.compat._
 import scala.reflect.ClassTag
 import scala.runtime.AbstractFunction1
 
@@ -114,22 +114,22 @@ object Expr extends ExprBoilerplate {
   def runAll(es: Expr[Any]*): Expr[Unit] =
     stdlibCosequenceDiscard(es)
 
-  def stdlibDist[F[x] <: Traversable[x], A, B](fa: F[A])(f: A => Expr[B])
-                                              (implicit cbf: CanBuildFrom[F[A], B, F[B]]): Expr[F[B]] =
+  def stdlibDist[F[x] <: Iterable[x], A, B](fa: F[A])(f: A => Expr[B])
+                                              (implicit cbf: BuildFrom[F[A], B, F[B]]): Expr[F[B]] =
     lift(c => {
-      val b = cbf(fa)
+      val b = cbf.newBuilder(fa)
       fa.foreach(a => b += f(a).run(c))
       b.result()
     })
 
-  def stdlibCosequence[F[x] <: Traversable[x], A](fea: F[Expr[A]])
-                                                 (implicit cbf: CanBuildFrom[F[Expr[A]], A, F[A]]): Expr[F[A]] =
+  def stdlibCosequence[F[x] <: Iterable[x], A](fea: F[Expr[A]])
+                                                 (implicit cbf: BuildFrom[F[Expr[A]], A, F[A]]): Expr[F[A]] =
     stdlibDist[F, Expr[A], A](fea)(identity)
 
-  def stdlibDistDiscard[A, B](fa: Traversable[A])(f: A => Expr[B]): Expr[Unit] =
+  def stdlibDistDiscard[A, B](fa: Iterable[A])(f: A => Expr[B]): Expr[Unit] =
     lift(c => fa.foreach(f(_).run(c)))
 
-  def stdlibCosequenceDiscard[A](es: Traversable[Expr[A]]): Expr[Unit] =
+  def stdlibCosequenceDiscard[A](es: Iterable[Expr[A]]): Expr[Unit] =
     lift(c => es.foreach(_.run(c)))
 
   def fileOnClasspath(filename: String)(implicit lang: Language): Option[Expr[Value]] =

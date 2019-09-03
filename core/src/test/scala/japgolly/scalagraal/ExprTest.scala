@@ -15,7 +15,7 @@ object ExprTest extends TestSuite {
 
   override def tests = Tests {
 
-    'args {
+    "args" - {
 
       "1" - {
         val a = 666
@@ -61,8 +61,8 @@ object ExprTest extends TestSuite {
       }
     }
 
-    'results {
-      'option {
+    "results" - {
+      "option" - {
         val a = Option.empty[Int]
         val b = Some(456)
         val expr = Expr.apply2((a, b) => s"($a == null) ? $b : $a", a, b).asOption(_.asInt)
@@ -70,16 +70,16 @@ object ExprTest extends TestSuite {
       }
     }
 
-    'errors {
+    "errors" - {
       def test[A](e: Expr[A]) = {
         val r = sync.eval(e)
         assert(r.isLeft)
         // r.left.get.printStackTrace()
-        r.left.get
+        r.left.getOrElse(???)
       }
 
-      'eval    - test(Expr("xxx"))
-      'compile - test(Expr.compileExpr1[Int](_ => "xxx").apply(1))
+      "eval"    - test(Expr("xxx"))
+      "compile" - test(Expr.compileExpr1[Int](_ => "xxx").apply(1))
     }
 
   }
