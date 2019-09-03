@@ -36,12 +36,12 @@ object GraalBoopickleTest extends TestSuite {
 //      ctx.eval(expr)
 //    }
 
-    'sjs {
-      'null {
+    "sjs" - {
+      "null" - {
         val v = ctx.eval(SJS >> Expr("example1(null)").asString)
         assert(v == Right("<< null?! >>"))
       }
-      'ser {
+      "ser" - {
         val e = Expr.callFn1("example1", Example(9999, 3)).asString
         val v = ctx.eval(SJS >> e)
         assert(v == Right("<JS-9999:3>"))

@@ -14,7 +14,7 @@ object ContextPoolTest extends TestSuite {
 
   override def tests = Tests {
 
-    'poolOf2 {
+    "poolOf2" - {
       val mutex = new AnyRef
       var threadNames = Set.empty[String]
 
@@ -60,7 +60,7 @@ object ContextPoolTest extends TestSuite {
       eventually(pool.unsafePoolState() == ContextPool.State.Terminated)
     }
 
-    'awaitResultsWithTimeout {
+    "awaitResultsWithTimeout" - {
       val pool = ContextPool.Builder
         .fixedThreadPool(1)
         .fixedContextPerThread()

@@ -17,7 +17,7 @@ object GraalPrometheusTest extends TestSuite {
 
   override def tests = Tests {
 
-    'minimal {
+    "minimal" - {
       val registry = new CollectorRegistry
 
       val writer = GraalPrometheus.Builder()
@@ -35,14 +35,14 @@ object GraalPrometheusTest extends TestSuite {
         assert(sample == expect)
       }
 
-      'wait - assertSample(1, Metric.Wait)
-      'pre - assertSample(3, Metric.Pre)
-      'body - assertSample(5, Metric.Body)
-      'post - assertSample(2, Metric.Post)
-      'total - assertSample(9, Metric.Total)
+      "wait" - assertSample(1, Metric.Wait)
+      "pre" - assertSample(3, Metric.Pre)
+      "body" - assertSample(5, Metric.Body)
+      "post" - assertSample(2, Metric.Post)
+      "total" - assertSample(9, Metric.Total)
     }
 
-    'custom {
+    "custom" - {
       val registry = new CollectorRegistry
 
       val writer = GraalPrometheus.Builder()
@@ -67,11 +67,11 @@ object GraalPrometheusTest extends TestSuite {
         assert(sample == expect)
       }
 
-      'wait - assertSample(1, Metric.Wait)
-      'pre - assertSample(3, Metric.Pre)
-      'body - assertSample(5, Metric.Body, "body" -> "yep", "body2" -> "such amazing")
-      'post - assertSample(2, Metric.Post)
-      'total - assertSample(9, Metric.Total, "T" -> "tt")
+      "wait" - assertSample(1, Metric.Wait)
+      "pre" - assertSample(3, Metric.Pre)
+      "body" - assertSample(5, Metric.Body, "body" -> "yep", "body2" -> "such amazing")
+      "post" - assertSample(2, Metric.Post)
+      "total" - assertSample(9, Metric.Total, "T" -> "tt")
     }
 
   }

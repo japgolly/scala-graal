@@ -14,19 +14,19 @@ object ReactSsrUtilTest extends TestSuite {
 
   override def tests = Tests {
 
-    'renderToStaticMarkup - {
+    "renderToStaticMarkup" - {
       val expr = setup >> ReactSsr.renderToStaticMarkup("React.createElement('div', null, 'hehe')")
       val r = sync.eval(expr)
       assertEvalResult(r, "<div>hehe</div>")
     }
 
-    'renderToString - {
+    "renderToString" - {
       val expr = setup >> ReactSsr.renderToString("React.createElement('div', null, 'hehe')")
       val r = sync.eval(expr)
       assertEvalResult(r, """<div data-reactroot="">hehe</div>""")
     }
 
-    'setUrl - {
+    "setUrl" - {
       val test = for {
         _        <- setup
         _        <- ReactSsr.setUrl("http://blah.com:123/hehe?q#h")
@@ -52,7 +52,7 @@ object ReactSsrUtilTest extends TestSuite {
       assertEvalResult(sync.eval(test), ())
     }
 
-    'setUserAgent - {
+    "setUserAgent" - {
       val expr = for {
         _ <- setup
         _ <- ReactSsr.setUserAgent("lol")
@@ -61,11 +61,11 @@ object ReactSsrUtilTest extends TestSuite {
       assertEvalResult(sync.eval(expr), "lol")
     }
 
-    'navigator - {
+    "navigator" - {
       sync.eval(setup >> Expr("JSON.stringify(window.navigator)").asString).right.get
     }
 
-    'sample - {
+    "sample" - {
       val expr = for {
         _ <- setup
         _ <- Expr.requireFileOnClasspath("sample-sjr-spa.js")
