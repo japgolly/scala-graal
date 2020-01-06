@@ -23,7 +23,7 @@ object ScalaGraal {
     val Cats            = "2.0.0-RC2"
     val Graal           = "19.2.0"
     val KindProjector   = "0.10.3"
-    val Microlibs       = "2.0-RC1"
+    val Microlibs       = "2.0"
     val MonadicFor      = "0.3.1"
     val MTest           = "0.7.1"
     val Nyaya           = "0.9.0-RC1"
