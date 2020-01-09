@@ -20,16 +20,16 @@ object ScalaGraal {
 
   object Ver {
     val BooPickle       = "1.3.1"
-    val Cats            = "2.0.0-RC2"
+    val Cats            = "2.0.0"
     val Graal           = "19.2.1"
-    val KindProjector   = "0.10.3"
-    val Microlibs       = "2.0-RC1"
+    val KindProjector   = "0.11.0"
+    val Microlibs       = "2.0"
     val MonadicFor      = "0.3.1"
     val MTest           = "0.7.1"
-    val Nyaya           = "0.9.0-RC1"
-    val Prometheus      = "0.6.0"
-    val Scala212        = "2.12.8"
-    val Scala213        = "2.13.0"
+    val Nyaya           = "0.9.0"
+    val Prometheus      = "0.8.0"
+    val Scala212        = "2.12.10"
+    val Scala213        = "2.13.1"
     val ScalaCollCompat = "2.1.3"
   }
 
@@ -58,14 +58,13 @@ object ScalaGraal {
       scalacOptions in Test        --= Seq("-Ywarn-dead-code"),
       testFrameworks                := Nil,
       shellPrompt in ThisBuild      := ((s: State) => Project.extract(s).currentRef.project + "> "),
-      triggeredMessage              := Watched.clearWhenTriggered,
       incOptions                    := incOptions.value.withLogRecompileOnMacro(false),
       updateOptions                 := updateOptions.value.withCachedResolution(true),
       releasePublishArtifactsAction := PgpKeys.publishSigned.value,
       releaseTagComment             := s"v${(version in ThisBuild).value}",
       releaseVcsSign                := true,
       addCompilerPlugin("com.olegpy" %% "better-monadic-for" % Ver.MonadicFor),
-      addCompilerPlugin("org.typelevel" %% "kind-projector" % Ver.KindProjector)))
+      addCompilerPlugin("org.typelevel" %% "kind-projector" % Ver.KindProjector cross CrossVersion.full)))
 
   def testSettings = ConfigureBoth(
     _.settings(
