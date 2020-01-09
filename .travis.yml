@@ -1,8 +1,8 @@
 language: scala
 
 scala:
-  - 2.13.0
-  - 2.12.8
+  - 2.13.1
+  - 2.12.10
 
 env:
   - GRAAL_VER=19.3.0.2
