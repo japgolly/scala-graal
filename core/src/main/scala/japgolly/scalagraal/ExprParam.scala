@@ -1,6 +1,6 @@
 package japgolly.scalagraal
 
-import org.graalvm.polyglot.Context
+import org.graalvm.polyglot.{Context, Value}
 import org.graalvm.polyglot.proxy.Proxy
 import scala.runtime.AbstractFunction1
 
@@ -67,6 +67,7 @@ object ExprParam {
   }
 
   trait PolyglotValues {
+    implicit def exprParamValue: ValueFn[Value] = RawValueFn
     implicit def exprParamProxy: ValueFn[Proxy] = RawValueFn
   }
 
@@ -74,5 +75,6 @@ object ExprParam {
     extends Primitives
        with ArrayPrimitives
        with Contravariance
+       with PolyglotValues
 }
 
