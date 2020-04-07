@@ -77,7 +77,7 @@ object ScalaGraal {
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  lazy val genExprBoilerplate = TaskKey[File]("genExprBoilerplate")
+  lazy val genExprBoilerplate = TaskKey[Unit]("genExprBoilerplate")
 
   lazy val genCacheAndReplaceBoilerplate = TaskKey[File]("genCacheAndReplaceBoilerplate")
 
@@ -100,7 +100,7 @@ object ScalaGraal {
         "org.scala-lang.modules" %% "scala-collection-compat" % Ver.ScalaCollCompat
       ),
       initialCommands := "import japgolly.scalagraal._, GraalJs._; val ctx = ContextSync()",
-      genExprBoilerplate := GenExprBoilerplate(sourceDirectory.value / "main" / "scala"))
+      genExprBoilerplate := GenExprBoilerplate(sourceDirectory.value / "main"))
 
   lazy val utilJS  = util.js
   lazy val utilJVM = util.jvm

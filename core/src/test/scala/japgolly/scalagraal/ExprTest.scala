@@ -23,7 +23,9 @@ object ExprTest extends TestSuite {
   override def tests = Tests {
 
     "dsl" - {
-      "ap1" - assertTypeIs[Expr[Value]               ](Expr.apply2(_ + "+" + _, 1, 2))
+      // Scala 2.13 only
+      //"ap1" - assertTypeIs[Expr[Value]               ](Expr.apply2(_ + "+" + _, 1, 2))
+
       "ap2" - assertTypeIs[(Int, Int) => Expr[Value] ](Expr.apply2[Int, Int](_ + "+" + _).compile)
       "ap3" - assertTypeIs[(Int, Int) => Expr[String]](Expr.apply2[Int, Int](_ + "+" + _).compile(_.asString))
       "fn1" - assertTypeIs[Expr[Value]               ](Expr.fn2("add", 1, 2))
@@ -85,7 +87,7 @@ object ExprTest extends TestSuite {
       "option" - {
         val a = Option.empty[Int]
         val b = Some(456)
-        val expr = Expr.apply2((a, b) => s"($a == null) ? $b : $a", a, b).asOption(_.asInt)
+        val expr = Expr.apply2[Option[Int], Option[Int]]((a, b) => s"($a == null) ? $b : $a")(a, b).asOption(_.asInt)
         assertEvalResult(sync.eval(expr), b)
       }
 
@@ -109,7 +111,7 @@ object ExprTest extends TestSuite {
       }
 
       "eval"    - test(Expr("xxx"))
-      "compile" - test(Expr.apply1(_ => "xxx", 1))
+      "compile" - test(Expr.apply1[Int](_ => "xxx")(1))
     }
 
   }

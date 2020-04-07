@@ -50,7 +50,7 @@ object ReactSsr {
     /** Preparation of the environment required after loading React JS, but before attempting SSR. */
     val postReact: Expr[Unit] =
       Expr.runAll(
-        Expr.apply1(u => s"window = {console: console, navigator: {userAgent:$u}}", defaultUserAgent),
+        Expr.apply1[String](u => s"window = {console: console, navigator: {userAgent:$u}}")(defaultUserAgent),
         addSetWindowLocationFn,
       )
   }

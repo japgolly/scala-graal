@@ -37,10 +37,10 @@ final class Expr[+A] private[Expr] (private[scalagraal] val run: Context => A) e
     } yield a
 
   def assignTo[AA >: A](name: String)(implicit e: ExprParam[AA], l: Language): Expr[AA] =
-    flatTap(a => Expr.apply1(name + " = " + _, a: AA))
+    flatTap(a => Expr.apply1[AA](name + " = " + _)(a))
 
   def assignToNewVar[AA >: A](varName: String)(implicit e: ExprParam[AA], l: Language): Expr[AA] =
-    flatTap(a => Expr.apply1("var " + varName + " = " + _, a: AA))
+    flatTap(a => Expr.apply1[AA]("var " + varName + " = " + _)(a))
 
   @inline private def _as[B](f: Value => B)(implicit ev: Expr[A] <:< Expr[Value]): Expr[B] =
     ev(this).map(v => ExprError.InResult.capture(v, f))
@@ -118,7 +118,7 @@ final class Expr[+A] private[Expr] (private[scalagraal] val run: Context => A) e
       p      = Promise[B]()
       onThen = (v => p.complete(Try(f(Value.asValue(v)))))                       : Consumer[AnyRef]
       onFail = (v => p.failure(ExprError.AsyncFunctionFailed(Value.asValue(v)))) : Consumer[AnyRef]
-      _     <- Expr.apply3((a, b, c) => s"$a.then($b).catch($c)", v, onThen, onFail)
+      _     <- Expr.apply3[Value, Consumer[AnyRef], Consumer[AnyRef]]((a, b, c) => s"$a.then($b).catch($c)")(v, onThen, onFail)
     } yield p.future
   }
 

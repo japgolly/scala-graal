@@ -1,8 +1,27 @@
 import sbt._
 
+sealed trait ScalaVer
+object ScalaVer {
+  case object `2.12` extends ScalaVer
+  case object `2.13` extends ScalaVer
+
+  def parse(str: String) =
+    if (str startsWith "2.12")
+      `2.12`
+    else if (str startsWith "2.13")
+      `2.13`
+    else
+      throw new RuntimeException("Unknown Scala version: " + str)
+}
+
 object GenExprBoilerplate {
 
-  def apply(outputDir: File): File = {
+  def apply(mainDir: File): Unit = {
+    gen(mainDir / "scala-2.12", ScalaVer.`2.12`)
+    gen(mainDir / "scala-2.13", ScalaVer.`2.13`)
+  }
+
+  def gen(outputDir: File, scalaVer: ScalaVer): File = {
 
     val Name = "ExprBoilerplate"
 
@@ -17,12 +36,23 @@ object GenExprBoilerplate {
         val Strings = List.fill(n)("String").mkString(",")
         val es = (0 until n).map(i => s"e($i)").mkString(",")
 
+        val scalaSpecific = scalaVer match {
+          case ScalaVer.`2.12` =>
+            ""
+
+          case ScalaVer.`2.13` =>
+            s"""
+               |  final def apply$n[$ABC](mkExpr: ($Strings) => String, $Types)(implicit lang: Language, $Params): Expr[Value] =
+               |    apply$n[$ABC](mkExpr).apply($abc)
+               |
+               |""".stripMargin.trim
+        }
+
         s"""
+           |  $scalaSpecific
+           |
            |  final def apply$n[$ABC](mkExpr: ($Strings) => String): Apply$n[$ABC] =
            |    new Apply$n(mkExpr)
-           |
-           |  final def apply$n[$ABC](mkExpr: ($Strings) => String, $Types)(implicit lang: Language, $Params): Expr[Value] =
-           |    apply$n[$ABC](mkExpr).apply($abc)
            |
            |  final def fn$n[$ABC](fnName: String): Apply$n[$ABC] =
            |    apply$n(($abc) => s"$$fnName(${`$a,$b,$c`})")
