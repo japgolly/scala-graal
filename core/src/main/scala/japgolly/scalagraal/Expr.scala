@@ -1,5 +1,6 @@
 package japgolly.scalagraal
 
+import japgolly.scalagraal.util.DurationLite
 import org.graalvm.polyglot.{Language => _, _}
 import scala.annotation.tailrec
 import scala.collection.compat._

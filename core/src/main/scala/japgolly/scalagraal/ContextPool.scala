@@ -1,6 +1,7 @@
 package japgolly.scalagraal
 
 import japgolly.scalagraal.Effect.{Async, AsyncES}
+import japgolly.scalagraal.util.DurationLite
 import java.util.concurrent.{Future => _, _}
 import java.util.concurrent.atomic.AtomicInteger
 import org.graalvm.polyglot.{Context, Engine}

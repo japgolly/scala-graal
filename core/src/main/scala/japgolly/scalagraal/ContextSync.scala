@@ -1,6 +1,7 @@
 package japgolly.scalagraal
 
 import org.graalvm.polyglot.{Context, Engine}
+import japgolly.scalagraal.util.DurationLite
 
 trait ContextSync extends ContextF[Effect.Id] {
 

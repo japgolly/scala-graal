@@ -1,4 +1,4 @@
-package japgolly.scalagraal
+package japgolly.scalagraal.util
 
 import java.util.concurrent.TimeUnit
 

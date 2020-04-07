@@ -1,5 +1,6 @@
 package japgolly.scalagraal
 
+import japgolly.scalagraal.util.DurationLite
 import scala.annotation.tailrec
 import scala.concurrent.{Future, Promise}
 import scala.util.{Failure, Success, Try}

@@ -4,6 +4,7 @@ import io.prometheus.client.CollectorRegistry
 import utest._
 import GraalPrometheus.Default._
 import japgolly.scalagraal.ContextMetrics.Metric
+import japgolly.scalagraal.util.DurationLite
 
 object GraalPrometheusTest extends TestSuite {
 

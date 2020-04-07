@@ -1,5 +1,6 @@
 package japgolly.scalagraal
 
+import japgolly.scalagraal.util.DurationLite
 import java.io.PrintStream
 import ContextMetrics._
 
