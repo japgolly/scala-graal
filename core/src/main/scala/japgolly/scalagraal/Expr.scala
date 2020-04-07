@@ -46,6 +46,33 @@ final class Expr[+A] private[Expr] (private[scalagraal] val run: Context => A) e
     _as(_.as(t))
   }
 
+  def asBooleanArray(implicit ev: Expr[A] <:< Expr[Value]): Expr[Array[Boolean]] = _as(_.toBooleanArray())
+  def asByteArray   (implicit ev: Expr[A] <:< Expr[Value]): Expr[Array[Byte   ]] = _as(_.toByteArray())
+  def asDoubleArray (implicit ev: Expr[A] <:< Expr[Value]): Expr[Array[Double ]] = _as(_.toDoubleArray())
+  def asFloatArray  (implicit ev: Expr[A] <:< Expr[Value]): Expr[Array[Float  ]] = _as(_.toFloatArray())
+  def asIntArray    (implicit ev: Expr[A] <:< Expr[Value]): Expr[Array[Int    ]] = _as(_.toIntArray())
+  def asLongArray   (implicit ev: Expr[A] <:< Expr[Value]): Expr[Array[Long   ]] = _as(_.toLongArray())
+  def asShortArray  (implicit ev: Expr[A] <:< Expr[Value]): Expr[Array[Short  ]] = _as(_.toShortArray())
+  def asStringArray (implicit ev: Expr[A] <:< Expr[Value]): Expr[Array[String ]] = _as(_.toStringArray())
+
+  def asBooleanList(implicit ev: Expr[A] <:< Expr[Value]): Expr[List[Boolean]] = _as(_.toBooleanList())
+  def asByteList   (implicit ev: Expr[A] <:< Expr[Value]): Expr[List[Byte   ]] = _as(_.toByteList())
+  def asDoubleList (implicit ev: Expr[A] <:< Expr[Value]): Expr[List[Double ]] = _as(_.toDoubleList())
+  def asFloatList  (implicit ev: Expr[A] <:< Expr[Value]): Expr[List[Float  ]] = _as(_.toFloatList())
+  def asIntList    (implicit ev: Expr[A] <:< Expr[Value]): Expr[List[Int    ]] = _as(_.toIntList())
+  def asLongList   (implicit ev: Expr[A] <:< Expr[Value]): Expr[List[Long   ]] = _as(_.toLongList())
+  def asShortList  (implicit ev: Expr[A] <:< Expr[Value]): Expr[List[Short  ]] = _as(_.toShortList())
+  def asStringList (implicit ev: Expr[A] <:< Expr[Value]): Expr[List[String ]] = _as(_.toStringList())
+
+  def asBooleanVector(implicit ev: Expr[A] <:< Expr[Value]): Expr[Vector[Boolean]] = _as(_.toBooleanVector())
+  def asByteVector   (implicit ev: Expr[A] <:< Expr[Value]): Expr[Vector[Byte   ]] = _as(_.toByteVector())
+  def asDoubleVector (implicit ev: Expr[A] <:< Expr[Value]): Expr[Vector[Double ]] = _as(_.toDoubleVector())
+  def asFloatVector  (implicit ev: Expr[A] <:< Expr[Value]): Expr[Vector[Float  ]] = _as(_.toFloatVector())
+  def asIntVector    (implicit ev: Expr[A] <:< Expr[Value]): Expr[Vector[Int    ]] = _as(_.toIntVector())
+  def asLongVector   (implicit ev: Expr[A] <:< Expr[Value]): Expr[Vector[Long   ]] = _as(_.toLongVector())
+  def asShortVector  (implicit ev: Expr[A] <:< Expr[Value]): Expr[Vector[Short  ]] = _as(_.toShortVector())
+  def asStringVector (implicit ev: Expr[A] <:< Expr[Value]): Expr[Vector[String ]] = _as(_.toStringVector())
+
   def void: Expr[Unit] =
     new Expr(c => {run(c); ()})
 

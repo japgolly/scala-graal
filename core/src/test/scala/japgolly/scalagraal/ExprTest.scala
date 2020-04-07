@@ -68,6 +68,11 @@ object ExprTest extends TestSuite {
         val expr = Expr.apply2((a, b) => s"($a == null) ? $b : $a", a, b).asOption(_.asInt)
         assertEvalResult(sync.eval(expr), b)
       }
+
+      "stringList" - {
+        val expr = Expr("['omg', 'hello']").asStringVector
+        assertEvalResult(sync.eval(expr), Vector("omg", "hello"))
+      }
     }
 
     "errors" - {
