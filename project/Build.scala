@@ -27,7 +27,7 @@ object ScalaGraal {
     val MonadicFor      = "0.3.1"
     val MTest           = "0.7.1"
     val Nyaya           = "0.9.0"
-    val Prometheus      = "0.8.0"
+    val Prometheus      = "0.8.1"
     val Scala212        = "2.12.10"
     val Scala213        = "2.13.1"
     val ScalaCollCompat = "2.1.4"
