@@ -61,6 +61,11 @@ object ExprTest extends TestSuite {
       }
     }
 
+    "assignToNewVar" - {
+      val expr = Expr("123").asInt.assignToNewVar("x").void >> Expr("x").asInt
+      assertEvalResult(sync.eval(expr), 123)
+    }
+
     "results" - {
       "option" - {
         val a = Option.empty[Int]

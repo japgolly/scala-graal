@@ -26,6 +26,18 @@ final class Expr[+A] private[Expr] (private[scalagraal] val run: Context => A) e
   def flatMap[B](f: A => Expr[B]): Expr[B] =
     new Expr(c => f(run(c)).run(c))
 
+  def flatTap[B](f: A => Expr[B]): Expr[A] =
+    for {
+      a <- this
+      _ <- f(a)
+    } yield a
+
+  def assignTo[AA >: A](name: String)(implicit e: ExprParam[AA], l: Language): Expr[AA] =
+    flatTap(a => Expr.apply1[AA](name + " = " + _, a))
+
+  def assignToNewVar[AA >: A](varName: String)(implicit e: ExprParam[AA], l: Language): Expr[AA] =
+    flatTap(a => Expr.apply1[AA]("var " + varName + " = " + _, a))
+
   @inline private def _as[B](f: Value => B)(implicit ev: Expr[A] <:< Expr[Value]): Expr[B] =
     ev(this).map(v => ExprError.InResult.capture(v, f))
 
