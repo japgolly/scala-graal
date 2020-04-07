@@ -30,6 +30,10 @@ object ExprError {
 
   final case class UnsupportedLanguageOrMimeType(underlying: IllegalArgumentException) extends InEval(underlying)
 
+  final case class AsyncFunctionFailed(failure: Value) extends InEval(new RuntimeException(s"AsyncFunctionFailed: $failure")) {
+    override val underlying = new RuntimeException(s"AsyncFunctionFailed: $failure")
+  }
+
   // ===================================================================================================================
 
   sealed abstract class InResult(t: Throwable) extends ExprError(t) {

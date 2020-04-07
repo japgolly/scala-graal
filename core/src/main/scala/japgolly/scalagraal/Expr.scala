@@ -1,11 +1,15 @@
 package japgolly.scalagraal
 
 import japgolly.scalagraal.util.DurationLite
+import java.util.function.Consumer
 import org.graalvm.polyglot.{Language => _, _}
 import scala.annotation.tailrec
 import scala.collection.compat._
+import scala.concurrent.duration.{Duration, SECONDS}
+import scala.concurrent.{Await, Future, Promise, TimeoutException}
 import scala.reflect.ClassTag
 import scala.runtime.AbstractFunction1
+import scala.util.Try
 
 final class Expr[+A] private[Expr] (private[scalagraal] val run: Context => A) extends AbstractFunction1[Context, Expr.Result[A]] {
 
@@ -88,7 +92,7 @@ final class Expr[+A] private[Expr] (private[scalagraal] val run: Context => A) e
   def void: Expr[Unit] =
     new Expr(c => {run(c); ()})
 
-  def asOption[F, B](f: Expr[Value] => Expr[B])(implicit ev: Expr[A] <:< Expr[Value]): Expr[Option[B]] = {
+  def asOption[B](f: Expr[Value] => Expr[B])(implicit ev: Expr[A] <:< Expr[Value]): Expr[Option[B]] = {
     val self = ev(this)
     new Expr(c => {
       val v = self.run(c)
@@ -98,6 +102,43 @@ final class Expr[+A] private[Expr] (private[scalagraal] val run: Context => A) e
         Some(f(Expr.const(v)).run(c))
     })
   }
+
+  def asPromise(implicit ev: Expr[A] <:< Expr[Value],
+                l: Language,
+                pc: ExprParam[Consumer[AnyRef]],
+                pv: ExprParam[Value]): Expr[Future[Value]] =
+    asPromise[Value](identity)
+
+  def asPromise[B](f: Value => B)(implicit ev: Expr[A] <:< Expr[Value],
+                                  l: Language,
+                                  pc: ExprParam[Consumer[AnyRef]],
+                                  pv: ExprParam[Value]): Expr[Future[B]] = {
+    for {
+      v     <- ev(this)
+      p      = Promise[B]()
+      onThen = (v => p.complete(Try(f(Value.asValue(v)))))                       : Consumer[AnyRef]
+      onFail = (v => p.failure(ExprError.AsyncFunctionFailed(Value.asValue(v)))) : Consumer[AnyRef]
+      _     <- Expr.apply3((a, b, c) => s"$a.then($b).catch($c)", v, onThen, onFail)
+    } yield p.future
+  }
+
+  def await[B](implicit ev: Expr[A] <:< Expr[Future[B]]): Expr[B] =
+    await(Expr.DefaultAwaitTimeout)
+
+  def await[B](atMost: Duration)(implicit ev: Expr[A] <:< Expr[Future[B]]): Expr[B] =
+    ev(this).map(Await.result(_, atMost))
+
+  def awaitAttempt[B](implicit ev: Expr[A] <:< Expr[Future[B]]): Expr[Either[Future[B], B]] =
+    awaitAttempt(Expr.DefaultAwaitTimeout)
+
+  def awaitAttempt[B](atMost: Duration)(implicit ev: Expr[A] <:< Expr[Future[B]]): Expr[Either[Future[B], B]] =
+    ev(this).map { f =>
+      try
+        Right(Await.result(f, atMost))
+      catch {
+        case _: TimeoutException => Left(f)
+      }
+    }
 
   def >>[B](next: Expr[B]): Expr[B] =
     new Expr(c => {run(c); next.run(c)})
@@ -116,6 +157,8 @@ final class Expr[+A] private[Expr] (private[scalagraal] val run: Context => A) e
 
 object Expr extends ExprBoilerplate {
   type Result[+A] = Either[ExprError, A]
+
+  val DefaultAwaitTimeout = Duration(10, SECONDS)
 
   def apply(source: CharSequence)(implicit language: Language): Expr[Value] =
     apply(Source.create(language.name, source))

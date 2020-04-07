@@ -78,6 +78,11 @@ object ExprTest extends TestSuite {
         val expr = Expr("['omg', 'hello']").asStringVector
         assertEvalResult(sync.eval(expr), Vector("omg", "hello"))
       }
+
+      "asyncAwait" - {
+        val expr = Expr("async function x(){return 123}; x()").asPromise(_.asInt()).await
+        assertEvalResult(sync.eval(expr), 123)
+      }
     }
 
     "errors" - {
