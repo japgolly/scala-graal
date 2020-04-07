@@ -5,7 +5,8 @@ scala:
   - 2.12.11
 
 env:
-  - GRAAL_VER=19.2.1
+  - GRAAL_VER=20.0.0
+  - JAVA_VER=8
 
 before_install:
 - wget https://github.com/sormuras/bach/raw/master/install-jdk.sh
@@ -17,7 +18,7 @@ install:
   - export NODE_PATH="$(npm config get prefix)"/lib/node_modules
   - npm install
   - npm install jsdom@9.12.0 source-map-support
-  - . ./install-jdk.sh --url "https://github.com/oracle/graal/releases/download/vm-${GRAAL_VER}/graalvm-ce-linux-amd64-${GRAAL_VER}.tar.gz"
+  - . ./install-jdk.sh --url "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-${GRAAL_VER}/graalvm-ce-java${JAVA_VER}-linux-amd64-${GRAAL_VER}.tar.gz"
 
 script:
   - sbt ++$TRAVIS_SCALA_VERSION 'set parallelExecution in ThisBuild := false' test
