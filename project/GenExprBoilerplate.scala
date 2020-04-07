@@ -4,6 +4,8 @@ object GenExprBoilerplate {
 
   def apply(outputDir: File): File = {
 
+    val Name = "ExprBoilerplate"
+
     val groups =
       (1 to 22).map { n =>
         val _ABC = (1 to n).map(_ + 64).map(_.toChar)
@@ -14,33 +16,36 @@ object GenExprBoilerplate {
         val Params = _ABC.map(A => s"$A:ExprParam[$A]").mkString(", ")
         val Strings = List.fill(n)("String").mkString(",")
         val es = (0 until n).map(i => s"e($i)").mkString(",")
+
         s"""
-           |  final class CompileDsl$n[$ABC](mkExpr: ($Strings) => String) {
-           |    def apply[Z](post: Expr[Value] => Z)(implicit lang: Language, $Params): ($ABC) => Z = {
+           |  final def apply$n[$ABC](mkExpr: ($Strings) => String): Apply$n[$ABC] =
+           |    new Apply$n(mkExpr)
+           |
+           |  final def apply$n[$ABC](mkExpr: ($Strings) => String, $Types)(implicit lang: Language, $Params): Expr[Value] =
+           |    apply$n[$ABC](mkExpr).apply($abc)
+           |
+           |  final def fn$n[$ABC](fnName: String): Apply$n[$ABC] =
+           |    apply$n(($abc) => s"$$fnName(${`$a,$b,$c`})")
+           |
+           |  final def fn$n[$ABC](fnName: String, $Types)(implicit lang: Language, $Params): Expr[Value] =
+           |    fn$n[$ABC](fnName).apply($abc)
+           |
+           |  final class Apply$n[$ABC](mkExpr: ($Strings) => String) {
+           |
+           |    @inline def apply($Types)(implicit lang: Language, $Params): Expr[Value] =
+           |      compile.apply($abc)
+           |
+           |    def compile(implicit lang: Language, $Params): ($ABC) => Expr[Value] =
+           |      compile[Expr[Value]](exprValueId)
+           |
+           |    def compile[Z](post: Expr[Value] => Z)(implicit lang: Language, $Params): ($ABC) => Z = {
            |      val ps = Array[ExprParam[_]]($ABC).asInstanceOf[Array[ExprParam[X]]]
            |      val z = genericOpt(ps, e => mkExpr($es), post)
            |      ($abc) => z(Array[Any]($abc).asInstanceOf[Array[X]])
            |    }
            |  }
-           |
-           |  final def compile$n[$ABC](mkExpr: ($Strings) => String): CompileDsl$n[$ABC] =
-           |    new CompileDsl$n(mkExpr)
-           |
-           |  final def compileExpr$n[$ABC](mkExpr: ($Strings) => String)(implicit lang: Language, $Params): ($ABC) => Expr[Value] =
-           |    compile$n[$ABC](mkExpr)(exprValueId)
-           |
-           |  final def apply$n[$ABC](mkExpr: ($Strings) => String, $Types)(implicit lang: Language, $Params): Expr[Value] =
-           |    compileExpr$n[$ABC](mkExpr).apply($abc)
-           |
-           |  final def compileFnCall$n[$ABC](fnName: String): CompileDsl$n[$ABC] =
-           |    compile$n[$ABC](($abc) => s"$$fnName(${`$a,$b,$c`})")
-           |
-           |  final def callFn$n[$ABC](fnName: String, $Types)(implicit lang: Language, $Params): Expr[Value] =
-           |    compileFnCall$n[$ABC](fnName)(exprValueId).apply($abc)
          """.stripMargin.trim.replaceFirst("^", "  ")
       }
-
-    val Name = "ExprBoilerplate"
 
     val sep = s"\n  // ${"=" * 115}\n\n"
 

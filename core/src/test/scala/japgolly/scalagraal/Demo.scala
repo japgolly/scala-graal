@@ -14,7 +14,7 @@ object Demo extends TestSuite {
       // 1. Pre-compile expression functions for fast invocation.
       // 2. Typeclasses determine how to translate and/or marshall data from Scala to JS.
       val expr: (Int, Int) => Expr[String] =
-        Expr.compile2((a, b) => s"($a + $b) * 2 + '!'")(_.asString)
+        Expr.apply2((a, b) => s"($a + $b) * 2 + '!'").compile(_.asString)
 
       // Let's use a single synchronous JS evaluator/environment
       val ctx = ContextSync()

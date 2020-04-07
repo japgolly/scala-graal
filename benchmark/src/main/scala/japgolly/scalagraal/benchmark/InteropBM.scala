@@ -65,8 +65,8 @@ class InteropBM {
           }
 
         val expr: Int => Expr[String] = exprInputs match {
-          case 1 => val e = Expr.compile1(a => render(s"($a + $a) * 2 + '!'"))(_.asString)(implicitly, ep); i => e(i)
-          case 2 => val e = Expr.compile2((a, b) => render(s"($a + $b) * 2 + '!'"))(_.asString)(implicitly, ep, ep); i => e(i, i)
+          case 1 => val e = Expr.apply1(a => render(s"($a + $a) * 2 + '!'")).compile(_.asString)(implicitly, ep); i => e(i)
+          case 2 => val e = Expr.apply2((a, b) => render(s"($a + $b) * 2 + '!'")).compile(_.asString)(implicitly, ep, ep); i => e(i, i)
         }
 
         GraalWarmup.sync(ctx)(warmupContexts, expr(9))
@@ -83,8 +83,8 @@ class InteropBM {
           }
 
         val expr: String => Expr[String] = exprInputs match {
-          case 1 => val e = Expr.compile1(a => render(s"$a + '!' + $a"))(_.asString)(implicitly, ep); i => e(i)
-          case 2 => val e = Expr.compile2((a, b) => render(s"$a + '!' + $b"))(_.asString)(implicitly, ep, ep); i => e(i, i)
+          case 1 => val e = Expr.apply1(a => render(s"$a + '!' + $a")).compile(_.asString)(implicitly, ep); i => e(i)
+          case 2 => val e = Expr.apply2((a, b) => render(s"$a + '!' + $b")).compile(_.asString)(implicitly, ep, ep); i => e(i, i)
         }
 
         GraalWarmup.sync(ctx)(warmupContexts, expr("asd"))
@@ -98,7 +98,7 @@ class InteropBM {
         }
 
         val expr: BinStr2 => Expr[String] = exprInputs match {
-          case 2 => val e = Expr.compile1(i => render(s"'' + $i"))(_.asString)(implicitly, ep); i => e(i)
+          case 2 => val e = Expr.apply1(i => render(s"'' + $i")).compile(_.asString)(implicitly, ep); i => e(i)
         }
 
         GraalWarmup.sync(ctx)(warmupContexts, expr(BinStr2("a1", "a2")))

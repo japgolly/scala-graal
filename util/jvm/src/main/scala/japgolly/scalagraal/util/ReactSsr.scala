@@ -59,7 +59,7 @@ object ReactSsr {
 
   val setWindowLocation: WindowLocation => Expr[Unit] = {
     implicit val e = ExprParam.RawValueFn[WindowLocation]
-    Expr.compileFnCall1(SetWindowLocationFnName)(_.void)
+    Expr.fn1(SetWindowLocationFnName).compile(_.void)
   }
 
   /** Sets `window.location` to an object representing the given URL.
@@ -70,7 +70,7 @@ object ReactSsr {
     setWindowLocation(WindowLocation.parse(url).orNull)
 
   val setUserAgent: String => Expr[Unit] =
-    Expr.compile1[String](v => s"window.navigator.userAgent=$v")(_.void)
+    Expr.apply1(v => s"window.navigator.userAgent=$v").compile(_.void)
 
   /** Render a React element to its initial HTML. React will return an HTML string. You can use this method to generate
     * HTML on the server and send the markup down on the initial request for faster page loads and to allow search

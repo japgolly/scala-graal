@@ -1,19 +1,35 @@
 package japgolly.scalagraal
 
+import org.graalvm.polyglot.Value
 import utest._
 import TestUtil._
 
 object ExprTest extends TestSuite {
 
-  val paramTypes = Vector[Int => ExprParam[Int]](
+  private val paramTypes = Vector[Int => ExprParam[Int]](
     i => ExprParam.SourceConst(i.toString),
     _ => ExprParam.SourceFn(_.toString),
     _ => ExprParam.ValueFn(ExprParam.RawValue),
     _ => ExprParam.CtxValueFn(i => ctx => ExprParam.RawValue(ctx.eval(graalLanguage.name, i.toString))))
 
-  trait X
+  private trait X
+
+  private class TestType[E] {
+    def apply[A](a: A)(implicit ev: A =:= E) = ()
+  }
+
+  private def assertTypeIs[E] = new TestType[E]
 
   override def tests = Tests {
+
+    "dsl" - {
+      "ap1" - assertTypeIs[Expr[Value]               ](Expr.apply2(_ + "+" + _, 1, 2))
+      "ap2" - assertTypeIs[(Int, Int) => Expr[Value] ](Expr.apply2[Int, Int](_ + "+" + _).compile)
+      "ap3" - assertTypeIs[(Int, Int) => Expr[String]](Expr.apply2[Int, Int](_ + "+" + _).compile(_.asString))
+      "fn1" - assertTypeIs[Expr[Value]               ](Expr.fn2("add", 1, 2))
+      "fn2" - assertTypeIs[(Int, Int) => Expr[Value] ](Expr.fn2[Int, Int]("add").compile)
+      "fn3" - assertTypeIs[(Int, Int) => Expr[String]](Expr.fn2[Int, Int]("add").compile(_.asString))
+    }
 
     "args" - {
 
@@ -23,7 +39,7 @@ object ExprTest extends TestSuite {
         for {
           pa <- paramTypes.map(_(a))
         } {
-          val fn = Expr.compile1(identity)(_.asInt)(graalLanguage, pa)
+          val fn = Expr.apply1[Int](identity).compile(_.asInt)(graalLanguage, pa)
           val expr = fn(a)
           val result = sync.eval(expr)
           assertEvalResult(result, a)
@@ -43,8 +59,7 @@ object ExprTest extends TestSuite {
           pc <- paramTypes.map(_(c))
           pd <- paramTypes.map(_(d))
         } {
-          val fn = Expr.compile4(mkExpr)(_.asInt)(graalLanguage, pa, pb, pc, pd)
-          val expr = fn(a, b, c, d)
+          val expr = Expr.apply4(mkExpr)(a, b, c, d)(graalLanguage, pa, pb, pc, pd).asInt
           val result = sync.eval(expr)
           assertEvalResult(result, expect)
         }
@@ -94,7 +109,7 @@ object ExprTest extends TestSuite {
       }
 
       "eval"    - test(Expr("xxx"))
-      "compile" - test(Expr.compileExpr1[Int](_ => "xxx").apply(1))
+      "compile" - test(Expr.apply1(_ => "xxx", 1))
     }
 
   }

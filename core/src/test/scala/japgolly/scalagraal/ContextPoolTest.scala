@@ -69,7 +69,9 @@ object ContextPoolTest extends TestSuite {
 
       try {
 
-        val fib = Expr.compile1[Int](n => s"function fibonacci(n){for(var r,c=1,f=0;0<=n;)r=c,c+=f,f=r,n--;return f}; fibonacci($n) + ''")(_.asString)
+        val fib =
+          Expr.apply1[Int](n => s"function fibonacci(n){for(var r,c=1,f=0;0<=n;)r=c,c+=f,f=r,n--;return f}; fibonacci($n) + ''")
+            .compile(_.asString)
 
         // scala> ctx.evalWithStats(fib(20000000))
         // res0 = ContextMetrics.AndResult(ContextMetrics(590 ms), Right(Infinity))
