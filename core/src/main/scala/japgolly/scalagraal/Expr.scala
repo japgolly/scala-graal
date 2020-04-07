@@ -198,7 +198,7 @@ object Expr extends ExprBoilerplate {
     stdlibCosequenceDiscard(es)
 
   def stdlibDist[F[x] <: Iterable[x], A, B](fa: F[A])(f: A => Expr[B])
-                                              (implicit cbf: BuildFrom[F[A], B, F[B]]): Expr[F[B]] =
+                                           (implicit cbf: BuildFrom[F[A], B, F[B]]): Expr[F[B]] =
     lift(c => {
       val b = cbf.newBuilder(fa)
       fa.foreach(a => b += f(a).run(c))
@@ -206,7 +206,7 @@ object Expr extends ExprBoilerplate {
     })
 
   def stdlibCosequence[F[x] <: Iterable[x], A](fea: F[Expr[A]])
-                                                 (implicit cbf: BuildFrom[F[Expr[A]], A, F[A]]): Expr[F[A]] =
+                                              (implicit cbf: BuildFrom[F[Expr[A]], A, F[A]]): Expr[F[A]] =
     stdlibDist[F, Expr[A], A](fea)(identity)
 
   def stdlibDistDiscard[A, B](fa: Iterable[A])(f: A => Expr[B]): Expr[Unit] =
