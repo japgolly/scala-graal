@@ -18,7 +18,7 @@ final class ContextMetrics(private val data: Array[Long]) extends AnyVal {
 
 object ContextMetrics {
 
-  // TODO Lots of yuk in this file to be fast as possible. Benchmark without some of the yuk, it might not be necessary.
+  // Lots of yuk in this file to be fast as possible.
 
   def apply(waited: DurationLite,
             pre   : DurationLite,
