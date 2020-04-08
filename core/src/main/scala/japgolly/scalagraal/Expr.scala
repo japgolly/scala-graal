@@ -218,14 +218,8 @@ object Expr extends ExprBoilerplate {
   def fileOnClasspath(filename: String)(implicit lang: Language): Option[Expr[Value]] =
     SourceUtil.fileOnClasspath(filename).map(apply)
 
-  def fileOnClasspath(lang: String, filename: String): Option[Expr[Value]] =
-    SourceUtil.fileOnClasspath(lang, filename).map(apply)
-
   def requireFileOnClasspath(filename: String)(implicit lang: Language): Expr[Value] =
     apply(SourceUtil.requireFileOnClasspath(filename))
-
-  def requireFileOnClasspath(lang: String, filename: String): Expr[Value] =
-    apply(SourceUtil.requireFileOnClasspath(lang, filename))
 
   override protected def genericOpt[Z](params: Array[ExprParam[X]],
                                        mkExprStr: Array[String] => String,
