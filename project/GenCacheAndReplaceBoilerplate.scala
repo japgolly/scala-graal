@@ -15,10 +15,10 @@ object GenCacheAndReplaceBoilerplate {
         val fromStrs = (0 until n).map(i => s"${up(i)}.fromStr(a($i))").mkString(",")
         val toStrs = (0 until n).map(i => s"${up(i)}.toStr(${down(i)})").mkString(",")
         s"""
-           |  def compileI$n[$ABC](f: ($ABC) => String)(implicit $Params): ($ABC) => String =
-           |    compile$n[Id, $ABC](f)
+           |  def compile$n[$ABC](f: ($ABC) => String)(implicit $Params): ($ABC) => String =
+           |    compileF$n[Id, $ABC](f)
            |
-           |  def compile$n[Z[_], $ABC](f: ($ABC) => Z[String])(implicit Z: Functor[Z], $Params): Z[($ABC) => String] =
+           |  def compileF$n[Z[_], $ABC](f: ($ABC) => Z[String])(implicit $Params, Z: Functor[Z]): Z[($ABC) => String] =
            |    compileGeneric($n, a => f($fromStrs)).map(x => ($aAbBcC) => x(Array($toStrs)))
          """.stripMargin.trim.replaceFirst("^", "  ")
       }

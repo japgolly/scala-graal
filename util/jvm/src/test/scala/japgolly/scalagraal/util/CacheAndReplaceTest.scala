@@ -44,7 +44,7 @@ object CacheAndReplaceTest extends TestSuite {
         }
 
       val prop = Prop.equal[D]("T(f)(a,b) = f(a,b)")(
-        { case (a, b, t) => CacheAndReplace.compileI2(t).apply(a, b) },
+        { case (a, b, t) => CacheAndReplace.compile2(t).apply(a, b) },
         { case (a, b, t) => t(a, b) })
 
       gen.mustSatisfy(prop)
