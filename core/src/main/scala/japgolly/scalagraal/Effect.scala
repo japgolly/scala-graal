@@ -63,4 +63,13 @@ object Effect {
         override def delay[A](a: => A) = Future(a)
       }
   }
+
+  // ===================================================================================================================
+
+  trait Trans[F[_], G[_]] {
+
+    /** Unlike natural transformations, fa is non-strict here because it could represent an impure proc.
+      */
+    def apply[A](fa: => F[A]): G[A]
+  }
 }
