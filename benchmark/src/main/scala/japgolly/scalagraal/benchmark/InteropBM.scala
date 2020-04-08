@@ -11,12 +11,12 @@ import InteropBM._
 
 object InteropBM {
   val SetupExpr: Expr[Unit] =
-    Expr.stdlibCosequenceDiscard(List(
+    Expr.runAll(
       Expr.requireFileOnClasspath("react.production.min.js"),
       Expr.requireFileOnClasspath("react-dom-server.browser.production.min.js"),
       Expr.requireFileOnClasspath("ext-boopickle-test-opt.js"),
       Expr("window = {console: console, location: {href: 'https://shipreq.com'}, navigator: {userAgent: ''}}"),
-    ))
+    )
 
   def render(a: String): String =
     s"ReactDOMServer.renderToStaticMarkup(React.createElement('div', null, $a))"

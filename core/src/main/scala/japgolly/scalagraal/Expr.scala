@@ -99,7 +99,7 @@ final class Expr[+A] private[Expr] (private[scalagraal] val run: Context => A) e
       if (ExprError.InResult.capture(v, _.isNull))
         None
       else
-        Some(f(Expr.const(v)).run(c))
+        Some(f(Expr.pure(v)).run(c))
     })
   }
 
@@ -163,20 +163,27 @@ object Expr extends ExprBoilerplate {
   def apply(source: CharSequence)(implicit language: Language): Expr[Value] =
     apply(Source.create(language.name, source))
 
-  def apply(source: Source): Expr[Value] =
-    new Expr(c => ExprError.InEval.capture(c.eval(source)))
+  def apply(source: => Source): Expr[Value] = {
+    lazy val s = source
+    new Expr(c => ExprError.InEval.capture(c.eval(s)))
+  }
 
   def lift[A](f: Context => A): Expr[A] =
     new Expr(f)
 
-  def const[A](a: A): Expr[A] =
+  def pure[A](a: A): Expr[A] =
     new Expr(_ => a)
 
   def point[A](a: => A): Expr[A] =
     new Expr(_ => a)
 
+  def lazily[A](a: => A): Expr[A] = {
+    lazy val l = a
+    new Expr(_ => l)
+  }
+
   val unit: Expr[Unit] =
-    const(())
+    pure(())
 
   def fail[A](e: ExprError): Expr[A] =
     point(throw e)
@@ -215,11 +222,14 @@ object Expr extends ExprBoilerplate {
   def stdlibCosequenceDiscard[A](es: Iterable[Expr[A]]): Expr[Unit] =
     lift(c => es.foreach(_.run(c)))
 
-  def fileOnClasspath(filename: String)(implicit lang: Language): Option[Expr[Value]] =
-    SourceUtil.fileOnClasspath(filename).map(apply)
+  def fileOnClasspath(filename: String)(implicit lang: Language): Expr[Option[Value]] =
+    lazily(SourceUtil.fileOnClasspath(lang.name, filename)).flatMap {
+      case Some(s) => apply(s).map(Some(_))
+      case None    => pure(None)
+    }
 
   def requireFileOnClasspath(filename: String)(implicit lang: Language): Expr[Value] =
-    apply(SourceUtil.requireFileOnClasspath(filename))
+    apply(SourceUtil.requireFileOnClasspath(lang.name, filename))
 
   override protected def genericOpt[Z](params: Array[ExprParam[X]],
                                        mkExprStr: Array[String] => String,
