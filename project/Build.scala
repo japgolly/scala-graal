@@ -1,13 +1,16 @@
 import sbt._
 import sbt.Keys._
+import com.typesafe.sbt.GitPlugin.autoImport._
 import com.typesafe.sbt.pgp.PgpKeys
-import pl.project13.scala.sbt.JmhPlugin
-import sbtrelease.ReleasePlugin.autoImport._
+import mdoc.MdocPlugin
+import mdoc.MdocPlugin.autoImport._
 import org.portablescala.sbtplatformdeps.PlatformDepsPlugin.autoImport._
 import org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv
 import org.scalajs.sbtplugin.ScalaJSPlugin
 import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport.{crossProject => _, CrossType => _, _}
+import pl.project13.scala.sbt.JmhPlugin
 import sbtcrossproject.CrossPlugin.autoImport._
+import sbtrelease.ReleasePlugin.autoImport._
 import scalajscrossproject.ScalaJSCrossPlugin.autoImport._
 import Lib._
 
@@ -90,7 +93,8 @@ object ScalaGraal {
         core,
         utilJVM, utilJS,
         extBoopickleJVM, extBoopickleJS, extPrometheus,
-        benchmark)
+        benchmark,
+        mdoc)
 
   lazy val core = project
     .configure(commonSettings.jvm, publicationSettings.jvm, testSettings.jvm)
@@ -140,4 +144,17 @@ object ScalaGraal {
     .enablePlugins(JmhPlugin)
     .dependsOn(core, utilJVM, extBoopickleJVM)
     .settings(unmanagedResources in Compile += (fullOptJS in Test in extBoopickleJS).value.data)
+
+  lazy val mdoc = project
+    .in(file(".mdoc"))
+    .configure(commonSettings.jvm)
+    .dependsOn(core, utilJVM)
+    .enablePlugins(MdocPlugin)
+    .settings(
+      mdocIn := baseDirectory.in(ThisBuild).value / "mdoc",
+      mdocOut := baseDirectory.in(ThisBuild).value / "doc",
+      mdocVariables := Map(
+        "VERSION" -> advertiseVersion(version.value, git.gitDescribedVersion.value)
+      )
+    )
 }
