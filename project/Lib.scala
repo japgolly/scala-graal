@@ -87,4 +87,10 @@ object Lib {
       case other =>
         sys.error("Unsupported virtual file type: " + other)
     }
+
+  def advertiseVersion(currentVer: String, gitVer: Option[String]) =
+    if (!currentVer.contains("SNAPSHOT"))
+      currentVer
+    else
+      gitVer.fold(currentVer)(_.takeWhile(_ != '-'))
 }

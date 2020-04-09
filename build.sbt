@@ -8,3 +8,4 @@ val extBoopickleJS  = ScalaGraal.extBoopickleJS
 val extBoopickleJVM = ScalaGraal.extBoopickleJVM
 val extPrometheus   = ScalaGraal.extPrometheus
 val benchmark       = ScalaGraal.benchmark
+val mdoc            = ScalaGraal.mdoc
