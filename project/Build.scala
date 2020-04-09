@@ -148,7 +148,7 @@ object ScalaGraal {
   lazy val mdoc = project
     .in(file(".mdoc"))
     .configure(commonSettings.jvm)
-    .dependsOn(core, utilJVM)
+    .dependsOn(core, utilJVM, extBoopickleJVM, extPrometheus)
     .enablePlugins(MdocPlugin)
     .settings(
       mdocIn := baseDirectory.in(ThisBuild).value / "mdoc",

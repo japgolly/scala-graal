@@ -8,6 +8,7 @@ libraryDependencies ++= Seq(
 )
 ```
 
+
 # Demo
 
 ```scala
@@ -22,9 +23,39 @@ import GraalJs._
 val expr: (Int, Int) => Expr[String] =
   Expr.apply2((a, b) => s"($a + $b) * 2 + '!'").compile(_.asString)
 
-// Let's use a single synchronous JS evaluator/environment
+// Let's use a single synchronous JS environment
 val ctx = ContextSync()
 
 val result = ctx.eval(expr(3, 8))
 assert(result == Right("22!"))
 ```
+
+
+# Features
+
+* Expressions
+  * composition
+  * purity
+  * parse results
+  * error handling
+  * null handling
+  * binding typeclasses
+  * bindind codec (eg binary/json)
+* Service
+  * single-threaded
+  * multi-threaded pool
+  * synchronous
+  * asynchronous
+  * eval with optional time limit
+  * before/around/after hooks
+  * automatic metrics
+* Warmup
+  * ability to warmup VM
+  * rules (eg. `up to 10000 reps/thread & up to 30 sec | until completes within 20ms`)
+* React SSR (Server-Side Rendering)
+  * support for rendering JS components from JVM
+  * conversion to constant-time (conditionally)
+  * `window` and especially `window.location` management
+* Integration
+  * Prometheus - export metrics to Prometheus
+  * BooPickle - marshall data back and forth using binary codecs
