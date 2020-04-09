@@ -37,7 +37,8 @@ Shared code:
 ```scala
 import boopickle.Default._
 
-final case class ScalaData(a: Int, b: Int)
+case class ScalaData(a: Int, b: Int)
+
 object ScalaData {
   // Binary format shared between JVM & JS
   implicit val pickler: Pickler[ScalaData] = generatePickler
