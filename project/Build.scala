@@ -33,7 +33,7 @@ object ScalaGraal {
     val Prometheus      = "0.8.1"
     val Scala212        = "2.12.11"
     val Scala213        = "2.13.1"
-    val ScalaCollCompat = "2.1.4"
+    val ScalaCollCompat = "2.1.5"
   }
 
   def scalacFlags = Seq(
