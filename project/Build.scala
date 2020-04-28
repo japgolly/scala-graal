@@ -29,7 +29,7 @@ object ScalaGraal {
     val Microlibs       = "2.0"
     val MonadicFor      = "0.3.1"
     val MTest           = "0.7.1"
-    val Nyaya           = "0.9.0"
+    val Nyaya           = "0.9.2"
     val Prometheus      = "0.8.1"
     val Scala212        = "2.12.11"
     val Scala213        = "2.13.1"
