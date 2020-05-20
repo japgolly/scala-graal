@@ -11,7 +11,6 @@ import pl.project13.scala.sbt.JmhPlugin
 import sbtcrossproject.CrossPlugin.autoImport.{crossProject, _}
 import sbtrelease.ReleasePlugin.autoImport._
 import scalajscrossproject.ScalaJSCrossPlugin.autoImport._
-import scala.util.Properties
 import Lib._
 
 object ScalaGraal {
@@ -22,7 +21,7 @@ object ScalaGraal {
     Lib.publicationSettings(ghProject)
 
   object Ver {
-    val BooPickle       = "1.3.2"
+    val BooPickle       = if (scalaJSVersion.startsWith("0")) "1.3.1" else "1.3.2"
     val Cats            = "2.1.1"
     val Graal           = "20.0.0"
     val KindProjector   = "0.11.0"
