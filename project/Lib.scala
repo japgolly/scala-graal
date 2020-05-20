@@ -1,7 +1,5 @@
 import sbt._
 import sbt.Keys._
-import org.scalajs.core.tools.io.{FileVirtualJSFile, VirtualJSFile}
-import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport.{CrossType => _, crossProject => _, _}
 import sbtcrossproject.CrossProject
 import sbtcrossproject.CrossPlugin.autoImport._
 import scalajscrossproject.ScalaJSCrossPlugin.autoImport._
@@ -73,20 +71,6 @@ object Lib {
 
   def byScalaVersion[A](f: PartialFunction[(Long, Long), Seq[A]]): Def.Initialize[Seq[A]] =
     Def.setting(CrossVersion.partialVersion(scalaVersion.value).flatMap(f.lift).getOrElse(Nil))
-
-  def expectRealJsFile(jsf: VirtualJSFile): File =
-    jsf match {
-      case f: FileVirtualJSFile => f.file
-      case other => sys.error("Unsupported virtual file type: " + other)
-    }
-
-  def copyScalaJs(jsf: VirtualJSFile, to: File): Unit =
-    jsf match {
-      case f: FileVirtualJSFile =>
-        IO.copyFile(f.file, to, preserveLastModified = true)
-      case other =>
-        sys.error("Unsupported virtual file type: " + other)
-    }
 
   def advertiseVersion(currentVer: String, gitVer: Option[String]) =
     if (!currentVer.contains("SNAPSHOT"))
