@@ -22,7 +22,7 @@ object ScalaGraal {
     Lib.publicationSettings(ghProject)
 
   object Ver {
-    val BooPickle       = if (Properties.javaVersion.startsWith("1.8")) "1.3.1" else "1.3.2"
+    val BooPickle       = "1.3.2"
     val Cats            = "2.1.1"
     val Graal           = "20.0.0"
     val KindProjector   = "0.11.0"
