@@ -37,6 +37,7 @@ object Lib {
           else
             Some("releases" at nexus + "service/local/staging/deploy/maven2")
         },
+        scmInfo := None,
         pomExtra :=
           <scm>
             <connection>scm:git:github.com/japgolly/{ghProject}</connection>
