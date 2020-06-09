@@ -6,10 +6,9 @@ import mdoc.MdocPlugin
 import mdoc.MdocPlugin.autoImport._
 import org.portablescala.sbtplatformdeps.PlatformDepsPlugin.autoImport._
 import org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv
-import org.scalajs.sbtplugin.ScalaJSPlugin
-import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport.{crossProject => _, CrossType => _, _}
+import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
 import pl.project13.scala.sbt.JmhPlugin
-import sbtcrossproject.CrossPlugin.autoImport._
+import sbtcrossproject.CrossPlugin.autoImport.{crossProject, _}
 import sbtrelease.ReleasePlugin.autoImport._
 import scalajscrossproject.ScalaJSCrossPlugin.autoImport._
 import Lib._
@@ -22,13 +21,13 @@ object ScalaGraal {
     Lib.publicationSettings(ghProject)
 
   object Ver {
-    val BooPickle       = "1.3.1"
+    val BooPickle       = "1.3.3"
     val Cats            = "2.1.1"
     val Graal           = "20.0.0"
     val KindProjector   = "0.11.0"
     val Microlibs       = "2.3"
     val MonadicFor      = "0.3.1"
-    val MTest           = "0.7.1"
+    val MTest           = "0.7.4"
     val Nyaya           = "0.9.2"
     val Prometheus      = "0.9.0"
     val Scala212        = "2.12.11"
@@ -74,7 +73,7 @@ object ScalaGraal {
       libraryDependencies ++= Seq(
         "com.lihaoyi"                   %%% "utest"     % Ver.MTest     % Test,
         "com.github.japgolly.microlibs" %%% "test-util" % Ver.Microlibs % Test),
-      testFrameworks += new TestFramework("utest.runner.Framework")))
+      testFrameworks := Seq(new TestFramework("utest.runner.Framework"))))
     .jsConfigure(
       _.settings(jsEnv in Test := new JSDOMNodeJSEnv))
 

@@ -7,7 +7,9 @@ import TestData._
 
 object GraalBoopickleTest extends TestSuite {
 
-  lazy val SJS = Expr.requireFileOnClasspath("ext-boopickle-test-fastopt.js")
+  // https://github.com/scala-js/scala-js/issues/4057
+  private lazy val shim = Expr("function nop(){}; scalajsCom={init:nop, send:nop}")
+  private lazy val SJS = shim >> Expr.requireFileOnClasspath("ext-boopickle-test-fastopt.js")
 
   override def tests = Tests {
     val ctx = ContextSync()
