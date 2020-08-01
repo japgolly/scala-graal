@@ -1,6 +1,6 @@
 package japgolly.scalagraal.benchmark
 
-import japgolly.scalagraal.{InternalUtils, SourceUtil}
+import japgolly.scalagraal.{InternalUtils, GraalSourceUtil}
 import java.util.concurrent.TimeUnit
 import org.graalvm.polyglot.{Context, Engine, Source}
 import org.openjdk.jmh.annotations._
@@ -9,10 +9,10 @@ object WarmupBM {
 
   val Libs: List[Source] =
     List(
-      SourceUtil.requireFileOnClasspath("js", "react.production.min.js"),
-      SourceUtil.requireFileOnClasspath("js", "react-dom-server.browser.production.min.js"),
+      GraalSourceUtil.requireFileOnClasspath("js", "react.production.min.js"),
+      GraalSourceUtil.requireFileOnClasspath("js", "react-dom-server.browser.production.min.js"),
       Source.create("js", "window = {console: console, location: {href: 'https://shipreq.com'}, navigator: {userAgent: ''}}"),
-      SourceUtil.requireFileOnClasspath("js", "sample-sjr-spa.js"))
+      GraalSourceUtil.requireFileOnClasspath("js", "sample-sjr-spa.js"))
 
   val Render = Source.create("js", "A.comp2()")
 

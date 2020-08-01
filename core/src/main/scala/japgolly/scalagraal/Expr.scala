@@ -223,13 +223,13 @@ object Expr extends ExprBoilerplate {
     lift(c => es.foreach(_.run(c)))
 
   def fileOnClasspath(filename: String)(implicit lang: Language): Expr[Option[Value]] =
-    lazily(SourceUtil.fileOnClasspath(lang.name, filename)).flatMap {
+    lazily(GraalSourceUtil.fileOnClasspath(lang.name, filename)).flatMap {
       case Some(s) => apply(s).map(Some(_))
       case None    => pure(None)
     }
 
   def requireFileOnClasspath(filename: String)(implicit lang: Language): Expr[Value] =
-    apply(SourceUtil.requireFileOnClasspath(lang.name, filename))
+    apply(GraalSourceUtil.requireFileOnClasspath(lang.name, filename))
 
   override protected def genericOpt[Z](params: Array[ExprParam[X]],
                                        mkExprStr: Array[String] => String,

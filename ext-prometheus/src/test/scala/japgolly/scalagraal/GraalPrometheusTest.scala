@@ -3,7 +3,7 @@ package japgolly.scalagraal
 import io.prometheus.client.CollectorRegistry
 import utest._
 import GraalPrometheus.Default._
-import japgolly.scalagraal.ContextMetrics.Metric
+import japgolly.scalagraal.GraalContextMetrics.Metric
 import japgolly.scalagraal.util.DurationLite
 
 object GraalPrometheusTest extends TestSuite {
@@ -24,7 +24,7 @@ object GraalPrometheusTest extends TestSuite {
       val writer = GraalPrometheus.Builder()
         .registerAndBuild(registry)
 
-      writer(ContextMetrics(
+      writer(GraalContextMetrics(
         waited = sec(1),
         pre = sec(3),
         body = sec(5),
@@ -48,12 +48,12 @@ object GraalPrometheusTest extends TestSuite {
 
       val writer = GraalPrometheus.Builder()
         .configure(_.addLabel("all", "AHH"))
-        .configureByMetric{ case ContextMetrics.Metric.Body  => _.addLabel("body", "yep") }
-        .configureByMetric{ case ContextMetrics.Metric.Total => _.addLabel("T", "tt") }
-        .configureByMetric{ case ContextMetrics.Metric.Body  => _.addLabel("body2", "such amazing") }
+        .configureByMetric{ case GraalContextMetrics.Metric.Body  => _.addLabel("body", "yep") }
+        .configureByMetric{ case GraalContextMetrics.Metric.Total => _.addLabel("T", "tt") }
+        .configureByMetric{ case GraalContextMetrics.Metric.Body  => _.addLabel("body2", "such amazing") }
         .registerAndBuild(registry)
 
-      writer(ContextMetrics(
+      writer(GraalContextMetrics(
         waited = sec(1),
         pre = sec(3),
         body = sec(5),

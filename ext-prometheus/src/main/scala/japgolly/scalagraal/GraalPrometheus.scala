@@ -1,7 +1,7 @@
 package japgolly.scalagraal
 
 import io.prometheus.client.{CollectorRegistry, Histogram}
-import japgolly.scalagraal.ContextMetrics.Metric
+import japgolly.scalagraal.GraalContextMetrics.Metric
 
 /** Example:
   *
@@ -13,7 +13,7 @@ import japgolly.scalagraal.ContextMetrics.Metric
   */
 object GraalPrometheus {
 
-  def apply(): ContextMetrics.Writer =
+  def apply(): GraalContextMetrics.Writer =
     Builder().registerAndBuild()
 
   object Builder {
@@ -37,14 +37,14 @@ object GraalPrometheus {
       })
     }
 
-    def registerAndBuild(): ContextMetrics.Writer =
+    def registerAndBuild(): GraalContextMetrics.Writer =
       build(_.register())
 
-    def registerAndBuild(registry: CollectorRegistry): ContextMetrics.Writer =
+    def registerAndBuild(registry: CollectorRegistry): GraalContextMetrics.Writer =
       build(_.register(registry))
 
-    private def build(register: Histogram.Builder => Histogram): ContextMetrics.Writer =
-      ContextMetrics.Writer.perMetric { m =>
+    private def build(register: Histogram.Builder => Histogram): GraalContextMetrics.Writer =
+      GraalContextMetrics.Writer.perMetric { m =>
         val r = bh(m)
         val h = register(r.b.labelNames(r.l.map(_._1): _*))
         if (r.l.isEmpty)

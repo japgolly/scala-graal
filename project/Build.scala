@@ -90,7 +90,7 @@ object ScalaGraal {
       .configure(commonSettings.jvm, preventPublication)
       .aggregate(
         core,
-        utilJVM, utilJS,
+        coreJsJVM, coreJsJS,
         extBoopickleJVM, extBoopickleJS, extPrometheus,
         benchmark,
         mdoc)
@@ -99,29 +99,28 @@ object ScalaGraal {
     .configure(commonSettings.jvm, publicationSettings.jvm, testSettings.jvm)
     .settings(
       libraryDependencies ++= Seq(
-        "org.graalvm.sdk"         % "graal-sdk"               % Ver.Graal,
-        "org.scala-lang.modules" %% "scala-collection-compat" % Ver.ScalaCollCompat
+        "org.graalvm.sdk"            % "graal-sdk"               % Ver.Graal,
+        "org.scala-lang.modules"    %% "scala-collection-compat" % Ver.ScalaCollCompat,
+        "org.typelevel"             %% "cats-core"               % Ver.Cats,
+        "com.github.japgolly.nyaya" %% "nyaya-test"              % Ver.Nyaya % Test
       ),
-      initialCommands := "import japgolly.scalagraal._, GraalJs._; val ctx = ContextSync()",
-      genExprBoilerplate := GenExprBoilerplate(sourceDirectory.value / "main"))
+      genExprBoilerplate := GenExprBoilerplate(sourceDirectory.value / "main"),
+      genCacheAndReplaceBoilerplate := GenCacheAndReplaceBoilerplate(sourceDirectory.value / "main" / "scala"))
 
-  lazy val utilJS  = util.js
-  lazy val utilJVM = util.jvm
-  lazy val util = crossProject(JSPlatform, JVMPlatform)
-    .in(file("util"))
+  lazy val coreJsJS  = coreJs.js
+  lazy val coreJsJVM = coreJs.jvm
+  lazy val coreJs = crossProject(JSPlatform, JVMPlatform)
+    .in(file("core-js"))
     .configureCross(commonSettings, publicationSettings, testSettings)
     .jvmConfigure(_
       .dependsOn(core)
       .settings(
-        libraryDependencies ++= Seq(
-          "org.typelevel"             %% "cats-core"  % Ver.Cats,
-          "com.github.japgolly.nyaya" %% "nyaya-test" % Ver.Nyaya % Test),
-        genCacheAndReplaceBoilerplate := GenCacheAndReplaceBoilerplate(sourceDirectory.value / "main" / "scala")))
+        initialCommands := "import japgolly.scalagraal._, GraalJs._; val ctx = ContextSync()"))
 
   lazy val extBoopickle = crossProject(JSPlatform, JVMPlatform)
     .in(file("ext-boopickle"))
     .configureCross(commonSettings, publicationSettings, testSettings)
-    .jvmConfigure(_.dependsOn(core))
+    .jvmConfigure(_.dependsOn(coreJsJVM))
     .settings(
       name := "ext-boopickle",
       libraryDependencies += "io.suzaku" %%% "boopickle" % Ver.BooPickle)
@@ -141,13 +140,13 @@ object ScalaGraal {
   lazy val benchmark = project
     .configure(commonSettings.jvm, preventPublication)
     .enablePlugins(JmhPlugin)
-    .dependsOn(core, utilJVM, extBoopickleJVM)
+    .dependsOn(core, coreJsJVM, extBoopickleJVM)
     .settings(unmanagedResources in Compile += (fullOptJS in Test in extBoopickleJS).value.data)
 
   lazy val mdoc = project
     .in(file(".mdoc"))
     .configure(commonSettings.jvm, preventPublication)
-    .dependsOn(core, utilJVM, extBoopickleJVM, extPrometheus)
+    .dependsOn(core, coreJsJVM, extBoopickleJVM, extPrometheus)
     .enablePlugins(MdocPlugin)
     .settings(
       mdocIn := baseDirectory.in(ThisBuild).value / "mdoc",

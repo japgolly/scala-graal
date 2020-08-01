@@ -1,7 +1,7 @@
 package japgolly.scalagraal
 
 import utest._
-import GraalJs._
+import js.GraalJs._
 import GraalBoopickle._
 import TestData._
 
@@ -12,7 +12,7 @@ object GraalBoopickleTest extends TestSuite {
   private lazy val SJS = shim >> Expr.requireFileOnClasspath("ext-boopickle-test-fastopt.js")
 
   override def tests = Tests {
-    val ctx = ContextSync()
+    val ctx = GraalContext()
 
 //    'one {
 //      val expr = for {

@@ -2,7 +2,7 @@ package japgolly.scalagraal
 
 import org.graalvm.polyglot.{Context, Source, Value}
 
-sealed abstract class Language(final val name: String) { self =>
+abstract class Language(final val name: String) { self =>
 
   def polyglotImport(b: Binding): String
 
@@ -54,14 +54,4 @@ sealed abstract class Language(final val name: String) { self =>
   private[scalagraal] val argBinding = Binding("ScalaGraalArg")
   private[scalagraal] val argBinder = bound(argBinding)
   private[scalagraal] val argElement = (0 until 22).map(i => s"${argBinding.localValue}[$i]").toArray.apply _
-}
-
-object Language {
-
-  type JS = JS.type
-  case object JS extends Language("js") {
-    override def polyglotImport(b: Binding)                 = s"Polyglot.import('${b.bindingName}')"
-    override protected def setBinding(a: String, b: String) = a + "=" + b
-    override protected def unsetBinding(a: String)          = a + "=null"
-  }
 }

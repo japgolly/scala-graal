@@ -1,6 +1,8 @@
 package japgolly.scalagraal.benchmark
 
-import japgolly.scalagraal.{Warmup => GraalWarmup, _}
+import japgolly.scalagraal._
+import japgolly.scalagraal.js._
+import japgolly.scalagraal.util.{Warmup => GraalWarmup, _}
 import java.util.concurrent.TimeUnit
 import org.openjdk.jmh.annotations._
 import GraalJs._
@@ -48,7 +50,7 @@ class InteropBM {
   var run: () => Any = _
 
   @Setup def setup: Unit = {
-    val ctx = ContextSync()
+    val ctx = GraalContext()
 
     ctx.eval(SetupExpr).left.foreach(e => throw e.underlying)
 
