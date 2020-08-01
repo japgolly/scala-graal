@@ -11,6 +11,7 @@ import pl.project13.scala.sbt.JmhPlugin
 import sbtcrossproject.CrossPlugin.autoImport.{crossProject, _}
 import sbtrelease.ReleasePlugin.autoImport._
 import scalajscrossproject.ScalaJSCrossPlugin.autoImport._
+import scalafix.sbt.ScalafixPlugin
 import Lib._
 
 object ScalaGraal {
@@ -46,11 +47,11 @@ object ScalaGraal {
     "-opt:l:inline",
     "-opt-inline-from:japgolly.scalagraal.**",
     "-Ywarn-dead-code",
-    // "-Ywarn-unused",
+    "-Ywarn-unused",
     "-Ywarn-value-discard")
 
   val commonSettings = ConfigureBoth(
-    _.settings(
+    _.enablePlugins(ScalafixPlugin).settings(
       organization                  := "com.github.japgolly.scala-graal",
       homepage                      := Some(url("https://github.com/japgolly/" + ghProject)),
       licenses                      += ("Apache-2.0", url("http://opensource.org/licenses/Apache-2.0")),
