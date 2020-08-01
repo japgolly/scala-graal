@@ -2,11 +2,13 @@ package japgolly.scalagraal
 
 import japgolly.scalagraal.TestUtil._
 import org.graalvm.polyglot.Value
+import scala.annotation.nowarn
 import utest._
 
 object ExprTest213 extends TestSuite {
 
   private class TestType[E] {
+    @nowarn("cat=unused")
     def apply[A](a: A)(implicit ev: A =:= E) = ()
   }
 

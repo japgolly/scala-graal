@@ -4,6 +4,7 @@ import boopickle._
 import japgolly.scalagraal.ExprParam.RawValue
 import japgolly.scalagraal.js.LanguageJs
 import org.graalvm.polyglot.Source
+import scala.annotation.nowarn
 
 object GraalBoopickle {
 
@@ -17,6 +18,7 @@ object GraalBoopickle {
     Source.create("js", expr)
   }
 
+  @nowarn("cat=unused")
   implicit def exprParamBoopickle[A](implicit js: LanguageJs.type, pickler: Pickler[A]): ExprParam[A] =
     ExprParam.CtxValueFn { a =>
       val byteBufferJvm = PickleImpl.intoBytes(a)
