@@ -1,10 +1,10 @@
 package japgolly.scalagraal
 
 import io.prometheus.client.CollectorRegistry
-import utest._
-import GraalPrometheus.Default._
 import japgolly.scalagraal.GraalContextMetrics.Metric
+import japgolly.scalagraal.GraalPrometheus.Default._
 import japgolly.scalagraal.util.DurationLite
+import utest._
 
 object GraalPrometheusTest extends TestSuite {
 

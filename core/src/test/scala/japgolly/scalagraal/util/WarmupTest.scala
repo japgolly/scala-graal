@@ -1,7 +1,7 @@
 package japgolly.scalagraal.util
 
-import japgolly.scalagraal._
 import japgolly.scalagraal.TestUtil._
+import japgolly.scalagraal._
 import java.util.concurrent.atomic.AtomicInteger
 import utest._
 

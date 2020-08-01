@@ -1,15 +1,13 @@
 package japgolly.scalagraal.benchmark
 
+import boopickle.Default._
+import japgolly.scalagraal.GraalBoopickle._
 import japgolly.scalagraal._
-import japgolly.scalagraal.js._
-import japgolly.scalagraal.util.{Warmup => GraalWarmup, _}
+import japgolly.scalagraal.benchmark.InteropBM._
+import japgolly.scalagraal.js.GraalJs._
+import japgolly.scalagraal.util.{Warmup => GraalWarmup}
 import java.util.concurrent.TimeUnit
 import org.openjdk.jmh.annotations._
-import GraalJs._
-import GraalBoopickle._
-import boopickle.Default._
-import boopickle.SpeedOriented._
-import InteropBM._
 
 object InteropBM {
   val SetupExpr: Expr[Unit] =

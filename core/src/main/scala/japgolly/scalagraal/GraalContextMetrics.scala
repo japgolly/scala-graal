@@ -1,8 +1,8 @@
 package japgolly.scalagraal
 
+import japgolly.scalagraal.GraalContextMetrics._
 import japgolly.scalagraal.util.DurationLite
 import java.io.PrintStream
-import GraalContextMetrics._
 
 final class GraalContextMetrics(private val data: Array[Long]) extends AnyVal {
   override def toString = s"ContextMetrics($total)"

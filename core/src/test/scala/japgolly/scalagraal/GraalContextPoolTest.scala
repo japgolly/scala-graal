@@ -1,9 +1,9 @@
 package japgolly.scalagraal
 
-import TestUtil.{sync => _, _}
+import japgolly.scalagraal.TestUtil.{sync => _, _}
 import java.util.concurrent.TimeUnit
-import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration._
+import scala.concurrent.{Await, ExecutionContext}
 import scalaz.Equal
 import utest._
 

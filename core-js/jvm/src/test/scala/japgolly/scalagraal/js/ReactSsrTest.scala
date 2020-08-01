@@ -1,9 +1,9 @@
 package japgolly.scalagraal.js
 
+import japgolly.scalagraal.TestUtil._
 import japgolly.scalagraal._
 import java.time.Year
 import utest._
-import TestUtil._
 
 object ReactSsrTest extends TestSuite {
 

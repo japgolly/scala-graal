@@ -1,8 +1,8 @@
 package japgolly.scalagraal.util
 
-import cats.{Functor, Id}
 import cats.syntax.functor._
-import CacheAndReplace.Param
+import cats.{Functor, Id}
+import japgolly.scalagraal.util.CacheAndReplace.Param
 
 abstract class CacheAndReplaceBoilerplate private[util]() {
 

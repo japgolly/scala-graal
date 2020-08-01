@@ -1,7 +1,7 @@
 package japgolly.scalagraal.js
 
 import japgolly.scalagraal._
-import GraalJs._
+import japgolly.scalagraal.js.GraalJs._
 
 /** Instructions for basic React SSR on the GraalVM:
   *

@@ -1,6 +1,6 @@
 package japgolly.scalagraal.benchmark
 
-import japgolly.scalagraal.{InternalUtils, GraalSourceUtil}
+import japgolly.scalagraal.{GraalSourceUtil, InternalUtils}
 import java.util.concurrent.TimeUnit
 import org.graalvm.polyglot.{Context, Engine, Source}
 import org.openjdk.jmh.annotations._

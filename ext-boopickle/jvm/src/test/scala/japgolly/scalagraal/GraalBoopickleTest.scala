@@ -1,9 +1,9 @@
 package japgolly.scalagraal
 
+import japgolly.scalagraal.GraalBoopickle._
+import japgolly.scalagraal.TestData._
+import japgolly.scalagraal.js.GraalJs._
 import utest._
-import js.GraalJs._
-import GraalBoopickle._
-import TestData._
 
 object GraalBoopickleTest extends TestSuite {
 

@@ -1,8 +1,8 @@
 package japgolly.scalagraal
 
 import java.util.function.Consumer
-import org.graalvm.polyglot.{Context, Value}
 import org.graalvm.polyglot.proxy.Proxy
+import org.graalvm.polyglot.{Context, Value}
 import scala.runtime.AbstractFunction1
 
 sealed trait ExprParam[A] {

@@ -1,7 +1,7 @@
 package japgolly.scalagraal
 
+import japgolly.scalagraal.TestUtil._
 import utest._
-import TestUtil._
 
 object GraalContextTest extends TestSuite {
 

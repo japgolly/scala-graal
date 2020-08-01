@@ -1,7 +1,7 @@
 package japgolly.scalagraal
 
-import org.graalvm.polyglot.{Context, Engine}
 import japgolly.scalagraal.util.DurationLite
+import org.graalvm.polyglot.{Context, Engine}
 
 trait GraalContext extends GraalContextF[ScalaGraalEffect.Id] {
 

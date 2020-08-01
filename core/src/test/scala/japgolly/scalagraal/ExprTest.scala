@@ -1,8 +1,8 @@
 package japgolly.scalagraal
 
+import japgolly.scalagraal.TestUtil._
 import org.graalvm.polyglot.Value
 import utest._
-import TestUtil._
 
 object ExprTest extends TestSuite {
 
