@@ -18,4 +18,5 @@ object TestUtil
   def assertEvalResult[A: Equal](actual: Expr.Result[A], expect: A): Unit =
     assertEq(actual.left.map(_.toString), Right(expect))
 
+  val inTravis = Option(System.getenv("TRAVIS")).map(_.trim).exists(_.nonEmpty)
 }
