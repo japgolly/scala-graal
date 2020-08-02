@@ -23,7 +23,7 @@ object ReactSsr {
     def apply(loadReact: Expr[Any]*): Expr[Unit] =
       for {
         _ <- preReact
-        _ <- Expr.stdlibCosequenceDiscard(loadReact)
+        _ <- Expr.cosequenceAndDiscard(loadReact)
         _ <- postReact
       } yield ()
 

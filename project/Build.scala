@@ -3,7 +3,7 @@ import sbt.Keys._
 import com.typesafe.sbt.GitPlugin.autoImport._
 import com.typesafe.sbt.pgp.PgpKeys
 import mdoc.MdocPlugin
-import mdoc.MdocPlugin.autoImport._
+import mdoc.MdocPlugin.autoImport.{mdoc => mdocTask, _}
 import org.portablescala.sbtplatformdeps.PlatformDepsPlugin.autoImport._
 import org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv
 import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
@@ -84,6 +84,8 @@ object ScalaGraal {
 
   lazy val genCacheAndReplaceBoilerplate = TaskKey[File]("genCacheAndReplaceBoilerplate")
 
+  lazy val updateDoc = TaskKey[Unit]("updateDoc")
+
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   lazy val root =
@@ -154,6 +156,13 @@ object ScalaGraal {
       mdocOut := baseDirectory.in(ThisBuild).value / "doc",
       mdocVariables := Map(
         "VERSION" -> advertiseVersion(version.value, git.gitDescribedVersion.value)
-      )
+      ),
+      updateDoc := {
+        mdocTask.toTask("").value
+        val readme = "README.md"
+        val src = mdocOut.value / readme
+        val tgt = baseDirectory.in(ThisBuild).value / readme
+        IO.move(src, tgt)
+      }
     )
 }

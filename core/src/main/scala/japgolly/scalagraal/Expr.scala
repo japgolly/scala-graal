@@ -188,7 +188,7 @@ object Expr extends ExprBoilerplate {
   def fail[A](e: ExprError): Expr[A] =
     point(throw e)
 
-  def byName[A](e: => Expr[A]): Expr[A] =
+  def suspend[A](e: => Expr[A]): Expr[A] =
     new Expr(c => e.run(c))
 
   def tailrec[A, B](init: => A)(f: A => Expr[Either[A, B]]): Expr[B] =
@@ -202,9 +202,9 @@ object Expr extends ExprBoilerplate {
     }
 
   def runAll(es: Expr[Any]*): Expr[Unit] =
-    stdlibCosequenceDiscard(es)
+    cosequenceAndDiscard(es)
 
-  def stdlibDist[F[x] <: Iterable[x], A, B](fa: F[A])(f: A => Expr[B])
+  def distribute[F[x] <: Iterable[x], A, B](fa: F[A])(f: A => Expr[B])
                                            (implicit cbf: BuildFrom[F[A], B, F[B]]): Expr[F[B]] =
     lift(c => {
       val b = cbf.newBuilder(fa)
@@ -212,14 +212,14 @@ object Expr extends ExprBoilerplate {
       b.result()
     })
 
-  def stdlibCosequence[F[x] <: Iterable[x], A](fea: F[Expr[A]])
-                                              (implicit cbf: BuildFrom[F[Expr[A]], A, F[A]]): Expr[F[A]] =
-    stdlibDist[F, Expr[A], A](fea)(identity)
+  def cosequence[F[x] <: Iterable[x], A](fea: F[Expr[A]])
+                                        (implicit cbf: BuildFrom[F[Expr[A]], A, F[A]]): Expr[F[A]] =
+    distribute[F, Expr[A], A](fea)(identity)
 
-  def stdlibDistDiscard[A, B](fa: Iterable[A])(f: A => Expr[B]): Expr[Unit] =
+  def distributeAndDiscard[A, B](fa: Iterable[A])(f: A => Expr[B]): Expr[Unit] =
     lift(c => fa.foreach(f(_).run(c)))
 
-  def stdlibCosequenceDiscard[A](es: Iterable[Expr[A]]): Expr[Unit] =
+  def cosequenceAndDiscard[A](es: Iterable[Expr[A]]): Expr[Unit] =
     lift(c => es.foreach(_.run(c)))
 
   def fileOnClasspath(filename: String)(implicit lang: Language): Expr[Option[Value]] =
