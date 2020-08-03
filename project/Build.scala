@@ -115,6 +115,7 @@ object ScalaGraal {
   lazy val coreJs = crossProject(JSPlatform, JVMPlatform)
     .in(file("core-js"))
     .configureCross(commonSettings, publicationSettings, testSettings)
+    .settings(name := "core-js")
     .jvmConfigure(_
       .dependsOn(core)
       .settings(
