@@ -30,7 +30,7 @@ import japgolly.scalagraal.js._
 import GraalJs._
 
 // 1. Pre-compile expression functions for fast invocation.
-// 2. Typeclasses translate and/or marshall data from JVM to JS.
+// 2. Typeclasses translate and/or marshall data between JVM and JS.
 val expr: (Int, Int) => Expr[String] =
   Expr.apply2((a, b) => s"($a + $b) * 2 + '!'").compile(_.asString)
 
@@ -42,6 +42,12 @@ assert(result == Right("22!"))
 ```
 
 
+# Learning
+
+* [API & how to use](doc/API.md)
+* [Recipes](doc/RECIPES.md)
+
+
 # Features
 
 * Expressions
@@ -51,13 +57,13 @@ assert(result == Right("22!"))
   * error handling
   * null handling
   * binding typeclasses
-  * binding codecs (eg binary/json)
-* Service ("Context")
+  * binding codecs (eg binary/json/whatever)
+* Service
   * single-threaded
   * multi-threaded pool
   * synchronous
   * asynchronous
-  * eval with optional time limit
+  * optional time limits
   * before/around/after hooks
   * automatic metrics
 * Warmup
@@ -70,10 +76,3 @@ assert(result == Right("22!"))
 * Integrations
   * [Prometheus](https://prometheus.io) - export metrics to Prometheus
   * [BooPickle](https://github.com/suzaku-io/boopickle) - marshall data back and forth using binary codecs
-
-
-# Learning
-
-* [API walkthrough](doc/API.md)
-* [Recipes](doc/RECIPES.md)
-

@@ -42,6 +42,12 @@ assert(result == Right("22!"))
 ```
 
 
+# Learning
+
+* [API & how to use](doc/API.md)
+* [Recipes](doc/RECIPES.md)
+
+
 # Features
 
 * Expressions
@@ -70,9 +76,3 @@ assert(result == Right("22!"))
 * Integrations
   * [Prometheus](https://prometheus.io) - export metrics to Prometheus
   * [BooPickle](https://github.com/suzaku-io/boopickle) - marshall data back and forth using binary codecs
-
-
-# Learning
-
-* [API](doc/API.md)
-* [Recipes](doc/RECIPES.md)
