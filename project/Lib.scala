@@ -3,6 +3,7 @@ import sbt.Keys._
 import sbtcrossproject.CrossProject
 import sbtcrossproject.CrossPlugin.autoImport._
 import scalajscrossproject.ScalaJSCrossPlugin.autoImport._
+import xerial.sbt.Sonatype.autoImport._
 
 object Lib {
 
@@ -30,13 +31,7 @@ object Lib {
   def publicationSettings(ghProject: String) =
     ConfigureBoth(
       _.settings(
-        publishTo := {
-          val nexus = "https://oss.sonatype.org/"
-          if (isSnapshot.value)
-            Some("snapshots" at nexus + "content/repositories/snapshots")
-          else
-            Some("releases" at nexus + "service/local/staging/deploy/maven2")
-        },
+        publishTo := sonatypePublishToBundle.value,
         scmInfo := None,
         pomExtra :=
           <scm>
