@@ -46,6 +46,7 @@ assert(result == Right("22!"))
 
 * [API & how to use](doc/API.md)
 * [Recipes](doc/RECIPES.md)
+* Scala SSR tutorial - check back next week
 
 
 # Features
