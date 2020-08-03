@@ -1,6 +1,6 @@
 package japgolly.scalagraal
 
-trait GraalContextF[F[_]] { self =>
+trait AbstractGraalContext[F[_]] { self =>
 
   final def eval[A](expr: Expr[A]): F[Expr.Result[A]] =
     eval(expr, GraalContextMetrics.Writer.Noop)
@@ -22,8 +22,8 @@ trait GraalContextF[F[_]] { self =>
 
   // ===================================================================================================================
 
-  def trans[G[_]](f: ScalaGraalEffect.Trans[F, G]): GraalContextF[G] =
-    new GraalContextF[G] {
+  def trans[G[_]](f: ScalaGraalEffect.Trans[F, G]): AbstractGraalContext[G] =
+    new AbstractGraalContext[G] {
       override def eval[A](expr: Expr[A], metricWriter: GraalContextMetrics.Writer): G[Expr.Result[A]] =
         f(self.eval(expr, metricWriter))
 

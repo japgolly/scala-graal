@@ -7,7 +7,7 @@ import java.util.concurrent.{Future => _, _}
 import org.graalvm.polyglot.{Context, Engine}
 import scala.concurrent.Future
 
-trait GraalContextPool[F[_]] extends GraalContextF[F] {
+trait GraalContextPool[F[_]] extends AbstractGraalContext[F] {
   val poolSize: Int
 
   /** unsafe because impure */

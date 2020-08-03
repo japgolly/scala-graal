@@ -3,7 +3,7 @@ package japgolly.scalagraal
 import japgolly.scalagraal.util.DurationLite
 import org.graalvm.polyglot.{Context, Engine}
 
-trait GraalContext extends GraalContextF[ScalaGraalEffect.Id] {
+trait GraalContext extends AbstractGraalContext[ScalaGraalEffect.Id] {
 
   override def eval[A](expr: Expr[A], metricWriter: GraalContextMetrics.Writer): Expr.Result[A] =
     evalT(expr, DurationLite.start(), metricWriter)

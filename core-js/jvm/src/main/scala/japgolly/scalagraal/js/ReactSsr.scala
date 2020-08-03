@@ -8,7 +8,7 @@ import japgolly.scalagraal.js.GraalJs._
   * 1. Bundle React JS into your application yourself.
   * 2. Use [[Expr.requireFileOnClasspath()]] to load React JS files.
   * 3. Provide the above [[Expr]]s to [[ReactSsr.Setup.apply()]].
-  * 4. Run the resulting [[Expr]] of above to initialise your [[GraalContextF]] instance(s).
+  * 4. Run the resulting [[Expr]] of above to initialise your [[AbstractGraalContext]] instance(s).
   * 5. Optionally call [[ReactSsr.setUrl()]] if your component expects to read it (eg. has a router).
   * 6. Call [[ReactSsr.renderToString()]] or [[ReactSsr.renderToStaticMarkup()]] to render a component.
   *
