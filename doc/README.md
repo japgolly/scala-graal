@@ -4,10 +4,10 @@
 
 ```scala
 libraryDependencies ++= Seq(
-  "com.github.japgolly.scala-graal"  %% "core"           % "@VERSION@"
-  "com.github.japgolly.scala-graal" %%% "core-js"        % "@VERSION@"
-  "com.github.japgolly.scala-graal" %%% "ext-boopickle"  % "@VERSION@"
-  "com.github.japgolly.scala-graal"  %% "ext-prometheus" % "@VERSION@"
+  "com.github.japgolly.scala-graal"  %% "core"           % "0.5.0"
+  "com.github.japgolly.scala-graal" %%% "core-js"        % "0.5.0"
+  "com.github.japgolly.scala-graal" %%% "ext-boopickle"  % "0.5.0"
+  "com.github.japgolly.scala-graal"  %% "ext-prometheus" % "0.5.0"
 )
 ```
 
@@ -21,7 +21,7 @@ libraryDependencies ++= Seq(
 
 # Demo
 
-```scala mdoc:silent
+```scala
 import japgolly.scalagraal._
 
 // Use semantics and implicit config for JS
