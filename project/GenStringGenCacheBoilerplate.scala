@@ -11,10 +11,15 @@ object GenStringGenCacheBoilerplate {
         val ABC = _ABC.mkString(",")
         def repeat(s: String, sep: String = ", ") = (0 until n).map(i => s.replace("_?", "_"+(i+1)).replace('?', up(i))).mkString(sep)
         s"""
-           |  def apply$n[$ABC,Z](f: ($ABC) => Z)(g: Z => ($ABC))(implicit t: StringGenCache[($ABC)]): StringGenCache[Z] =
+           |  final def apply$n[$ABC,Z](f: ($ABC) => Z)(g: Z => ($ABC))(implicit t: StringGenCache[($ABC)]): StringGenCache[Z] =
            |    t.xmap(x => f(${repeat("x._?")}))(g)
            |
-           |  implicit def tuple$n[$ABC](${repeat("c?: StringGenCache[?]")}): StringGenCache[($ABC)] = {
+           |  final def divide$n[${repeat("?<:Z:ClassTag")}, Z](${repeat("c?: StringGenCache[?]")}): StringGenCache[Z] =
+           |    apply((
+           |      ${repeat("c?.paths.iterator.map(_.widen[Z])", " ++\n      ")}
+           |    ).toList)
+           |
+           |  final implicit def tuple$n[$ABC](implicit ${repeat("c?: StringGenCache[?]")}): StringGenCache[($ABC)] = {
            |    type Z = ($ABC)
            |    val paths =
            |      for {
@@ -44,6 +49,7 @@ object GenStringGenCacheBoilerplate {
          |package japgolly.scalagraal.util
          |
          |import japgolly.scalagraal.util.StringGenCachePath._
+         |import scala.reflect.ClassTag
          |
          |abstract class $Name private[util]() {
          |

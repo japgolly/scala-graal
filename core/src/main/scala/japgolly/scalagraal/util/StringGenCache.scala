@@ -1,9 +1,10 @@
 package japgolly.scalagraal.util
 
-import cats.Functor
+import cats.{Functor, Id}
 import cats.syntax.functor._
 import java.util.UUID
 import japgolly.scalagraal.util.StringGenCachePath._
+import java.util.regex.Pattern
 import scala.annotation.tailrec
 import scala.reflect.ClassTag
 
@@ -17,6 +18,9 @@ final case class StringGenCache[A](paths: List[StringGenCachePath[A]]) {
 
   def widen[B >: A](implicit ct: ClassTag[A]): StringGenCache[B] =
     mapPaths(_.widen[B])
+
+  def direct(f: A => String): A => String =
+    apply[Id](f)
 
   def apply[F[_]](f: A => F[String])(implicit F: Functor[F]): A => F[String] =
     paths match {
@@ -54,7 +58,7 @@ final case class StringGenCache[A](paths: List[StringGenCachePath[A]]) {
 
           val regex = {
             val i = t.replacements.map(_.tokenRegex).mkString("|")
-            val r = s"(?=$i)|(?<=$i)"
+            val r = s"(?<=$i)|(?=$i)"
             r.r
           }
 
@@ -116,21 +120,50 @@ object StringGenCache extends StringGenCacheBoilerplate {
   def enum[A](allEnumValues: A*): StringGenCache[A] =
     apply(allEnumValues.iterator.map(a => StringGenCachePath.const[A](a == _, a)).toList)
 
-  def sum[A <: Z: ClassTag, B <: Z: ClassTag, Z](ca: StringGenCache[A], cb: StringGenCache[B]): StringGenCache[Z] =
-    apply((
-      ca.paths.iterator.map(_.widen[Z]) ++
-      cb.paths.iterator.map(_.widen[Z])
-    ).toList)
-
-  implicit val string: StringGenCache[String] = {
-    val strIdentity: String => String = s => s
-    val path = StringGenCachePath.total[String] {
-      val token   = s"\u0001scalagraal_${UUID.randomUUID().toString.replace("-", "")}\u0002"
-      val regex   = s"(?:$token)"
-      val replace = (s: String) => Option.when(s == token)(strIdentity)
+  def viaToken[A](tokenFn: () => A)
+                 (toString: A => String,
+                  regexMod: String => String = identity): StringGenCache[A] = {
+    val path = StringGenCachePath.total[A] {
+      val token    = tokenFn()
+      val tokenStr = toString(token)
+      val regex    = s"(?:${regexMod(Pattern.quote(tokenStr))})"
+      val replace  = (s: String) => Option.when(s == tokenStr)(toString)
       Tokens(token, Replacement(regex, replace) :: Nil)
     }
     apply(path :: Nil)
+  }
+
+  def apply1[A, Z](f: A => Z)(g: Z => A)(implicit t: StringGenCache[A]): StringGenCache[Z] =
+    t.xmap(f)(g)
+
+  def numericRegexMod(r: String): String =
+    if (r.startsWith("-"))
+      s"$r(?!\\d)"
+    else
+      s"(?<!\\d|(?<!\\d)-)$r(?!\\d)"
+
+  def char(token: Char = '\uE666', toString: Char => String = _.toString): StringGenCache[Char] =
+    viaToken(() => token)(toString)
+
+  def short(token: Short = Short.MinValue, toString: Short => String = _.toString): StringGenCache[Short] =
+    viaToken(() => token)(toString, numericRegexMod)
+
+  def int(token: Int = Int.MinValue, toString: Int => String = _.toString): StringGenCache[Int] =
+    viaToken(() => token)(toString, numericRegexMod)
+
+  def long(token: Long = Long.MinValue, toString: Long => String = _.toString): StringGenCache[Long] =
+    viaToken(() => token)(toString, numericRegexMod)
+
+  implicit val string: StringGenCache[String] = {
+    val tokenFn = () => {
+      val id = UUID.randomUUID()
+        .toString
+        .replace("-", "")
+        .map(c => (c.toInt + 58982).toChar) // unicode private use area
+        .mkString
+      s"[scalagraal:$id]"
+    }
+    viaToken(tokenFn)(identity)
   }
 
   implicit val boolean: StringGenCache[Boolean] =
@@ -140,12 +173,12 @@ object StringGenCache extends StringGenCacheBoilerplate {
     const(())
 
   implicit def option[A](implicit underlying: StringGenCache[A]): StringGenCache[Option[A]] =
-    sum(
+    divide2(
       const(None),
       underlying.xmap(Some(_))(_.value))
 
   implicit def either[A, B](implicit l: StringGenCache[A], r: StringGenCache[B]): StringGenCache[Either[A, B]] =
-    sum(
+    divide2(
       l.xmap(Left(_))(_.value),
       r.xmap(Right(_))(_.value))
 
