@@ -84,6 +84,8 @@ object ScalaGraal {
 
   lazy val genCacheAndReplaceBoilerplate = TaskKey[File]("genCacheAndReplaceBoilerplate")
 
+  lazy val genStringGenCacheBoilerplate = TaskKey[File]("genStringGenCacheBoilerplate")
+
   lazy val updateDoc = TaskKey[Unit]("updateDoc")
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -108,7 +110,8 @@ object ScalaGraal {
         "com.github.japgolly.nyaya" %% "nyaya-test"              % Ver.Nyaya % Test
       ),
       genExprBoilerplate := GenExprBoilerplate(sourceDirectory.value / "main"),
-      genCacheAndReplaceBoilerplate := GenCacheAndReplaceBoilerplate(sourceDirectory.value / "main" / "scala"))
+      genCacheAndReplaceBoilerplate := GenCacheAndReplaceBoilerplate(sourceDirectory.value / "main" / "scala"),
+      genStringGenCacheBoilerplate := GenStringGenCacheBoilerplate(sourceDirectory.value / "main" / "scala"))
 
   lazy val coreJsJS  = coreJs.js
   lazy val coreJsJVM = coreJs.jvm
