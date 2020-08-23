@@ -9,10 +9,10 @@ final case class StringGenCachePath[A](isApplicable: A => Boolean,
   def xmap[B](f: A => B)(g: B => A): StringGenCachePath[B] =
     StringGenCachePath(isApplicable compose g, () => newTokens().xmap(f)(g))
 
-  def widen[B >: A](implicit ct: ClassTag[B]): StringGenCachePath[B] = {
-    val bClass = ct.runtimeClass
+  def widen[B >: A](implicit ct: ClassTag[A]): StringGenCachePath[B] = {
+    val aClass = ct.runtimeClass
     StringGenCachePath(
-      b => bClass.isInstance(b) && isApplicable(b.asInstanceOf[A]),
+      b => aClass.isInstance(b) && isApplicable(b.asInstanceOf[A]),
       () => newTokens().xmap(a => (a: B))(_.asInstanceOf[A]))
   }
 }

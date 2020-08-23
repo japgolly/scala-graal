@@ -13,9 +13,12 @@ final case class StringGenCache[A](paths: List[StringGenCachePath[A]]) {
     StringGenCache(paths map f)
 
   def xmap[B](f: A => B)(g: B => A): StringGenCache[B] =
-    StringGenCache(paths.map(_.xmap(f)(g)))
+    mapPaths(_.xmap(f)(g))
 
-  def cache[F[_]](f: A => F[String])(implicit F: Functor[F]): A => F[String] =
+  def widen[B >: A](implicit ct: ClassTag[A]): StringGenCache[B] =
+    mapPaths(_.widen[B])
+
+  def apply[F[_]](f: A => F[String])(implicit F: Functor[F]): A => F[String] =
     paths match {
       case Nil => f
       case p :: Nil => cachePath(p.newTokens(), f)
@@ -113,8 +116,11 @@ object StringGenCache extends StringGenCacheBoilerplate {
   def enum[A](allEnumValues: A*): StringGenCache[A] =
     apply(allEnumValues.iterator.map(a => StringGenCachePath.const[A](a == _, a)).toList)
 
-  def sum[A: ClassTag](parts: StringGenCache[_ <: A]*): StringGenCache[A] =
-    apply(parts.iterator.flatMap(_.paths.map(_.widen[A])).toList)
+  def sum[A <: Z: ClassTag, B <: Z: ClassTag, Z](ca: StringGenCache[A], cb: StringGenCache[B]): StringGenCache[Z] =
+    apply((
+      ca.paths.iterator.map(_.widen[Z]) ++
+      cb.paths.iterator.map(_.widen[Z])
+    ).toList)
 
   implicit val string: StringGenCache[String] = {
     val strIdentity: String => String = s => s
@@ -133,12 +139,12 @@ object StringGenCache extends StringGenCacheBoilerplate {
   implicit val unit: StringGenCache[Unit] =
     const(())
 
-  implicit def option[A](underlying: StringGenCache[A]): StringGenCache[Option[A]] =
+  implicit def option[A](implicit underlying: StringGenCache[A]): StringGenCache[Option[A]] =
     sum(
       const(None),
       underlying.xmap(Some(_))(_.value))
 
-  implicit def either[A, B](l: StringGenCache[A], r: StringGenCache[B]): StringGenCache[Either[A, B]] =
+  implicit def either[A, B](implicit l: StringGenCache[A], r: StringGenCache[B]): StringGenCache[Either[A, B]] =
     sum(
       l.xmap(Left(_))(_.value),
       r.xmap(Right(_))(_.value))
