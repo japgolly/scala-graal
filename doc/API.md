@@ -6,7 +6,7 @@
 * [GraalContext](#graalcontext)
 * [GraalContextPool](#graalcontextpool)
 * [Warmup](#warmup)
-* CacheAndReplace
+* [StrFnCache](#strfncache)
 * ReactSSR
 * WindowLocation
 
@@ -311,3 +311,26 @@ and I've included some results so
 have a look at that to get a sense of warmup efficacy with regard to warmup parameters;
 and keep in mind that the `Expr` being evaluated is hugely significant so best to test out
 parameters with your own specific use case.
+
+
+# StrFnCache
+
+`StrFnCache` is a very powerful and very unconventional cache that is designed specifically for SSR.
+
+It caches `A => F[String]` functions and makes them super-fast by executing once per path,
+optimising and caching the result, and then using it as template for all subsequent calls.
+
+"Paths" are independent from each other and are defined by `StrFnCacheParam` instances. There is typically
+one path per sum type, for example `Option` has two paths: `None` and `Some[A]`; `String` only has one which is
+itself.
+
+Values (once in a path) must be completely opaque and not used to affect function logic or conditionality.
+For example, a function that takes a name and prints it a few times is fine, but a function which branched
+according to string length, or converted the string to uppercase would be broken by this cache because the caching
+logic doesn't branch according to string length, and the caching logic doesn't convert strings to uppercase. You
+can still have your super-fast cake and eat it too by creating your own customised `StrFnCacheParam` instance
+that includes any value modification or branching you need. In such cases it would be wise to cross-compile the
+logic rather than duplicate it, and/or modify your function (or React component) to accept inputs that have already
+been processed.
+
+Read more here: https://blog.shipreq.com/post/scala_react_and_ssr_part_2
