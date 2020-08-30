@@ -141,5 +141,37 @@ object StrFnCacheTest extends TestSuite {
       "egProps"    - propTest(genExampleProps, tailNoise = false)(_ => _.render)
       "divide3"    - propTest(SumTest.gen, tailNoise = false)(_ => _.render)
     }
+
+    "routes" - {
+      val x = "X"
+      val y = "Y"
+      val fn: (String, String) => String = (a, b) => s"[$a] => [$b]"
+      val as = x :: y :: "z" :: Nil
+      val bs = "a b c".split(' ')
+
+      "total" - {
+        val cached = StrFnCache.withRoutes.id(fn)
+        for {
+          a <- as
+          b <- bs
+        } {
+          val actual = cached(a, b)
+          val expect = fn(a, b)
+          assertEq(actual = actual, expect = expect)
+        }
+      }
+
+      "whitelist" - {
+        val cached = StrFnCache.withRouteWhitelist.id(fn)(x, y)
+        for {
+          a <- as
+          b <- bs
+        } {
+          val actual = cached(a, b)
+          val expect = if (a == x || a == y) Some(fn(a, b)) else None
+          assertEq(actual = actual, expect = expect)
+        }
+      }
+    }
   }
 }

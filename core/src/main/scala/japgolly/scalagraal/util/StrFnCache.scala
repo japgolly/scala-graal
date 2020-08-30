@@ -1,6 +1,6 @@
 package japgolly.scalagraal.util
 
-import cats.{Functor, Id}
+import cats.{Applicative, Functor, Id}
 import cats.instances.either._
 import cats.syntax.functor._
 import japgolly.scalagraal.Expr
@@ -122,6 +122,106 @@ object StrFnCache {
       }
 
     i => fFn.map(_(i))
+  }
+
+  /** Each route will be cached on demand. */
+  object withRoutes {
+
+    def id[A, B](f: (A, B) => String)
+                (implicit A: StrFnCacheRoute[A],
+                 B: StrFnCacheParam[B]): (A, B) => String =
+      poly[Id, A, B](f)
+
+    def apply[A, B](f: (A, B) => Expr.Result[String])
+                   (implicit A: StrFnCacheRoute[A],
+                    B: StrFnCacheParam[B]): (A, B) => Expr.Result[String] =
+      poly(f)
+
+    def poly[F[_], A, B](f: (A, B) => F[String])
+                        (implicit A: StrFnCacheRoute[A],
+                         B: StrFnCacheParam[B],
+                         F: Functor[F]): (A, B) => F[String] = {
+      val h = curried.poly[F, A, B](a => f(a, _))
+      (a, b) => h(a)(b)
+    }
+
+    object curried {
+
+      def id[A, B](f: A => B => String)
+                  (implicit A: StrFnCacheRoute[A],
+                   B: StrFnCacheParam[B]): A => B => String =
+        poly[Id, A, B](f)
+
+      def apply[A, B](f: A => B => Expr.Result[String])
+                     (implicit A: StrFnCacheRoute[A],
+                      B: StrFnCacheParam[B]): A => B => Expr.Result[String] =
+        poly(f)
+
+      def poly[F[_], A, B](f: A => B => F[String])
+                          (implicit A: StrFnCacheRoute[A],
+                           B: StrFnCacheParam[B],
+                           F: Functor[F]): A => B => F[String] = {
+        val g: A => B => F[String] = a => StrFnCache.poly(f(a))
+        A.total(g)
+      }
+    }
+
+  }
+
+  /** A whitelist of routes will be pre-cached, any routes not in the whitelist will return `None`. */
+  object withRouteWhitelist {
+
+    def id[A, B](f: (A, B) => String)
+                (whitelistedValues: A*)
+                (implicit A: StrFnCacheRoute[A],
+                 B: StrFnCacheParam[B]): (A, B) => Option[String] =
+      poly[Id, A, B](f)(whitelistedValues: _*)
+
+    def apply[A, B](f: (A, B) => Expr.Result[String])
+                   (whitelistedValues: A*)
+                   (implicit A: StrFnCacheRoute[A],
+                    B: StrFnCacheParam[B]): (A, B) => Expr.Result[Option[String]] =
+      poly(f)(whitelistedValues: _*)
+
+    def poly[F[_], A, B](f: (A, B) => F[String])
+                        (whitelistedValues: A*)
+                        (implicit A: StrFnCacheRoute[A],
+                         B: StrFnCacheParam[B],
+                         F: Applicative[F]): (A, B) => F[Option[String]] = {
+      val h = curried.poly[F, A, B](a => f(a, _))(whitelistedValues: _*)
+      val fNone = F.pure(Option.empty[String])
+      (a, b) =>
+        h(a) match {
+          case Some(g) => g(b).map(Some(_))
+          case None => fNone
+        }
+    }
+
+    object curried {
+
+      def id[A, B](f: A => B => String)
+                  (whitelistedValues: A*)
+                  (implicit A: StrFnCacheRoute[A],
+                   B: StrFnCacheParam[B]): A => Option[B => String] =
+        poly[Id, A, B](f)(whitelistedValues: _*)
+
+      def apply[A, B](f: A => B => Expr.Result[String])
+                     (whitelistedValues: A*)
+                     (implicit A: StrFnCacheRoute[A],
+                      B: StrFnCacheParam[B]): A => Option[B => Expr.Result[String]] =
+        poly(f)(whitelistedValues: _*)
+
+      def poly[F[_], A, B](f: A => B => F[String])
+                          (whitelistedValues: A*)
+                          (implicit A: StrFnCacheRoute[A],
+                           B: StrFnCacheParam[B],
+                           F: Functor[F]): A => Option[B => F[String]] = {
+        val g: A => B => F[String] = a => StrFnCache.poly(f(a))
+        A.whitelist(g)(whitelistedValues: _*)
+      }
+
+    }
+
   }
 
 }
