@@ -1,23 +1,23 @@
 package japgolly.scalagraal.util
 
 import scala.reflect.ClassTag
-import japgolly.scalagraal.util.StringGenCachePath._
+import japgolly.scalagraal.util.StrFnCachePath._
 
-final case class StringGenCachePath[A](isApplicable: A => Boolean,
-                                       newTokens   : () => Tokens[A]) {
+final case class StrFnCachePath[A](isApplicable: A => Boolean,
+                                   newTokens   : () => Tokens[A]) {
 
-  def xmap[B](f: A => B)(g: B => A): StringGenCachePath[B] =
-    StringGenCachePath(isApplicable compose g, () => newTokens().xmap(f)(g))
+  def xmap[B](f: A => B)(g: B => A): StrFnCachePath[B] =
+    StrFnCachePath(isApplicable compose g, () => newTokens().xmap(f)(g))
 
-  def widen[B >: A](implicit ct: ClassTag[A]): StringGenCachePath[B] = {
+  def widen[B >: A](implicit ct: ClassTag[A]): StrFnCachePath[B] = {
     val aClass = ct.runtimeClass
-    StringGenCachePath(
+    StrFnCachePath(
       b => aClass.isInstance(b) && isApplicable(b.asInstanceOf[A]),
       () => newTokens().xmap(a => (a: B))(_.asInstanceOf[A]))
   }
 }
 
-object StringGenCachePath {
+object StrFnCachePath {
 
   final case class Tokens[A](tokens      : A,
                              replacements: List[Replacement[A]]) {
@@ -46,14 +46,14 @@ object StringGenCachePath {
   private val always: Any => Boolean =
     _ => true
 
-  def total[A](t: => Tokens[A]): StringGenCachePath[A] =
-    StringGenCachePath(always, () => t)
+  def total[A](t: => Tokens[A]): StrFnCachePath[A] =
+    StrFnCachePath(always, () => t)
 
-  def const[A](value: A): StringGenCachePath[A] =
+  def const[A](value: A): StrFnCachePath[A] =
     const(always, value)
 
-  def const[A](isApplicable: A => Boolean, value: A): StringGenCachePath[A] = {
+  def const[A](isApplicable: A => Boolean, value: A): StrFnCachePath[A] = {
     val t = Tokens.const(value)
-    StringGenCachePath(isApplicable, () => t)
+    StrFnCachePath(isApplicable, () => t)
   }
 }

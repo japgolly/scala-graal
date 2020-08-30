@@ -10,8 +10,8 @@ import scalaz.std.string._
 import sourcecode.Line
 import utest._
 
-object StringGenCacheTest extends TestSuite {
-  import StringGenCache._
+object StrFnCacheTest extends TestSuite {
+  import StrFnCacheParam._
 
   private val genChar: Gen[Char] =
     Gen.chooseGen(
@@ -43,7 +43,7 @@ object StringGenCacheTest extends TestSuite {
                           noise    : Int = 0,
                           tailNoise: Boolean = true)
                          (fn       : ArraySeq[String] => A => String)
-                         (implicit cache: StringGenCache[A]): Unit = {
+                         (implicit cache: StrFnCacheParam[A]): Unit = {
 
     val genNoise: Gen[String] =
       Gen.chooseGen(
@@ -62,7 +62,7 @@ object StringGenCacheTest extends TestSuite {
       } yield fn(user).andThen(prefix + _ + suffix) // .andThen(x => {println(x);x})
 
     def genTestsForFn(f: A => String): Gen[Test[A]] = {
-      val cachedFn = cache.direct(f)
+      val cachedFn = StrFnCache.id(f)
       genA.map(a => Test(original = f, cached = cachedFn, value = a))
     }
 
@@ -72,8 +72,8 @@ object StringGenCacheTest extends TestSuite {
     genTests.mustSatisfy(prop[A].forallF[List])
   }
 
-  private def test[A](values: A*)(f: A => String)(implicit l: Line, cache: StringGenCache[A]): Unit = {
-    val c = cache.direct(f)
+  private def test[A](values: A*)(f: A => String)(implicit l: Line, cache: StrFnCacheParam[A]): Unit = {
+    val c = StrFnCache.id(f)
     for (v <- values) {
       val e = f(v)
       val a = c(v)
@@ -107,18 +107,18 @@ object StringGenCacheTest extends TestSuite {
     case object S2 extends SumTest
     case object S3 extends SumTest
     val gen = Gen.choose[SumTest](S1, S2, S3)
-    implicit val cache: StringGenCache[SumTest] = StringGenCache.divide3(
-      StringGenCache.const[S1.type](S1),
-      StringGenCache.const[S2.type](S2),
-      StringGenCache.const[S3.type](S3),
+    implicit val cache: StrFnCacheParam[SumTest] = StrFnCacheParam.divide3(
+      StrFnCacheParam.const[S1.type](S1),
+      StrFnCacheParam.const[S2.type](S2),
+      StrFnCacheParam.const[S3.type](S3),
     )
   }
 
-  private implicit val cacheShort = StringGenCache.short(3)
-  private implicit val cacheInt = StringGenCache.int(3)
-  private implicit val cacheLong = StringGenCache.long(3)
-  private implicit val cacheUsername = StringGenCache.apply1(Username.apply)(_.value)
-  private implicit val cacheExampleProps = StringGenCache.apply2(ExampleProps.apply)(p => (p.user, p.notificationCount))
+  private implicit val cacheShort        = StrFnCacheParam.short(3)
+  private implicit val cacheInt          = StrFnCacheParam.int(3)
+  private implicit val cacheLong         = StrFnCacheParam.long(3)
+  private implicit val cacheUsername     = StrFnCacheParam.apply1(Username.apply)(_.value)
+  private implicit val cacheExampleProps = StrFnCacheParam.apply2(ExampleProps.apply)(p => (p.user, p.notificationCount))
 
   override def tests = Tests {
 

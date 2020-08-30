@@ -84,7 +84,7 @@ object ScalaGraal {
 
   lazy val genCacheAndReplaceBoilerplate = TaskKey[File]("genCacheAndReplaceBoilerplate")
 
-  lazy val genStringGenCacheBoilerplate = TaskKey[File]("genStringGenCacheBoilerplate")
+  lazy val genStrFnCacheParamBoilerplate = TaskKey[File]("genStrFnCacheParamBoilerplate")
 
   lazy val updateDoc = TaskKey[Unit]("updateDoc")
 
@@ -111,7 +111,7 @@ object ScalaGraal {
       ),
       genExprBoilerplate := GenExprBoilerplate(sourceDirectory.value / "main"),
       genCacheAndReplaceBoilerplate := GenCacheAndReplaceBoilerplate(sourceDirectory.value / "main" / "scala"),
-      genStringGenCacheBoilerplate := GenStringGenCacheBoilerplate(sourceDirectory.value / "main" / "scala"))
+      genStrFnCacheParamBoilerplate := GenStrFnCacheParamBoilerplate(sourceDirectory.value / "main" / "scala"))
 
   lazy val coreJsJS  = coreJs.js
   lazy val coreJsJVM = coreJs.jvm
