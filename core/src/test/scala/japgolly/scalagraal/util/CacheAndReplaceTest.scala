@@ -4,9 +4,11 @@ import java.util.UUID
 import nyaya.gen._
 import nyaya.prop._
 import nyaya.test.PropTest._
+import scala.annotation.nowarn
 import scalaz.std.string._
 import utest._
 
+@nowarn
 object CacheAndReplaceTest extends TestSuite {
 
   private val genChar: Gen[Char] =

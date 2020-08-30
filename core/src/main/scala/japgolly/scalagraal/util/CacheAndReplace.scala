@@ -18,6 +18,7 @@ import java.util.UUID
   *   import cats.instances.either._
   * }}}
   */
+@deprecated("Use StrFnCache instead.", "1.1.0")
 object CacheAndReplace extends CacheAndReplaceBoilerplate {
 
   final class Param[A](val fromStr: String => A, val toStr: A => String)
