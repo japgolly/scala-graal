@@ -35,7 +35,7 @@ object StrFnCacheParam extends StrFnCacheParamBoilerplate {
       val token    = tokenFn()
       val tokenStr = toString(token)
       val regex    = s"(?:${regexMod(Pattern.quote(tokenStr))})"
-      val replace  = (s: String) => Option.when(s == tokenStr)(toString)
+      val replace  = (s: String) => if (s == tokenStr) Some(toString) else None
       Tokens(token, Replacement(regex, replace) :: Nil)
     }
     apply(path :: Nil)

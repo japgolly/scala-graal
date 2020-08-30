@@ -45,7 +45,7 @@ object StrFnCache {
       case _ =>
         type Result = A => F[String]
         type Cache = (StrFnCachePath[A], Result)
-        val caches = p.paths.map[Cache](p => p -> cachePath(p.newTokens(), f))
+        val caches: List[Cache] = p.paths.map(p => p -> cachePath(p.newTokens(), f))
         a => {
           @tailrec
           def go(cs: List[Cache]): Result =
@@ -78,11 +78,14 @@ object StrFnCache {
             r.r
           }
 
-          def makeFragFn(frag: String): (A, StringBuilder) => Unit =
-            t.replacements.iterator.flatMap(_.replaceToken(frag)).nextOption() match {
-              case Some(f) => (i, sb) => sb.append(f(i)); ()
-              case None    => (_, sb) => sb.append(frag); ()
-            }
+          def makeFragFn(frag: String): (A, StringBuilder) => Unit = {
+            val it = t.replacements.iterator.flatMap(_.replaceToken(frag))
+            if (it.hasNext) {
+              val f = it.next()
+              (i, sb) => { sb.append(f(i)); () }
+            } else
+              (_, sb) => { sb.append(frag); () }
+          }
 
           val fragFns =
             regex

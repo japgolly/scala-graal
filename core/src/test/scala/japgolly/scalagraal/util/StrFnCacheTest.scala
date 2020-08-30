@@ -4,7 +4,6 @@ import japgolly.microlibs.testutil.TestUtil._
 import nyaya.gen._
 import nyaya.prop._
 import nyaya.test.PropTest._
-import scala.collection.compat.immutable.ArraySeq
 import scalaz.std.list._
 import scalaz.std.string._
 import sourcecode.Line
@@ -42,7 +41,7 @@ object StrFnCacheTest extends TestSuite {
   private def propTest[A](genA     : Gen[A],
                           noise    : Int = 0,
                           tailNoise: Boolean = true)
-                         (fn       : ArraySeq[String] => A => String)
+                         (fn       : Vector[String] => A => String)
                          (implicit cache: StrFnCacheParam[A]): Unit = {
 
     val genNoise: Gen[String] =
@@ -58,7 +57,7 @@ object StrFnCacheTest extends TestSuite {
       for {
         prefix <- genTailNoise
         suffix <- genTailNoise
-        user   <- genNoise.arraySeq[String](noise)
+        user   <- genNoise.vector(noise)
       } yield fn(user).andThen(prefix + _ + suffix) // .andThen(x => {println(x);x})
 
     def genTestsForFn(f: A => String): Gen[Test[A]] = {
