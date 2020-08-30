@@ -44,6 +44,9 @@ object StrFnCacheParam extends StrFnCacheParamBoilerplate {
   def apply1[A, Z](f: A => Z)(g: Z => A)(implicit t: StrFnCacheParam[A]): StrFnCacheParam[Z] =
     t.xmap(f)(g)
 
+  def divide1[A<:Z:ClassTag, Z](cA: StrFnCacheParam[A]): StrFnCacheParam[Z] =
+    apply(cA.paths.map(_.widen[Z]))
+
   def numericRegexMod(r: String): String =
     if (r.startsWith("-"))
       s"$r(?!\\d)"

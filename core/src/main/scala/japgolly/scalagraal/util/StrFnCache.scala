@@ -35,8 +35,13 @@ object StrFnCache {
 
   def poly[F[_], A](f: A => F[String])(implicit p: StrFnCacheParam[A], F: Functor[F]): A => F[String] =
     p.paths match {
-      case Nil => f
-      case p :: Nil => cachePath(p.newTokens(), f)
+
+      case Nil =>
+        f
+
+      case p :: Nil =>
+        cachePath(p.newTokens(), f)
+
       case _ =>
         type Result = A => F[String]
         type Cache = (StrFnCachePath[A], Result)

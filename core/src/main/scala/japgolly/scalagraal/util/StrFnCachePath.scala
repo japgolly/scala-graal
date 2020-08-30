@@ -3,6 +3,13 @@ package japgolly.scalagraal.util
 import scala.reflect.ClassTag
 import japgolly.scalagraal.util.StrFnCachePath._
 
+/** A specific subset of a type that will be cached.
+  *
+  * For example, you would have a `StrFnCachePath[Option[A]]` for the `None` case,
+  * and another `StrFnCachePath[Option[A]]` for the `Some` case.
+  *
+  * @param isApplicable Whether a given value of `A` is within the subset of `A` represented by this path/instance.
+  */
 final case class StrFnCachePath[A](isApplicable: A => Boolean,
                                    newTokens   : () => Tokens[A]) {
 
@@ -40,8 +47,6 @@ object StrFnCachePath {
     def contramapO[B](f: B => Option[A]): Replacement[B] =
       copy(replaceToken = s => replaceToken(s).map(fa => f(_).fold(s)(fa)))
   }
-
-  // ===================================================================================================================
 
   private val always: Any => Boolean =
     _ => true
