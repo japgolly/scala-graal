@@ -1,7 +1,6 @@
 package japgolly.scalagraal.util
 
 import cats.{Applicative, Functor, Id}
-import cats.instances.either._
 import cats.syntax.functor._
 import japgolly.scalagraal.Expr
 import scala.annotation.tailrec
