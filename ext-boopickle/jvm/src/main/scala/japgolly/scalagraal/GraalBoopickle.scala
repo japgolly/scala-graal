@@ -11,10 +11,9 @@ object GraalBoopickle {
   private[scalagraal] val tmpBinding = LanguageJs.Binding("ScalaGraalBoopickle")
 
   private[scalagraal] val tmpToPickled = {
-    val mkInt8Array = "const i=new Int8Array(a.limit());const b=a.array();let j=i.length;while(j-->0)i[j]=b[j]"
-    val pickled     = "ScalaGraalBookpicklePickled(i)"
+    val pickled     = "ScalaGraalBookpicklePickled(new Int8Array(new ArrayBuffer(b)))"
     val input       = LanguageJs.polyglotImport(tmpBinding)
-    val expr        = s"(function(a){$mkInt8Array;return $pickled})($input)"
+    val expr        = s"(function(b){return $pickled})($input)"
     Source.create("js", expr)
   }
 
