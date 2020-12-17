@@ -25,7 +25,7 @@ object ScalaGraal {
     val BooPickle       = "1.3.3"
     val Cats            = "2.1.1"
     val Graal           = "20.2.0"
-    val KindProjector   = "0.11.0"
+    val KindProjector   = "0.11.2"
     val Microlibs       = "2.5"
     val MonadicFor      = "0.3.1"
     val MTest           = "0.7.4"
@@ -33,7 +33,7 @@ object ScalaGraal {
     val Prometheus      = "0.9.0"
     val Scala212        = "2.12.11"
     val Scala213        = "2.13.3"
-    val ScalaCollCompat = "2.1.6"
+    val ScalaCollCompat = "2.3.1"
   }
 
   def scalacFlags = Seq(
