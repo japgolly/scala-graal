@@ -23,7 +23,7 @@ object ScalaGraal {
 
   object Ver {
     val BooPickle       = "1.3.3"
-    val Cats            = "2.1.1"
+    val Cats            = "2.3.0"
     val Graal           = "20.3.0"
     val KindProjector   = "0.11.2"
     val Microlibs       = "2.5"
