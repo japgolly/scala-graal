@@ -9,7 +9,7 @@ libraryDependencies ++= {
 }
 
 addSbtPlugin("ch.epfl.scala"      % "sbt-scalafix"             % "0.9.24")
-addSbtPlugin("com.github.gseitz"  % "sbt-release"              % "1.0.13")
+addSbtPlugin("com.github.sbt"  % "sbt-release"              % "1.0.14")
 addSbtPlugin("com.jsuereth"       % "sbt-pgp"                  % "1.1.2-1")
 addSbtPlugin("com.typesafe.sbt"   % "sbt-git"                  % "1.0.0")
 addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "1.0.0")
