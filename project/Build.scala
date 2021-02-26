@@ -31,7 +31,7 @@ object ScalaGraal {
     val MTest           = "0.7.4"
     val Nyaya           = "0.9.2"
     val Prometheus      = "0.9.0"
-    val Scala212        = "2.12.11"
+    val Scala212        = "2.12.13"
     val Scala213        = "2.13.3"
     val ScalaCollCompat = "2.3.1"
   }

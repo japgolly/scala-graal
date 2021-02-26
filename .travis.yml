@@ -4,7 +4,7 @@ jobs:
   include:
 
     - name: 'Scala 2.12 / Scala.JS 0.6 / Java 11'
-      scala: 2.12.11
+      scala: 2.12.13
       env: JAVA_VER=11 SCALAJS_VERSION=0.6.33
 
     - name: 'Scala 2.13 / Scala.JS 0.6 / Java 11'
@@ -12,7 +12,7 @@ jobs:
       env: JAVA_VER=11 SCALAJS_VERSION=0.6.33
 
     - name: 'Scala 2.12 / Scala.JS 1.0 / Java 11'
-      scala: 2.12.11
+      scala: 2.12.13
       env: JAVA_VER=11 SCALAJS_VERSION=
 
     - name: 'Scala 2.13 / Scala.JS 1.0 / Java 11'
@@ -20,7 +20,7 @@ jobs:
       env: JAVA_VER=11 SCALAJS_VERSION=
 
     - name: 'Scala 2.12 / Scala.JS 0.6 / Java 8'
-      scala: 2.12.11
+      scala: 2.12.13
       env: JAVA_VER=8 SCALAJS_VERSION=0.6.33
 
     - name: 'Scala 2.13 / Scala.JS 0.6 / Java 8'
@@ -28,7 +28,7 @@ jobs:
       env: JAVA_VER=8 SCALAJS_VERSION=0.6.33
 
     - name: 'Scala 2.12 / Scala.JS 1.0 / Java 8'
-      scala: 2.12.11
+      scala: 2.12.13
       env: JAVA_VER=8 SCALAJS_VERSION=
 
     - name: 'Scala 2.13 / Scala.JS 1.0 / Java 8'
