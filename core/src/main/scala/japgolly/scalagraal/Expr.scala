@@ -4,7 +4,7 @@ import japgolly.scalagraal.util.DurationLite
 import java.util.function.Consumer
 import org.graalvm.polyglot.{Language => _, _}
 import scala.annotation.tailrec
-import scala.collection.compat._
+import scala.collection.BuildFrom
 import scala.concurrent.duration.{Duration, SECONDS}
 import scala.concurrent.{Await, Future, Promise, TimeoutException}
 import scala.reflect.ClassTag

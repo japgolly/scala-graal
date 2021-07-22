@@ -1,11 +1,11 @@
 package japgolly.scalagraal.util
 
+import cats.instances.list._
+import cats.instances.string._
 import japgolly.microlibs.testutil.TestUtil._
 import nyaya.gen._
 import nyaya.prop._
 import nyaya.test.PropTest._
-import scalaz.std.list._
-import scalaz.std.string._
 import sourcecode.Line
 import utest._
 
@@ -137,7 +137,7 @@ object StrFnCacheTest extends TestSuite {
       "either"     - propTest(Gen.string either Gen.string)(_ => _.toString)
       "int"        - propTest(Gen.int, tailNoise = false)(_ => n => s"[ 0 1 2 ${Int.MaxValue} ${Int.MinValue} ] real value: $n!")
       "long"       - propTest(Gen.long, tailNoise = false)(_ => n => s"[ 0 1 2 ${Long.MaxValue} ${Long.MinValue} ] real value: $n!")
-      "stringPair" - propTest(genString *** genString)(_ => x => s"${x._1} / ${x._2}")
+      "stringPair" - propTest(genString.pair)(_ => x => s"${x._1} / ${x._2}")
       "egProps"    - propTest(genExampleProps, tailNoise = false)(_ => _.render)
       "divide3"    - propTest(SumTest.gen, tailNoise = false)(_ => _.render)
     }

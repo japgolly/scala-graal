@@ -1,7 +1,7 @@
 package japgolly.scalagraal.util
 
-import java.util.UUID
 import japgolly.scalagraal.util.StrFnCachePath._
+import java.util.UUID
 import java.util.regex.Pattern
 import scala.reflect.ClassTag
 

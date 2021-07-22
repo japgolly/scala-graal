@@ -1,7 +1,7 @@
 package japgolly.scalagraal.util
 
-import scala.reflect.ClassTag
 import japgolly.scalagraal.util.StrFnCachePath._
+import scala.reflect.ClassTag
 
 /** A specific subset of a type that will be cached.
   *

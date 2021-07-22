@@ -1,16 +1,16 @@
 package japgolly.scalagraal
 
+import cats.Eq
 import japgolly.scalagraal.TestUtil.{sync => _, _}
 import java.util.concurrent.TimeUnit
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext}
-import scalaz.Equal
 import utest._
 
 object GraalContextPoolTest extends TestSuite {
 
-  private implicit val stateEq: Equal[GraalContextPool.State] = Equal.equalA
-  private implicit val resultEq: Equal[Option[Expr.Result[String]]] = Equal.equalA
+  private implicit val stateEq: Eq[GraalContextPool.State] = Eq.fromUniversalEquals
+  private implicit val resultEq: Eq[Option[Expr.Result[String]]] = Eq.fromUniversalEquals
 
   override def tests = Tests {
 
