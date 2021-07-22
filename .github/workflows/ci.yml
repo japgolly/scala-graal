@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - graal: graalvm-ce-java11@21.1.0
+            scala: 2.13.6
+    name: Scala v${{ matrix.scala }} / Java v${{ matrix.java }}
+    steps:
+
+      - name: Git checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Java and Scala
+        uses: olafurpg/setup-scala@v12
+        with:
+          java-version: ${{ matrix.graal }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Setup Scala.JS
+        uses: japgolly/setup-scalajs@v1
+
+      - name: Cache sbt
+        uses: coursier/cache-action@v6.1
+
+      - name: Build and test
+        shell: bash
+        run: sbt ++${{ matrix.scala }} clean test
