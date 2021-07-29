@@ -7,14 +7,17 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
+
+    name: Scala v${{ matrix.scala }} / ${{ matrix.graal }}
     strategy:
       matrix:
         include:
           - graal: graalvm-ce-java11@21.1.0
             scala: 2.13.6
-    name: Scala v${{ matrix.scala }} / Java v${{ matrix.java }}
-    steps:
+          - graal: graalvm-ce-java11@21.1.0
+            scala: 3.0.1
 
+    steps:
       - name: Git checkout
         uses: actions/checkout@v2
 

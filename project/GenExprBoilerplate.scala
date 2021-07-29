@@ -4,12 +4,15 @@ sealed trait ScalaVer
 object ScalaVer {
   case object `2.12` extends ScalaVer
   case object `2.13` extends ScalaVer
+  case object `3` extends ScalaVer
 
   def parse(str: String) =
     if (str startsWith "2.12")
       `2.12`
     else if (str startsWith "2.13")
       `2.13`
+    else if (str startsWith "3")
+      `3`
     else
       throw new RuntimeException("Unknown Scala version: " + str)
 }
@@ -19,6 +22,7 @@ object GenExprBoilerplate {
   def apply(mainDir: File): Unit = {
     gen(mainDir / "scala-2.12", ScalaVer.`2.12`)
     gen(mainDir / "scala-2.13", ScalaVer.`2.13`)
+    gen(mainDir / "scala-3", ScalaVer.`3`)
   }
 
   def gen(outputDir: File, scalaVer: ScalaVer): File = {
@@ -40,7 +44,7 @@ object GenExprBoilerplate {
           case ScalaVer.`2.12` =>
             ""
 
-          case ScalaVer.`2.13` =>
+          case ScalaVer.`2.13` | ScalaVer.`3` =>
             s"""
                |  final def apply$n[$ABC](mkExpr: ($Strings) => String, $Types)(implicit lang: Language, $Params): Expr[Value] =
                |    apply$n[$ABC](mkExpr).apply($abc)

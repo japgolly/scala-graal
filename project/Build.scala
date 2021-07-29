@@ -51,7 +51,7 @@ object ScalaGraal {
       homepage                      := Some(url("https://github.com/japgolly/" + ghProject)),
       licenses                      += ("Apache-2.0", url("http://opensource.org/licenses/Apache-2.0")),
       scalaVersion                  := Ver.scala2,
-      // crossScalaVersions            := Seq(Ver.scala2, Ver.scala3),
+      crossScalaVersions            := Seq(Ver.scala2, Ver.scala3),
       scalacOptions                ++= scalacCommonFlags,
       scalacOptions                ++= scalac2Flags.filter(_ => scalaVersion.value.startsWith("2")),
       scalacOptions                ++= scalac3Flags.filter(_ => scalaVersion.value.startsWith("3")),
