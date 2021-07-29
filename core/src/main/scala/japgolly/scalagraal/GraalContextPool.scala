@@ -110,7 +110,7 @@ object GraalContextPool {
     val lock = new AnyRef
     var threads = List.empty[ContextThread]
 
-    val threadFactory = new ThreadFactory {
+    val threadFactory: ThreadFactory = new ThreadFactory {
       override def newThread(r: Runnable) = {
         val t = createNewThread(r)
         lock.synchronized(threads ::= t)

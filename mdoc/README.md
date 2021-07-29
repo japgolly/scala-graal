@@ -1,7 +1,5 @@
 # scala-graal
 
-[![Build Status](https://travis-ci.org/japgolly/scala-graal.svg?branch=master)](https://travis-ci.org/japgolly/scala-graal)
-
 ```scala
 libraryDependencies ++= Seq(
   "com.github.japgolly.scala-graal"  %% "core"           % "@VERSION@"

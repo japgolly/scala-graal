@@ -91,7 +91,7 @@ object StrFnCacheTest extends TestSuite {
     }
   }
 
-  private val genExampleProps = Gen.lift2(genString.map(Username).option, Gen.int)(ExampleProps)
+  private val genExampleProps = Gen.lift2(genString.map(Username.apply).option, Gen.int)(ExampleProps.apply)
 
   private sealed trait SumTest {
     def render = this match {
@@ -113,11 +113,11 @@ object StrFnCacheTest extends TestSuite {
     )
   }
 
-  private implicit val cacheShort        = StrFnCacheParam.short(3)
-  private implicit val cacheInt          = StrFnCacheParam.int(3)
-  private implicit val cacheLong         = StrFnCacheParam.long(3)
-  private implicit val cacheUsername     = StrFnCacheParam.apply1(Username.apply)(_.value)
-  private implicit val cacheExampleProps = StrFnCacheParam.apply2(ExampleProps.apply)(p => (p.user, p.notificationCount))
+  private implicit val cacheShort       : StrFnCacheParam[Short       ] = StrFnCacheParam.short(3)
+  private implicit val cacheInt         : StrFnCacheParam[Int         ] = StrFnCacheParam.int(3)
+  private implicit val cacheLong        : StrFnCacheParam[Long        ] = StrFnCacheParam.long(3)
+  private implicit val cacheUsername    : StrFnCacheParam[Username    ] = StrFnCacheParam.apply1(Username.apply)(_.value)
+  private implicit val cacheExampleProps: StrFnCacheParam[ExampleProps] = StrFnCacheParam.apply2(ExampleProps.apply)(p => (p.user, p.notificationCount))
 
   override def tests = Tests {
 

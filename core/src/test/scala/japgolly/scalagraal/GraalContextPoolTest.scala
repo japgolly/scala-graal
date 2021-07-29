@@ -43,7 +43,7 @@ object GraalContextPoolTest extends TestSuite {
           b <- rb
         } yield (a, b)
 
-        val a = Await.result(f, (if (inTravis) 10 else 1).second)
+        val a = Await.result(f, (if (inCI) 30 else 1).second)
         assertEq(a.toOption, Some((200, 80)))
 
         if (threadPool.isEmpty)
@@ -78,7 +78,7 @@ object GraalContextPoolTest extends TestSuite {
         val ko = pool.eval(fib(20000000))
         assertEq(ko, None)
 
-        if (!inTravis) {
+        if (!inCI) {
           val ok = pool.eval(fib(0))
           assertEq(ok, Some(Right("1")))
         }

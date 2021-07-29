@@ -58,12 +58,7 @@ object Lib {
     )
 
   def preventPublication: Project => Project =
-    _.settings(
-      skip in publish    := true,
-      publishArtifact    := false,
-      publishTo          := Some(Resolver.file("Unused transient repository", target.value / "fakepublish")),
-      packagedArtifacts  := Map.empty)
-    // .disablePlugins(plugins.IvyPlugin)
+    _.settings(publish / skip := true)
 
   def byScalaVersion[A](f: PartialFunction[(Long, Long), Seq[A]]): Def.Initialize[Seq[A]] =
     Def.setting(CrossVersion.partialVersion(scalaVersion.value).flatMap(f.lift).getOrElse(Nil))

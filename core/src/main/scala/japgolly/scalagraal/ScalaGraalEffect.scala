@@ -16,7 +16,10 @@ object ScalaGraalEffect {
   object AsyncES {
 
     implicit def javaFutureInstance: AsyncES[JavaFuture] =
-      Async.javaFutureInstance
+      new AsyncES[JavaFuture] {
+        def apply(es: ExecutorService) =
+          Async.javaFutureInstance(es)
+      }
 
     implicit def futureInstance: AsyncES[Future] =
       es => Async.futureInstance(ExecutionContext.fromExecutorService(es))

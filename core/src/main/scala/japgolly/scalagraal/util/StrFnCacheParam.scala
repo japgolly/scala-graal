@@ -25,7 +25,11 @@ object StrFnCacheParam extends StrFnCacheParamBoilerplate {
   def const[A](value: A): StrFnCacheParam[A] =
     apply(StrFnCachePath.const(value) :: Nil)
 
-  def enum[A](allEnumValues: A*): StrFnCacheParam[A] =
+  @deprecated("Use enumOf", "1.2.0")
+  def `enum`[A](allEnumValues: A*): StrFnCacheParam[A] =
+    enumOf[A](allEnumValues: _*)
+
+  def enumOf[A](allEnumValues: A*): StrFnCacheParam[A] =
     apply(allEnumValues.iterator.map(a => StrFnCachePath.const[A](a == _, a)).toList)
 
   def viaToken[A](tokenFn: () => A)
@@ -78,7 +82,7 @@ object StrFnCacheParam extends StrFnCacheParamBoilerplate {
   }
 
   implicit val boolean: StrFnCacheParam[Boolean] =
-    enum(true, false)
+    enumOf(true, false)
 
   implicit val unit: StrFnCacheParam[Unit] =
     const(())

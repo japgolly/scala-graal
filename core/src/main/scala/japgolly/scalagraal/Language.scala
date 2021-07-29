@@ -6,7 +6,7 @@ abstract class Language(final val name: String) { self =>
 
   def polyglotImport(b: Binding): String
 
-  final object Binding {
+  object Binding {
     def apply(name: String): Binding =
       apply(name, name)
 

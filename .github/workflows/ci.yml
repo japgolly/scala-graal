@@ -7,21 +7,28 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
+
+    name: Scala v${{ matrix.scala }} / Graal v${{ matrix.graal }} / Java v${{ matrix.java }}
     strategy:
       matrix:
         include:
-          - graal: graalvm-ce-java11@21.1.0
-            scala: 2.13.6
-    name: Scala v${{ matrix.scala }} / Java v${{ matrix.java }}
-    steps:
 
+          - graal: 21.1.0
+            java: 11
+            scala: 2.13.6
+
+          - graal: 21.1.0
+            java: 11
+            scala: 3.0.1
+
+    steps:
       - name: Git checkout
         uses: actions/checkout@v2
 
       - name: Setup Java and Scala
         uses: olafurpg/setup-scala@v12
         with:
-          java-version: ${{ matrix.graal }}
+          java-version: graalvm-ce-java${{ matrix.java }}@${{ matrix.graal }}
 
       - name: Setup Node
         uses: actions/setup-node@v2
@@ -32,8 +39,8 @@ jobs:
         uses: japgolly/setup-scalajs@v1
 
       - name: Cache sbt
-        uses: coursier/cache-action@v6.1
+        uses: coursier/cache-action@v6
 
       - name: Build and test
         shell: bash
-        run: sbt ++${{ matrix.scala }} clean test
+        run: sbt -DCI=1 ++${{ matrix.scala }} clean test
