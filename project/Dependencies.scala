@@ -10,7 +10,7 @@ object Dependencies {
     val boopickle        = "1.4.0"
     val cats             = "2.6.1"
     val graal            = "21.1.0"
-    val microlibs        = "3.0"
+    val microlibs        = "3.0.1"
     val prometheus       = "0.11.0"
     val scala2           = "2.13.6"
     val scala3           = "3.0.1"
