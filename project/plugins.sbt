@@ -1,6 +1,6 @@
 libraryDependencies += "org.scala-js" %% "scalajs-env-jsdom-nodejs" % "1.1.0"
 
-addSbtPlugin("ch.epfl.scala"      % "sbt-scalafix"             % "0.9.29")
+addSbtPlugin("ch.epfl.scala"      % "sbt-scalafix"             % "0.9.30")
 addSbtPlugin("com.github.sbt"     % "sbt-pgp"                  % "2.1.2")
 addSbtPlugin("com.github.sbt"     % "sbt-release"              % "1.1.0")
 addSbtPlugin("com.typesafe.sbt"   % "sbt-git"                  % "1.0.1")
