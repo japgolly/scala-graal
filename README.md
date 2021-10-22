@@ -2,10 +2,10 @@
 
 ```scala
 libraryDependencies ++= Seq(
-  "com.github.japgolly.scala-graal"  %% "core"           % "1.2.0"
-  "com.github.japgolly.scala-graal" %%% "core-js"        % "1.2.0"
-  "com.github.japgolly.scala-graal" %%% "ext-boopickle"  % "1.2.0"
-  "com.github.japgolly.scala-graal"  %% "ext-prometheus" % "1.2.0"
+  "com.github.japgolly.scala-graal"  %% "core"           % "2.0.0"
+  "com.github.japgolly.scala-graal" %%% "core-js"        % "2.0.0"
+  "com.github.japgolly.scala-graal" %%% "ext-boopickle"  % "2.0.0"
+  "com.github.japgolly.scala-graal"  %% "ext-prometheus" % "2.0.0"
 )
 ```
 
