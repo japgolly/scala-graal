@@ -17,7 +17,7 @@ object Dependencies {
 
     // Internal
     val betterMonadicFor = "0.3.1"
-    val kindProjector    = "0.13.0"
+    val kindProjector    = "0.13.2"
     val nyaya            = "0.11.0"
     val utest            = "0.7.10"
   }
