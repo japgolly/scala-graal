@@ -15,32 +15,22 @@ jobs:
 
           - graal: 21.1.0
             java: 11
-            scala: 2.13.6
+            scala: 2
 
           - graal: 21.1.0
             java: 11
-            scala: 3.0.1
+            scala: 3
 
     steps:
       - name: Git checkout
         uses: actions/checkout@v2
 
-      - name: Setup Java and Scala
-        uses: olafurpg/setup-scala@v12
+
+      - name: Setup Scala
+        uses: japgolly/setup-everything-scala@v2.0
         with:
-          java-version: graalvm-ce-java${{ matrix.java }}@${{ matrix.graal }}
-
-      - name: Setup Node
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-
-      - name: Setup Scala.JS
-        uses: japgolly/setup-scalajs@v1
-
-      - name: Cache sbt
-        uses: coursier/cache-action@v6
+          java-version: adopt@1.${{ matrix.java }}
 
       - name: Build and test
         shell: bash
-        run: sbt -DCI=1 ++${{ matrix.scala }} clean test
+        run: sbt++field scala${{ matrix.scala }} -DCI=1 clean test
