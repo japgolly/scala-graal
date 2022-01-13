@@ -12,7 +12,7 @@ object Dependencies {
     val graal            = "21.1.0"
     val microlibs        = "4.0.0"
     val prometheus       = "0.12.0"
-    val scala2           = "2.13.6"
+    val scala2           = "2.13.8"
     val scala3           = "3.0.1"
 
     // Internal
