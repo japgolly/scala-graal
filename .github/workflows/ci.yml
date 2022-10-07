@@ -3,33 +3,36 @@ name: CI
 on:
   pull_request:
   push:
+    branches:
+      - '**'
+    tags-ignore:
+      - v*.*.*
 
 jobs:
   ci:
     runs-on: ubuntu-latest
 
-    name: Scala v${{ matrix.scala }} / Graal v${{ matrix.graal }} / Java v${{ matrix.java }}
     strategy:
       matrix:
         include:
 
-          - graal: 21.1.0
+          - graal: 21.3.1
             java: 11
             scala: 2
 
-          - graal: 21.1.0
+          - graal: 21.3.1
             java: 11
             scala: 3
 
+    name: Scala v${{ matrix.scala }} / Graal v${{ matrix.graal }} / Java v${{ matrix.java }}
     steps:
       - name: Git checkout
-        uses: actions/checkout@v2
-
+        uses: actions/checkout@v3
 
       - name: Setup Scala
-        uses: japgolly/setup-everything-scala@v2.0
+        uses: japgolly/setup-everything-scala@v3.1
         with:
-          java-version: graalvm-ce-java${{ matrix.java }}@${{ matrix.graal }}
+          java-version: graalvm-java${{ matrix.java }}:${{ matrix.graal }}
 
       - name: Build and test
         shell: bash
