@@ -2,7 +2,6 @@ package japgolly.scalagraal
 
 import japgolly.scalagraal.TestUtil._
 import org.graalvm.polyglot.Value
-import scala.annotation.nowarn
 import utest._
 
 object ExprTest extends TestSuite {
@@ -14,7 +13,6 @@ object ExprTest extends TestSuite {
     _ => ExprParam.CtxValueFn(i => ctx => ExprParam.RawValue(ctx.eval(graalLanguage.name, i.toString))))
 
   private class TestType[E] {
-    @nowarn("cat=unused")
     def apply[A](a: A)(implicit ev: A =:= E) = ()
   }
 
