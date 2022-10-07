@@ -1,6 +1,6 @@
 package japgolly.scalagraal
 
-import japgolly.scalagraal.util.DurationLite
+import japgolly.scalagraal.util.{DurationLite, FileRef}
 import java.util.function.Consumer
 import org.graalvm.polyglot.{Language => _, _}
 import scala.annotation.tailrec
@@ -221,6 +221,15 @@ object Expr extends ExprBoilerplate {
 
   def cosequenceAndDiscard[A](es: Iterable[Expr[A]]): Expr[Unit] =
     lift(c => es.foreach(_.run(c)))
+
+  def file[A](file: A, srcCfg: Source#Builder => Source#Builder = identity)(implicit lang: Language, A: FileRef[A]): Expr[Option[Value]] =
+    lazily(GraalSourceUtil.file(lang.name, file, srcCfg)).flatMap {
+      case Some(s) => apply(s).map(Some(_))
+      case None    => pure(None)
+    }
+
+  def requireFile[A](file: A, srcCfg: Source#Builder => Source#Builder = identity)(implicit lang: Language, A: FileRef[A]): Expr[Value] =
+    apply(GraalSourceUtil.requireFile(lang.name, file, srcCfg))
 
   def fileOnClasspath(filename: String, srcCfg: Source#Builder => Source#Builder = identity)(implicit lang: Language): Expr[Option[Value]] =
     lazily(GraalSourceUtil.fileOnClasspath(lang.name, filename, srcCfg)).flatMap {
