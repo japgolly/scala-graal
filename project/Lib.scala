@@ -31,20 +31,11 @@ object Lib {
   def publicationSettings(ghProject: String) =
     ConfigureBoth(
       _.settings(
-        publishTo := sonatypePublishToBundle.value,
-        scmInfo := None,
-        pomExtra :=
-          <scm>
-            <connection>scm:git:github.com/japgolly/{ghProject}</connection>
-            <developerConnection>scm:git:git@github.com:japgolly/{ghProject}.git</developerConnection>
-            <url>github.com:japgolly/{ghProject}.git</url>
-          </scm>
-          <developers>
-            <developer>
-              <id>japgolly</id>
-              <name>David Barri</name>
-            </developer>
-          </developers>))
+        developers := List(
+          Developer("japgolly", "David Barri", "japgolly@gmail.com", url("https://japgolly.github.io/japgolly/")),
+        ),
+      )
+    )
       .jsConfigure(
         sourceMapsToGithub(ghProject))
 

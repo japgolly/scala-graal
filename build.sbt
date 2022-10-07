@@ -1,5 +1,7 @@
 name := "scala-graal"
 
+sonatypeProfileName := "com.github.japgolly"
+
 ThisBuild / homepage      := Some(url("https://github.com/japgolly/scala-graal"))
 ThisBuild / licenses      += ("Apache-2.0", url("http://opensource.org/licenses/Apache-2.0"))
 ThisBuild / organization  := "com.github.japgolly.scala-graal"
