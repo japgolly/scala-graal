@@ -241,7 +241,7 @@ object Expr extends ExprBoilerplate {
     apply(GraalSourceUtil.requireFileOnClasspath(lang.name, filename, srcCfg))
 
   override protected def genericOpt[Z](params: Array[ExprParam[X]],
-                                       mkExprStr: Array[String] => String,
+                                       mkExprSrc: Array[String] => Source,
                                        post: Expr[Value] => Z)
                                       (implicit l: Language): Array[X] => Z = {
     val arity = params.length
@@ -259,8 +259,7 @@ object Expr extends ExprBoilerplate {
         }
         tokens(i) = token
       }
-      val es = mkExprStr(tokens)
-      val src = Source.create(l.name, es)
+      val src = mkExprSrc(tokens)
       if (usesBindings) {
         val run = l.argBinder(src)
         c => ExprError.InEval.capture(run(c))
