@@ -10,12 +10,13 @@ import org.graalvm.polyglot.Source
   */
 object GraalSourceUtil {
 
-  def fileOnClasspath(lang: String, filename: String): Option[Source] =
+  def fileOnClasspath(lang: String, filename: String, srcCfg: Source#Builder => Source#Builder = identity): Option[Source] =
     Option(getClass.getClassLoader.getResource(filename)).map { url =>
-      Source.newBuilder(lang, url).build()
+      val b = Source.newBuilder(lang, url)
+      srcCfg(b).build()
     }
 
-  def requireFileOnClasspath(lang: String, filename: String): Source =
-    fileOnClasspath(lang, filename)
+  def requireFileOnClasspath(lang: String, filename: String, srcCfg: Source#Builder => Source#Builder = identity): Source =
+    fileOnClasspath(lang, filename, srcCfg)
       .getOrElse(throw new FileNotFoundException(s"Classpath resource not found: $filename"))
 }

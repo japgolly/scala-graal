@@ -222,14 +222,14 @@ object Expr extends ExprBoilerplate {
   def cosequenceAndDiscard[A](es: Iterable[Expr[A]]): Expr[Unit] =
     lift(c => es.foreach(_.run(c)))
 
-  def fileOnClasspath(filename: String)(implicit lang: Language): Expr[Option[Value]] =
-    lazily(GraalSourceUtil.fileOnClasspath(lang.name, filename)).flatMap {
+  def fileOnClasspath(filename: String, srcCfg: Source#Builder => Source#Builder = identity)(implicit lang: Language): Expr[Option[Value]] =
+    lazily(GraalSourceUtil.fileOnClasspath(lang.name, filename, srcCfg)).flatMap {
       case Some(s) => apply(s).map(Some(_))
       case None    => pure(None)
     }
 
-  def requireFileOnClasspath(filename: String)(implicit lang: Language): Expr[Value] =
-    apply(GraalSourceUtil.requireFileOnClasspath(lang.name, filename))
+  def requireFileOnClasspath(filename: String, srcCfg: Source#Builder => Source#Builder = identity)(implicit lang: Language): Expr[Value] =
+    apply(GraalSourceUtil.requireFileOnClasspath(lang.name, filename, srcCfg))
 
   override protected def genericOpt[Z](params: Array[ExprParam[X]],
                                        mkExprStr: Array[String] => String,
