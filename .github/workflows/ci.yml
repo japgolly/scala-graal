@@ -16,11 +16,11 @@ jobs:
       matrix:
         include:
 
-          - graal: 22.2.0
+          - graal: 21.3.1
             java: 11
             scala: 2
 
-          - graal: 22.2.0
+          - graal: 21.3.1
             java: 11
             scala: 3
 
@@ -32,7 +32,7 @@ jobs:
       - name: Setup Scala
         uses: japgolly/setup-everything-scala@v3.1
         with:
-          java-version: graalvm-ce-java${{ matrix.java }}:${{ matrix.graal }}
+          java-version: graalvm-java${{ matrix.java }}:${{ matrix.graal }}
 
       - name: Build and test
         shell: bash
