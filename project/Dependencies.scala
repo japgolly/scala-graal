@@ -8,18 +8,18 @@ object Dependencies {
 
     // Exported
     val boopickle        = "1.4.0"
-    val cats             = "2.6.1"
-    val graal            = "21.1.0"
-    val microlibs        = "4.0.0"
-    val prometheus       = "0.12.0"
-    val scala2           = "2.13.6"
-    val scala3           = "3.0.1"
+    val cats             = "2.8.0"
+    val graal            = "22.2.0"
+    val microlibs        = "4.2.1"
+    val prometheus       = "0.16.0"
+    val scala2           = "2.13.9"
+    val scala3           = "3.0.2"
 
     // Internal
     val betterMonadicFor = "0.3.1"
     val kindProjector    = "0.13.2"
-    val nyaya            = "1.0.0"
-    val utest            = "0.7.10"
+    val nyaya            = "1.1.0"
+    val utest            = "0.8.1"
   }
 
   object Dep {
