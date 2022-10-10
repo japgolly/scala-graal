@@ -83,6 +83,9 @@ object GraalContext {
                      _metricWriter: Option[GraalContextMetrics.Writer] = _metricWriter): Builder =
       new Builder(_ctxProvider, _useMutex, _afterCreate, _beforeEval, _afterEval, _beforeClose, _metricWriter)
 
+    def configureContext(f: Context => Context): Builder =
+      copy(_ctxProvider = _ctxProvider.map(f).left.map(g => () => f(g())))
+
     def useMutex(b: Boolean): Builder =
       copy(_useMutex = b)
 
@@ -237,4 +240,3 @@ object GraalContext {
 
   }
 }
-

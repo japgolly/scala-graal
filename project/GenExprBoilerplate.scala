@@ -2,14 +2,11 @@ import sbt._
 
 sealed trait ScalaVer
 object ScalaVer {
-  case object `2.12` extends ScalaVer
   case object `2.13` extends ScalaVer
   case object `3` extends ScalaVer
 
   def parse(str: String) =
-    if (str startsWith "2.12")
-      `2.12`
-    else if (str startsWith "2.13")
+    if (str startsWith "2.13")
       `2.13`
     else if (str startsWith "3")
       `3`
@@ -20,7 +17,6 @@ object ScalaVer {
 object GenExprBoilerplate {
 
   def apply(mainDir: File): Unit = {
-    gen(mainDir / "scala-2.12", ScalaVer.`2.12`)
     gen(mainDir / "scala-2.13", ScalaVer.`2.13`)
     gen(mainDir / "scala-3", ScalaVer.`3`)
   }
@@ -41,13 +37,14 @@ object GenExprBoilerplate {
         val es = (0 until n).map(i => s"e($i)").mkString(",")
 
         val scalaSpecific = scalaVer match {
-          case ScalaVer.`2.12` =>
-            ""
 
           case ScalaVer.`2.13` | ScalaVer.`3` =>
             s"""
                |  final def apply$n[$ABC](mkExpr: ($Strings) => String, $Types)(implicit lang: Language, $Params): Expr[Value] =
                |    apply$n[$ABC](mkExpr).apply($abc)
+               |
+               |  final def source$n[$ABC](mkExpr: ($Strings) => Source, $Types)(implicit lang: Language, $Params): Expr[Value] =
+               |    source$n[$ABC](mkExpr).apply($abc)
                |
                |""".stripMargin.trim
         }
@@ -56,7 +53,10 @@ object GenExprBoilerplate {
            |  $scalaSpecific
            |
            |  final def apply$n[$ABC](mkExpr: ($Strings) => String): Apply$n[$ABC] =
-           |    new Apply$n(mkExpr)
+           |    new Apply$n[$ABC](mkExpr)
+           |
+           |  final def source$n[$ABC](mkSrc: ($Strings) => Source): Source$n[$ABC] =
+           |    new Source$n[$ABC](mkSrc)
            |
            |  final def fn$n[$ABC](fnName: String): Apply$n[$ABC] =
            |    apply$n(($abc) => s"$$fnName(${`$a,$b,$c`})")
@@ -73,8 +73,22 @@ object GenExprBoilerplate {
            |      compile[Expr[Value]](exprValueId)
            |
            |    def compile[Z](post: Expr[Value] => Z)(implicit lang: Language, $Params): ($ABC) => Z = {
+           |      val srcDsl = new Source$n[$ABC](($abc) => Source.create(lang.name, mkExpr($abc)))
+           |      srcDsl.compile(post)
+           |    }
+           |  }
+           |
+           |  final class Source$n[$ABC](mkSrc: ($Strings) => Source) {
+           |
+           |    @inline def apply($Types)(implicit lang: Language, $Params): Expr[Value] =
+           |      compile.apply($abc)
+           |
+           |    def compile(implicit lang: Language, $Params): ($ABC) => Expr[Value] =
+           |      compile[Expr[Value]](exprValueId)
+           |
+           |    def compile[Z](post: Expr[Value] => Z)(implicit lang: Language, $Params): ($ABC) => Z = {
            |      val ps = Array[ExprParam[_]]($ABC).asInstanceOf[Array[ExprParam[X]]]
-           |      val z = genericOpt(ps, e => mkExpr($es), post)
+           |      val z = genericOpt(ps, e => mkSrc($es), post)
            |      ($abc) => z(Array[Any]($abc).asInstanceOf[Array[X]])
            |    }
            |  }
@@ -87,7 +101,7 @@ object GenExprBoilerplate {
       s"""
          |package japgolly.scalagraal
          |
-         |import org.graalvm.polyglot.Value
+         |import org.graalvm.polyglot.{Source, Value}
          |
          |abstract class $Name private[scalagraal]() {
          |
@@ -95,7 +109,7 @@ object GenExprBoilerplate {
          |  private[this] final val exprValueId = (a: Expr[Value]) => a
          |
          |  protected def genericOpt[Z](params: Array[ExprParam[X]],
-         |                              mkExprStr: Array[String] => String,
+         |                              mkExprSrc: Array[String] => Source,
          |                              post: Expr[Value] => Z)
          |                             (implicit lang: Language): Array[X] => Z
          |$sep${groups.mkString("\n" + sep)}

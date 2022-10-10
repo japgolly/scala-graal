@@ -1,6 +1,6 @@
 package japgolly.scalagraal
 
-import japgolly.scalagraal.util.DurationLite
+import japgolly.scalagraal.util.{DurationLite, FileRef}
 import java.util.function.Consumer
 import org.graalvm.polyglot.{Language => _, _}
 import scala.annotation.tailrec
@@ -222,17 +222,26 @@ object Expr extends ExprBoilerplate {
   def cosequenceAndDiscard[A](es: Iterable[Expr[A]]): Expr[Unit] =
     lift(c => es.foreach(_.run(c)))
 
-  def fileOnClasspath(filename: String)(implicit lang: Language): Expr[Option[Value]] =
-    lazily(GraalSourceUtil.fileOnClasspath(lang.name, filename)).flatMap {
+  def file[A](file: A, srcCfg: Source#Builder => Source#Builder = identity)(implicit lang: Language, A: FileRef[A]): Expr[Option[Value]] =
+    lazily(GraalSourceUtil.file(lang.name, file, srcCfg)).flatMap {
       case Some(s) => apply(s).map(Some(_))
       case None    => pure(None)
     }
 
-  def requireFileOnClasspath(filename: String)(implicit lang: Language): Expr[Value] =
-    apply(GraalSourceUtil.requireFileOnClasspath(lang.name, filename))
+  def requireFile[A](file: A, srcCfg: Source#Builder => Source#Builder = identity)(implicit lang: Language, A: FileRef[A]): Expr[Value] =
+    apply(GraalSourceUtil.requireFile(lang.name, file, srcCfg))
+
+  def fileOnClasspath(filename: String, srcCfg: Source#Builder => Source#Builder = identity)(implicit lang: Language): Expr[Option[Value]] =
+    lazily(GraalSourceUtil.fileOnClasspath(lang.name, filename, srcCfg)).flatMap {
+      case Some(s) => apply(s).map(Some(_))
+      case None    => pure(None)
+    }
+
+  def requireFileOnClasspath(filename: String, srcCfg: Source#Builder => Source#Builder = identity)(implicit lang: Language): Expr[Value] =
+    apply(GraalSourceUtil.requireFileOnClasspath(lang.name, filename, srcCfg))
 
   override protected def genericOpt[Z](params: Array[ExprParam[X]],
-                                       mkExprStr: Array[String] => String,
+                                       mkExprSrc: Array[String] => Source,
                                        post: Expr[Value] => Z)
                                       (implicit l: Language): Array[X] => Z = {
     val arity = params.length
@@ -250,8 +259,7 @@ object Expr extends ExprBoilerplate {
         }
         tokens(i) = token
       }
-      val es = mkExprStr(tokens)
-      val src = Source.create(l.name, es)
+      val src = mkExprSrc(tokens)
       if (usesBindings) {
         val run = l.argBinder(src)
         c => ExprError.InEval.capture(run(c))
