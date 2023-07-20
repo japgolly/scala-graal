@@ -16,11 +16,11 @@ jobs:
       matrix:
         include:
 
-          - graal: 21.3.1
+          - graal: 21.3.7
             java: 11
             scala: 2
 
-          - graal: 21.3.1
+          - graal: 21.3.7
             java: 11
             scala: 3
 
