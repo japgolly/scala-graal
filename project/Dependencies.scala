@@ -7,7 +7,7 @@ object Dependencies {
   object Ver {
 
     // Exported
-    val boopickle        = "1.4.0"
+    val boopickle        = "1.5.0"
     val cats             = "2.8.0"
     val graal            = "21.3.1"
     val microlibs        = "4.2.1"
