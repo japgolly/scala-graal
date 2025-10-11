@@ -1,4 +1,4 @@
-libraryDependencies += "org.scala-js" %% "scalajs-env-jsdom-nodejs" % "1.1.0"
+libraryDependencies += "org.scala-js" %% "scalajs-env-jsdom-nodejs" % "1.1.1"
 
 addSbtPlugin("ch.epfl.scala"      % "sbt-scalafix"             % "0.9.34")
 addSbtPlugin("com.github.sbt"     % "sbt-ci-release"           % "1.5.10")
