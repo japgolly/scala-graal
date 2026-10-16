@@ -11,7 +11,7 @@ object Dependencies {
     val cats             = "2.8.0"
     val graal            = "21.3.1"
     val microlibs        = "4.2.1"
-    val prometheus       = "0.16.0"
+    val prometheus       = "1.10.0"
     val scala2           = "2.13.9"
     val scala3           = "3.1.3"
 
@@ -28,7 +28,7 @@ object Dependencies {
     val graalSdk          = Def.setting("org.graalvm.sdk"                 % "graal-sdk"    % Ver.graal)
     val microlibsTestUtil = Def.setting("com.github.japgolly.microlibs" %%% "test-util"    % Ver.microlibs)
     val nyayaTest         = Def.setting("com.github.japgolly.nyaya"     %%% "nyaya-test"   % Ver.nyaya)
-    val prometheus        = Def.setting("io.prometheus"                   % "simpleclient" % Ver.prometheus)
+    val prometheus        = Def.setting("io.prometheus"                   % "prometheus-metrics-core" % Ver.prometheus)
     val utest             = Def.setting("com.lihaoyi"                   %%% "utest"        % Ver.utest)
 
     // Compiler plugins
